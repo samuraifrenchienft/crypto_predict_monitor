@@ -9,7 +9,7 @@ services:
       pip install flask flask-cors
     startCommand: python run_dashboard.py
     healthCheckPath: /api/stats
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.10
