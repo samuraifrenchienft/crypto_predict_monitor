@@ -6,6 +6,7 @@ from urllib.parse import quote
 import httpx
 
 from bot.adapters.base import Adapter
+from bot.errors import retry_with_backoff, safe_http_get, log_error_metrics, ErrorInfo, ErrorType
 from bot.models import Market, Outcome, Quote
 
 
@@ -49,8 +50,11 @@ class MetaculusAdapter(Adapter):
         }
 
         async with httpx.AsyncClient(timeout=20.0) as client:
-            r = await client.get(url, params=params)
-            r.raise_for_status()
+            r = await retry_with_backoff(
+                safe_http_get, client, url, params=params,
+                max_retries=3,
+                adapter_name=self.name
+            )
             data = r.json()
 
         # Response can be paginated with "results" key or direct list
@@ -123,12 +127,22 @@ class MetaculusAdapter(Adapter):
             
             async with httpx.AsyncClient(timeout=20.0) as client:
                 try:
-                    r = await client.get(url)
-                    r.raise_for_status()
+                    r = await retry_with_backoff(
+                        safe_http_get, client, url,
+                        max_retries=2,
+                        adapter_name=self.name,
+                        market_id=market.market_id
+                    )
                     data = r.json()
                     prob = _extract_probability(data)
-                except httpx.HTTPError:
-                    pass
+                except Exception as e:
+                    # Log failure but continue with None probability
+                    log_error_metrics(ErrorInfo(
+                        error_type=ErrorType.NETWORK,
+                        message=f"Failed to fetch probability: {e}",
+                        adapter_name=self.name,
+                        market_id=market.market_id
+                    ))
 
         quotes: list[Quote] = []
         

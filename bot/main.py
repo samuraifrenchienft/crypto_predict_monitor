@@ -11,6 +11,7 @@ from rich.table import Table
 
 from bot.alerts.discord import DiscordAlerter
 from bot.config import load_config
+from bot.errors import ErrorInfo, ErrorType, log_error_metrics, FatalError, RetryableError
 from bot.models import Quote
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.adapters.limitless import LimitlessAdapter
@@ -144,8 +145,27 @@ async def main() -> None:
                 snap_path = write_snapshot(cfg.bot.snapshot_dir, source, snapshot_payload)
                 console.print(f"[green]snapshot[/green] {source} -> {snap_path}")
 
+            except FatalError as e:
+                # Fatal errors - don't retry this adapter
+                console.print(f"[red]FATAL[/red] {source}: {e.error_info.message}")
+                log_error_metrics(e.error_info)
+                # Continue to next adapter
+                continue
+            except RetryableError as e:
+                # Retryable errors - log but continue
+                console.print(f"[yellow]RETRYABLE[/yellow] {source}: {e.error_info.message}")
+                log_error_metrics(e.error_info)
+                # Continue to next adapter
+                continue
             except Exception as e:
-                console.print(f"[red]error[/red] {source}: {e}")
+                # Unexpected errors
+                error_info = ErrorInfo(
+                    error_type=ErrorType.UNKNOWN,
+                    message=str(e),
+                    adapter_name=source
+                )
+                console.print(f"[red]UNKNOWN[/red] {source}: {e}")
+                log_error_metrics(error_info)
 
         render_cycle_table(cycle_rows)
         console.print(f"[cyan]cycle:[/cyan] sleeping {cfg.bot.poll_interval_seconds}s\n")
