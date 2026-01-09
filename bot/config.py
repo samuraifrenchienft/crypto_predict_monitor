@@ -51,6 +51,21 @@ class LimitlessCfg:
 class KalshiCfg:
     enabled: bool
     base_url: str
+    markets_limit: int = 50
+
+
+@dataclass(frozen=True)
+class ManifoldCfg:
+    enabled: bool
+    base_url: str
+    markets_limit: int = 50
+
+
+@dataclass(frozen=True)
+class MetaculusCfg:
+    enabled: bool
+    base_url: str
+    questions_limit: int = 50
 
 
 @dataclass(frozen=True)
@@ -61,6 +76,8 @@ class AppConfig:
     polymarket: PolymarketCfg
     limitless: LimitlessCfg
     kalshi: KalshiCfg
+    manifold: ManifoldCfg
+    metaculus: MetaculusCfg
     discord_webhook_url: Optional[str]
 
 
@@ -124,6 +141,21 @@ def load_config() -> AppConfig:
     kalshi = KalshiCfg(
         enabled=bool(_must_get(k_raw, "enabled")),
         base_url=str(_must_get(k_raw, "base_url")),
+        markets_limit=int(k_raw.get("markets_limit", 50)),
+    )
+
+    mf_raw = ad_raw.get("manifold", {})
+    manifold = ManifoldCfg(
+        enabled=bool(mf_raw.get("enabled", False)),
+        base_url=str(mf_raw.get("base_url", "https://api.manifold.markets")),
+        markets_limit=int(mf_raw.get("markets_limit", 50)),
+    )
+
+    mc_raw = ad_raw.get("metaculus", {})
+    metaculus = MetaculusCfg(
+        enabled=bool(mc_raw.get("enabled", False)),
+        base_url=str(mc_raw.get("base_url", "https://www.metaculus.com/api2")),
+        questions_limit=int(mc_raw.get("questions_limit", 50)),
     )
 
     # Secret lives ONLY in .env; we just read it (no printing).
@@ -136,5 +168,7 @@ def load_config() -> AppConfig:
         polymarket=polymarket,
         limitless=limitless,
         kalshi=kalshi,
+        manifold=manifold,
+        metaculus=metaculus,
         discord_webhook_url=webhook,
     )

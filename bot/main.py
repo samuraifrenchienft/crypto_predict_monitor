@@ -14,6 +14,9 @@ from bot.config import load_config
 from bot.models import Quote
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.adapters.limitless import LimitlessAdapter
+from bot.adapters.kalshi import KalshiAdapter
+from bot.adapters.manifold import ManifoldAdapter
+from bot.adapters.metaculus import MetaculusAdapter
 
 console = Console()
 
@@ -75,6 +78,27 @@ async def main() -> None:
     if cfg.limitless.enabled:
         console.print("[cyan]boot:[/cyan] enabling Limitless adapter")
         adapters.append(LimitlessAdapter(base_url=cfg.limitless.base_url))
+
+    if cfg.kalshi.enabled:
+        console.print("[cyan]boot:[/cyan] enabling Kalshi adapter")
+        adapters.append(KalshiAdapter(
+            base_url=cfg.kalshi.base_url,
+            markets_limit=cfg.kalshi.markets_limit,
+        ))
+
+    if cfg.manifold.enabled:
+        console.print("[cyan]boot:[/cyan] enabling Manifold adapter")
+        adapters.append(ManifoldAdapter(
+            base_url=cfg.manifold.base_url,
+            markets_limit=cfg.manifold.markets_limit,
+        ))
+
+    if cfg.metaculus.enabled:
+        console.print("[cyan]boot:[/cyan] enabling Metaculus adapter")
+        adapters.append(MetaculusAdapter(
+            base_url=cfg.metaculus.base_url,
+            questions_limit=cfg.metaculus.questions_limit,
+        ))
 
     if cfg.discord.online_message:
         console.print("[cyan]boot:[/cyan] sending ONLINE (may silently fail if webhook invalid)")

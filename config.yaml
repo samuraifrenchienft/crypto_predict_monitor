@@ -47,6 +47,17 @@ adapters:
     use_websocket: false
 
   kalshi:
-    enabled: false
-    # Kalshi is auth-required; we add after PM + Limitless run clean
-    base_url: "https://api.elections.kalshi.com"
+    enabled: true
+    # Kalshi public API (no auth needed for market data)
+    base_url: "https://api.elections.kalshi.com/trade-api/v2"
+    markets_limit: 50
+
+  manifold:
+    enabled: true
+    base_url: "https://api.manifold.markets"
+    markets_limit: 50
+
+  metaculus:
+    enabled: true
+    base_url: "https://www.metaculus.com/api2"
+    questions_limit: 50
