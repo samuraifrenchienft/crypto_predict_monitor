@@ -1,1 +1,1 @@
-web: gunicorn -c dashboard/gunicorn_config.py dashboard.app:app
+web: python run_dashboard.py
