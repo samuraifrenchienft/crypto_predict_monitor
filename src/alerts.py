@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import logging
 import time
 from typing import Any, Literal
@@ -128,7 +129,14 @@ class AlertState:
         self.last_prob_by_market_id[market_id] = float(prob)
 
     def _rule_key(self, rule: AlertRule) -> str:
-        return f"{rule.market_id}:{id(rule)}"
+        # Use stable hash based on rule content instead of object id
+        rule_data = rule.model_dump(exclude={"escalate"})
+        # Include escalate rules in hash
+        escalate_data = [e.model_dump() for e in rule.escalate]
+        rule_data["escalate"] = escalate_data
+        content = str(sorted(rule_data.items()))
+        digest = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+        return f"{rule.market_id}:{digest}"
 
     def get_rule_state(self, rule: AlertRule) -> dict[str, Any]:
         key = self._rule_key(rule)

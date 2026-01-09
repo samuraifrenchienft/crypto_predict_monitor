@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import quote
 
 from src.http_client import HttpClient, HttpClientError
 from src.schemas import MarketEvent
@@ -164,7 +165,7 @@ def _fetch_polymarket_events(
                 try:
                     # Query for current price with token_id and side=SELL
                     response = polymarket_client.get_json(
-                        f"/price?token_id={token_id}&side=SELL"
+                        f"/price?token_id={quote(token_id, safe='')}&side=SELL"
                     )
                 finally:
                     polymarket_client.close()
@@ -263,7 +264,7 @@ def _fetch_price_events(
             granularity = interval_minutes * 60
             # Request last 2 candles to compute delta
             response = coinbase_client.get_json_any(
-                f"/products/{symbol}/candles?granularity={granularity}"
+                f"/products/{quote(symbol, safe='')}/candles?granularity={granularity}"
             )
         finally:
             coinbase_client.close()

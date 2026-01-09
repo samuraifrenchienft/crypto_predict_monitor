@@ -18,7 +18,7 @@ from tenacity import (
 
 from .schemas import WebhookPayload
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("crypto_predict_monitor")
 
 
 class WebhookError(RuntimeError):
@@ -120,8 +120,10 @@ def send_webhook(
     if version < 1:
         raise WebhookError("payload.schema_version must be >= 1")
 
-    # Body to send
-    body: Dict[str, Any] = payload.model_dump(exclude_none=True)
+    # Body to send - exclude schema_version as Discord doesn't recognize it
+    body: Dict[str, Any] = payload.model_dump(exclude_none=True, exclude={"schema_version"})
+    
+    logger.debug("webhook body keys=%s content_len=%s", list(body.keys()), len(body.get("content", "")))
 
     # Stable idempotency key (same payload => same key)
     idempotency_key = _stable_idempotency_key(payload)
@@ -192,11 +194,12 @@ def send_webhook(
 
         # Non-retryable 4xx (except 429 handled above)
         logger.warning(
-            "webhook send non-retryable url=%s status=%s market_id=%s severity=%s",
+            "webhook send non-retryable url=%s status=%s market_id=%s severity=%s response=%s",
             safe_url,
             status,
             market_id,
             severity,
+            resp.text[:200] if resp.text else "empty",
         )
         return
 

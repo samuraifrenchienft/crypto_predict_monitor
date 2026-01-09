@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
@@ -14,6 +15,8 @@ logger = logging.getLogger("crypto_predict_monitor")
 
 _ALLOWED_LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
 _ALLOWED_UPSTREAMS = {"dev", "polymarket", "price", "multi"}
+_ALLOWED_PRICE_PROVIDERS = {"coinbase"}
+_PRICE_SYMBOL_PATTERN = re.compile(r"^[A-Z0-9]+-[A-Z0-9]+$")
 _SENSITIVE_FIELDS = {"api_key", "webhook_url", "rules_json", "polymarket_markets_json"}
 
 
@@ -93,6 +96,30 @@ class Settings(BaseModel):
         if i <= 0:
             raise ValueError("must be > 0")
         return i
+
+    @field_validator("price_provider")
+    @classmethod
+    def _validate_price_provider(cls, v: str | None) -> str:
+        if v is None:
+            return "coinbase"
+        s = str(v).strip().lower()
+        if not s:
+            return "coinbase"
+        if s not in _ALLOWED_PRICE_PROVIDERS:
+            raise ValueError(f"price_provider must be one of: {', '.join(sorted(_ALLOWED_PRICE_PROVIDERS))}")
+        return s
+
+    @field_validator("price_symbol")
+    @classmethod
+    def _validate_price_symbol(cls, v: str | None) -> str:
+        if v is None:
+            return "BTC-USD"
+        s = str(v).strip().upper()
+        if not s:
+            return "BTC-USD"
+        if not _PRICE_SYMBOL_PATTERN.match(s):
+            raise ValueError("price_symbol must be in format 'BASE-QUOTE' (e.g., 'BTC-USD')")
+        return s
 
 
 def _safe_validation_message(err: ValidationError) -> str:
