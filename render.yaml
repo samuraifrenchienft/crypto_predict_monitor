@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: crypto-prediction-dashboard
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      pip install -r dashboard/requirements.txt
+    startCommand: gunicorn -c dashboard/gunicorn_config.py dashboard.app:app
+    healthCheckPath: /api/stats
+    autoDeploy: false
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
+      - key: FLASK_ENV
+        value: production
+    domains:
+      - crypto-prediction-dashboard.onrender.com
