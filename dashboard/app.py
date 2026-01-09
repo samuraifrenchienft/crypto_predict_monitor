@@ -95,13 +95,11 @@ async def update_all_markets():
                 clob_base_url=cfg.polymarket.clob_base_url,
                 data_base_url=cfg.polymarket.data_base_url,
                 events_limit=cfg.polymarket.events_limit,
-                use_websocket=cfg.polymarket.use_websocket,
             )))
         
         if cfg.limitless.enabled:
             adapters.append(("limitless", LimitlessAdapter(
                 base_url=cfg.limitless.base_url,
-                use_websocket=cfg.limitless.use_websocket,
             )))
         
         if cfg.kalshi.enabled:
