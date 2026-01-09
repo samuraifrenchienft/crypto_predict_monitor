@@ -84,74 +84,112 @@ async def fetch_market_data(adapter_name: str, adapter) -> List[Dict[str, Any]]:
 
 async def update_all_markets():
     """Update market data from all enabled adapters."""
-    cfg = load_config()
-    adapters = []
-    
-    # Create adapters based on config
-    if cfg.polymarket.enabled:
-        adapters.append(("polymarket", PolymarketAdapter(
-            gamma_base_url=cfg.polymarket.gamma_base_url,
-            clob_base_url=cfg.polymarket.clob_base_url,
-            data_base_url=cfg.polymarket.data_base_url,
-            events_limit=cfg.polymarket.events_limit,
-            use_websocket=cfg.polymarket.use_websocket,
-        )))
-    
-    if cfg.limitless.enabled:
-        adapters.append(("limitless", LimitlessAdapter(
-            base_url=cfg.limitless.base_url,
-            use_websocket=cfg.limitless.use_websocket,
-        )))
-    
-    if cfg.kalshi.enabled:
-        from bot.rate_limit import RateLimitConfig
-        adapters.append(("kalshi", KalshiAdapter(
-            base_url=cfg.kalshi.base_url,
-            markets_limit=cfg.kalshi.markets_limit,
-            rate_limit_config=RateLimitConfig(
-                requests_per_second=cfg.kalshi.requests_per_second,
-                requests_per_minute=cfg.kalshi.requests_per_minute,
-                burst_size=cfg.kalshi.burst_size,
-            ),
-        )))
-    
-    if cfg.manifold.enabled:
-        from bot.rate_limit import RateLimitConfig
-        adapters.append(("manifold", ManifoldAdapter(
-            base_url=cfg.manifold.base_url,
-            markets_limit=cfg.manifold.markets_limit,
-            rate_limit_config=RateLimitConfig(
-                requests_per_second=cfg.manifold.requests_per_second,
-                requests_per_minute=cfg.manifold.requests_per_minute,
-                burst_size=cfg.manifold.burst_size,
-            ),
-        )))
-    
-    if cfg.metaculus.enabled:
-        from bot.rate_limit import RateLimitConfig
-        adapters.append(("metaculus", MetaculusAdapter(
-            base_url=cfg.metaculus.base_url,
-            questions_limit=cfg.metaculus.questions_limit,
-            rate_limit_config=RateLimitConfig(
-                requests_per_second=cfg.metaculus.requests_per_second,
-                requests_per_minute=cfg.metaculus.requests_per_minute,
-                burst_size=cfg.metaculus.burst_size,
-            ),
-        )))
-    
-    # Fetch data from all adapters
-    for adapter_name, adapter in adapters:
-        print(f"Fetching data from {adapter_name}...")
-        data = await fetch_market_data(adapter_name, adapter)
-        market_cache[adapter_name] = data
-        last_update[adapter_name] = datetime.now(timezone.utc)
-        print(f"Fetched {len(data)} markets from {adapter_name}")
+    try:
+        cfg = load_config()
+        adapters = []
+        
+        # Create adapters based on config
+        if cfg.polymarket.enabled:
+            adapters.append(("polymarket", PolymarketAdapter(
+                gamma_base_url=cfg.polymarket.gamma_base_url,
+                clob_base_url=cfg.polymarket.clob_base_url,
+                data_base_url=cfg.polymarket.data_base_url,
+                events_limit=cfg.polymarket.events_limit,
+                use_websocket=cfg.polymarket.use_websocket,
+            )))
+        
+        if cfg.limitless.enabled:
+            adapters.append(("limitless", LimitlessAdapter(
+                base_url=cfg.limitless.base_url,
+                use_websocket=cfg.limitless.use_websocket,
+            )))
+        
+        if cfg.kalshi.enabled:
+            from bot.rate_limit import RateLimitConfig
+            adapters.append(("kalshi", KalshiAdapter(
+                base_url=cfg.kalshi.base_url,
+                markets_limit=cfg.kalshi.markets_limit,
+                rate_limit_config=RateLimitConfig(
+                    requests_per_second=cfg.kalshi.requests_per_second,
+                    requests_per_minute=cfg.kalshi.requests_per_minute,
+                    burst_size=cfg.kalshi.burst_size,
+                ),
+            )))
+        
+        if cfg.manifold.enabled:
+            from bot.rate_limit import RateLimitConfig
+            adapters.append(("manifold", ManifoldAdapter(
+                base_url=cfg.manifold.base_url,
+                markets_limit=cfg.manifold.markets_limit,
+                rate_limit_config=RateLimitConfig(
+                    requests_per_second=cfg.manifold.requests_per_second,
+                    requests_per_minute=cfg.manifold.requests_per_minute,
+                    burst_size=cfg.manifold.burst_size,
+                ),
+            )))
+        
+        if cfg.metaculus.enabled:
+            from bot.rate_limit import RateLimitConfig
+            adapters.append(("metaculus", MetaculusAdapter(
+                base_url=cfg.metaculus.base_url,
+                questions_limit=cfg.metaculus.questions_limit,
+                rate_limit_config=RateLimitConfig(
+                    requests_per_second=cfg.metaculus.requests_per_second,
+                    requests_per_minute=cfg.metaculus.requests_per_minute,
+                    burst_size=cfg.metaculus.burst_size,
+                ),
+            )))
+        
+        # Fetch data from all adapters
+        for adapter_name, adapter in adapters:
+            print(f"Fetching data from {adapter_name}...")
+            try:
+                data = await fetch_market_data(adapter_name, adapter)
+                market_cache[adapter_name] = data
+                last_update[adapter_name] = datetime.now(timezone.utc)
+                print(f"Fetched {len(data)} markets from {adapter_name}")
+            except Exception as e:
+                print(f"Error fetching from {adapter_name}: {e}")
+                # Add empty data to show the adapter is configured
+                market_cache[adapter_name] = []
+                last_update[adapter_name] = datetime.now(timezone.utc)
+                
+    except Exception as e:
+        print(f"Error updating markets: {e}")
+        # Add demo data if configuration fails
+        market_cache["demo"] = [
+            {
+                "source": "demo",
+                "market_id": "demo-1",
+                "title": "Demo Market - Configuration Needed",
+                "url": "#",
+                "outcomes": [
+                    {"outcome_id": "demo-1_YES", "name": "YES", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()},
+                    {"outcome_id": "demo-1_NO", "name": "NO", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()}
+                ],
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+            }
+        ]
+        last_update["demo"] = datetime.now(timezone.utc)
 
 
 @app.route("/")
 def index():
     """Main dashboard page."""
-    return render_template("index.html")
+    try:
+        return render_template("index.html")
+    except Exception as e:
+        return f"<h1>Template Error</h1><p>Error: {str(e)}</p><p>Check that templates/index.html exists</p>", 500
+
+
+@app.route("/test")
+def test():
+    """Test endpoint to verify app is running."""
+    return jsonify({
+        "status": "ok",
+        "message": "Dashboard is running",
+        "time": datetime.now(timezone.utc).isoformat()
+    })
 
 
 @app.route("/api/markets")
@@ -243,16 +281,5 @@ def get_stats():
 
 
 if __name__ == "__main__":
-    # Initial data fetch
-    print("Initial market data fetch...")
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(update_all_markets())
-    finally:
-        loop.close()
-    
-    print(f"Loaded {sum(len(markets) for markets in market_cache.values())} markets")
-    
     # Run Flask app
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)
