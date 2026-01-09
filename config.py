@@ -1,0 +1,12 @@
+
+
+
+EVENTS_URL_TEMPLATE = "https://web.crypto.com/api/proxy/private/knock-out/predictions/api/v2/events?limit={limit}&status=active&asset_type=predicts"
+
+CONTRACTS_URL_TEMPLATE = "https://web.crypto.com/api/proxy/public/knock-out/predictions/public/api/v2/contracts?event_id={event_ids}"
+
+COOKIE_VALUE = "_cfuvid=pi2SLYjR5lBjX_ooxNZFxV5l._727sMzi10ndK0X62g-1767318916835-0.0.1.1-604800000; ajs_anonymous_id=688ece73-6dbd-4858-b08c-21b3576cc1b5; gbuuid=1a1cb2af-984a-4386-b720-db0946ab41c1; intercom-device-id-ruozuwky=775679b3-cadc-4817-9b9c-1d734338693a; csrf_1764192298=MTc2NzMyOTc3NHxEdi1qQkFFQ182UUFBUkFCRUFBQVB2LWtBQUVHYzNSeWFXNW5EQVlBQkdOemNtWUdjM1J5YVc1bkRDSUFJRE0zWVRCbE5EWmpNalpoTkRRMU1EYzRZelk0WlRWbU5EbGtObVEzTlRGa3zpwzNSSfh_dlyvX2UqKu2ZWXlEdOsZ_DR6rhPEQhw2rQ==; cf_clearance=RjVcNSYAh1E88bRfCZ_coJVUMR.9J4PkT19ExVn9Ky4-1767338034-1.2.1.1-FK8uAOtLqasC5TMmv_1n9DiPMhC6fDmVCsk4CvcnELhaDX_MKYyKdLstEmtPPFSfyupc0MRVQiEIlxPkvbygSjCFcKmXmpyr_d3CXul5eQHrW0tRAiENEX1UWWg0JEb54vAinL4FkBbjC3hKVHPiJ6rcwxr8eHxELuC_NIm5JkiFIbhKts.yeufC.C9cY2fhr95V9MolXFsukmWhIUinVEk6Sukb74YOAcMD8PBsV7w; __Host-cdcweb-sid=AWNhNTY4NGY5LTkwOGYtNDRjYi04NzZmLWE1ZjM0ZDVkZDRhMg%3D%3D; cdcweb-ssid=AGNhNTY4NGY5LTkwOGYtNDRjYi04NzZmLWE1ZjM0ZDVkZDRhMg%3D%3D; intercom-session-ruozuwky=SHBSV0ozSGlPMDkzcW5iSG55NDhMaUN6N2hVd0l2aGJlUEZzeGs0ZHh1RG5iOHorQS94RGJLSlYzRGxGK3NBci9jR05zYkxtcGVJNHh0ZVlKeEJRaWhObHQ5WXNJNEZHSUdPQUU4bmV3Nkk9LS15SkYwR1RxNXN0T1RSQXcwYmJHdkFnPT0=--a2e48309a8a41b899072ecd6f9027f8f05998574; __cf_bm=xFVAtvLjt1VFipZVN041zbD8rvKb0EeS6WUt7T0cC.E-1767339876-1.0.1.1-MkoYTf05CBghYbSWjXhROax6u4Rlkey1IudzPqvufK.I6WJNub5g0NWmKozycVMA9ryXe9NDOrlFVWXykAaonHDd9H4T3H6PVk.29pO5TCI"
+
+
+POLL_EVENTS_SECONDS = 120
+POLL_CONTRACTS_SECONDS = 60

@@ -1,0 +1,52 @@
+bot:
+  # Main loop sleep time between polling cycles
+  poll_interval_seconds: 30
+
+  # Where JSON debug snapshots are written (no secrets)
+  snapshot_dir: data
+
+  # Safety cap so one adapter can't explode runtime
+  max_markets_per_adapter: 25
+
+alerts:
+  discord:
+    enabled: true
+
+    # Send one "ONLINE" message when the bot starts (once per run)
+    online_message: true
+
+    # Dedupe/cooldown: minimum seconds between identical alerts
+    min_seconds_between_same_alert: 120
+
+thresholds:
+  # Alert if spread >= this (0.08 = 8 cents wide)
+  min_spread: 0.08
+
+  # Alert if mid price moves by this fraction vs last seen (0.05 = 5%)
+  price_move_pct: 0.05
+
+  # Alert if best bid size or best ask size changes by this fraction
+  top_of_book_size_move_pct: 0.50
+
+adapters:
+  polymarket:
+    enabled: true
+    # HTTP endpoints (official)
+    gamma_base_url: "https://gamma-api.polymarket.com"
+    clob_base_url: "https://clob.polymarket.com"
+    data_base_url: "https://data-api.polymarket.com"
+    events_limit: 50
+    # Use WS later (we’ll wire it after HTTP is stable)
+    use_websocket: false
+
+  limitless:
+    enabled: true
+    # Use official SDK base
+    base_url: "https://api.limitless.exchange"
+    # Optional WS later
+    use_websocket: false
+
+  kalshi:
+    enabled: false
+    # Kalshi is auth-required; we add after PM + Limitless run clean
+    base_url: "https://api.elections.kalshi.com"

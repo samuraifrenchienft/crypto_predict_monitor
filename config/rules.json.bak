@@ -1,0 +1,206 @@
+{
+  "btc_15m_up": {
+    "threshold": 0.03,
+    "cooldown_seconds": 180,
+    "severity": "medium",
+    "reason_template": "Bitcoin 15m chart shows upward momentum (>{threshold})"
+  },
+  "btc_15m_down": {
+    "threshold": 0.03,
+    "cooldown_seconds": 180,
+    "severity": "medium",
+    "reason_template": "Bitcoin 15m chart shows downward pressure (>{threshold})"
+  },
+  "poly_fed_decision_in_january_no_change": {
+    "threshold": 0.04,
+    "cooldown_seconds": 300,
+    "severity": "high",
+    "reason_template": "Fed January decision: No change odds moved >{threshold}"
+  },
+  "poly_fed_decision_in_january_25bp_cut": {
+    "threshold": 0.04,
+    "cooldown_seconds": 300,
+    "severity": "high",
+    "reason_template": "Fed January decision: 25bp cut odds moved >{threshold}"
+  },
+  "poly_fed_decision_in_january_50bp_cut": {
+    "threshold": 0.04,
+    "cooldown_seconds": 300,
+    "severity": "high",
+    "reason_template": "Fed January decision: 50bp cut odds moved >{threshold}"
+  },
+  "poly_israel_strikes_iran_by_january_31_2026_yes": {
+    "threshold": 0.05,
+    "cooldown_seconds": 240,
+    "severity": "critical",
+    "reason_template": "Israel-Iran strike probability (YES) shifted >{threshold}"
+  },
+  "poly_israel_strikes_iran_by_january_31_2026_no": {
+    "threshold": 0.05,
+    "cooldown_seconds": 240,
+    "severity": "critical",
+    "reason_template": "Israel-Iran strike probability (NO) shifted >{threshold}"
+  },
+  "poly_uganda_presidential_election_yoweri_museveni": {
+    "threshold": 0.03,
+    "cooldown_seconds": 600,
+    "severity": "medium",
+    "reason_template": "Uganda election: Museveni odds moved >{threshold}"
+  },
+  "poly_uganda_presidential_election_opposition_candidate": {
+    "threshold": 0.03,
+    "cooldown_seconds": 600,
+    "severity": "medium",
+    "reason_template": "Uganda election: Opposition odds moved >{threshold}"
+  },
+  "poly_uganda_presidential_election_neither": {
+    "threshold": 0.03,
+    "cooldown_seconds": 600,
+    "severity": "medium",
+    "reason_template": "Uganda election: Neither outcome odds moved >{threshold}"
+  },
+  "poly_bitcoin_january_2026_under_90k": {
+    "threshold": 0.04,
+    "cooldown_seconds": 240,
+    "severity": "high",
+    "reason_template": "BTC January price: <$90k bracket odds moved >{threshold}"
+  },
+  "poly_bitcoin_january_2026_90k_100k": {
+    "threshold": 0.04,
+    "cooldown_seconds": 240,
+    "severity": "high",
+    "reason_template": "BTC January price: $90k-$100k bracket odds moved >{threshold}"
+  },
+  "poly_bitcoin_january_2026_100k_110k": {
+    "threshold": 0.04,
+    "cooldown_seconds": 240,
+    "severity": "high",
+    "reason_template": "BTC January price: $100k-$110k bracket odds moved >{threshold}"
+  },
+  "poly_bitcoin_january_2026_110k_120k": {
+    "threshold": 0.04,
+    "cooldown_seconds": 240,
+    "severity": "high",
+    "reason_template": "BTC January price: $110k-$120k bracket odds moved >{threshold}"
+  },
+  "poly_bitcoin_january_2026_over_120k": {
+    "threshold": 0.04,
+    "cooldown_seconds": 240,
+    "severity": "high",
+    "reason_template": "BTC January price: >$120k bracket odds moved >{threshold}"
+  },
+  "poly_hyperliquid_buybacks_q1_yes": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "medium",
+    "reason_template": "Hyperliquid Q1 $200M+ buybacks (YES) odds moved >{threshold}"
+  },
+  "poly_hyperliquid_buybacks_q1_no": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "medium",
+    "reason_template": "Hyperliquid Q1 $200M+ buybacks (NO) odds moved >{threshold}"
+  },
+  "poly_bitcoin_etf_flows_jan8_positive": {
+    "threshold": 0.03,
+    "cooldown_seconds": 180,
+    "severity": "medium",
+    "reason_template": "BTC ETF flows Jan 8: Positive outcome odds moved >{threshold}"
+  },
+  "poly_bitcoin_etf_flows_jan8_negative": {
+    "threshold": 0.03,
+    "cooldown_seconds": 180,
+    "severity": "medium",
+    "reason_template": "BTC ETF flows Jan 8: Negative outcome odds moved >{threshold}"
+  },
+  "poly_ethereum_jan8_up": {
+    "threshold": 0.03,
+    "cooldown_seconds": 180,
+    "severity": "medium",
+    "reason_template": "ETH Jan 8: UP odds moved >{threshold}"
+  },
+  "poly_ethereum_jan8_down": {
+    "threshold": 0.03,
+    "cooldown_seconds": 180,
+    "severity": "medium",
+    "reason_template": "ETH Jan 8: DOWN odds moved >{threshold}"
+  },
+  "poly_nfl_buf_jax_buf": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "low",
+    "reason_template": "NFL BUF vs JAX: Buffalo odds moved >{threshold}"
+  },
+  "poly_nfl_buf_jax_jax": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "low",
+    "reason_template": "NFL BUF vs JAX: Jacksonville odds moved >{threshold}"
+  },
+  "poly_nba_phi_orl_phi": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "low",
+    "reason_template": "NBA PHI vs ORL: Philadelphia odds moved >{threshold}"
+  },
+  "poly_nba_phi_orl_orl": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "low",
+    "reason_template": "NBA PHI vs ORL: Orlando odds moved >{threshold}"
+  },
+  "poly_nhl_nj_pit_nj": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "low",
+    "reason_template": "NHL NJ vs PIT: New Jersey odds moved >{threshold}"
+  },
+  "poly_nhl_nj_pit_pit": {
+    "threshold": 0.05,
+    "cooldown_seconds": 300,
+    "severity": "low",
+    "reason_template": "NHL NJ vs PIT: Pittsburgh odds moved >{threshold}"
+  },
+  "poly_us_recession_2026_yes": {
+    "threshold": 0.04,
+    "cooldown_seconds": 600,
+    "severity": "critical",
+    "reason_template": "US recession by end of 2026 (YES) odds moved >{threshold}"
+  },
+  "poly_us_recession_2026_no": {
+    "threshold": 0.04,
+    "cooldown_seconds": 600,
+    "severity": "critical",
+    "reason_template": "US recession by end of 2026 (NO) odds moved >{threshold}"
+  },
+  "poly_stranger_things_by_wed_yes": {
+    "threshold": 0.03,
+    "cooldown_seconds": 240,
+    "severity": "low",
+    "reason_template": "Stranger Things episode by Wednesday (YES) odds moved >{threshold}"
+  },
+  "poly_stranger_things_by_wed_no": {
+    "threshold": 0.03,
+    "cooldown_seconds": 240,
+    "severity": "low",
+    "reason_template": "Stranger Things episode by Wednesday (NO) odds moved >{threshold}"
+  },
+  "poly_before_gta_vi_gta_vi": {
+    "threshold": 0.04,
+    "cooldown_seconds": 600,
+    "severity": "low",
+    "reason_template": "What happens before GTA VI: GTA VI first odds moved >{threshold}"
+  },
+  "poly_before_gta_vi_elder_scrolls_6": {
+    "threshold": 0.04,
+    "cooldown_seconds": 600,
+    "severity": "low",
+    "reason_template": "What happens before GTA VI: Elder Scrolls 6 first odds moved >{threshold}"
+  },
+  "poly_before_gta_vi_neither": {
+    "threshold": 0.04,
+    "cooldown_seconds": 600,
+    "severity": "low",
+    "reason_template": "What happens before GTA VI: Neither first odds moved >{threshold}"
+  }
+}
