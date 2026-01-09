@@ -63,6 +63,7 @@ async def fetch_market_data(adapter_name: str, adapter) -> List[Dict[str, Any]]:
     """Fetch market data from an adapter."""
     try:
         markets = await adapter.list_active_markets()
+        print(f"{adapter_name}: Found {len(markets)} markets")
         markets = markets[:10]  # Limit to 10 markets per adapter
         
         market_data = []
@@ -70,12 +71,14 @@ async def fetch_market_data(adapter_name: str, adapter) -> List[Dict[str, Any]]:
             try:
                 outcomes = await adapter.list_outcomes(market)
                 quotes = await adapter.get_quotes(market, outcomes)
+                print(f"{adapter_name}: Market {market.market_id} has {len(quotes)} quotes")
                 market_data.append(serialize_market(market, quotes))
             except Exception as e:
                 print(f"Error fetching quotes for {market.market_id}: {e}")
                 # Add market without quotes
                 market_data.append(serialize_market(market, []))
         
+        print(f"{adapter_name}: Returning {len(market_data)} markets")
         return market_data
     except Exception as e:
         print(f"Error fetching data from {adapter_name}: {e}")
