@@ -66,6 +66,29 @@ class MetaculusCfg:
     enabled: bool
     base_url: str
     questions_limit: int = 50
+    requests_per_second: float = 1.5
+    requests_per_minute: int = 90
+    burst_size: int = 8
+
+
+@dataclass(frozen=True)
+class ManifoldCfg:
+    enabled: bool
+    base_url: str
+    markets_limit: int = 50
+    requests_per_second: float = 2.0
+    requests_per_minute: int = 120
+    burst_size: int = 10
+
+
+@dataclass(frozen=True)
+class KalshiCfg:
+    enabled: bool
+    base_url: str
+    markets_limit: int = 50
+    requests_per_second: float = 1.0
+    requests_per_minute: int = 60
+    burst_size: int = 5
 
 
 @dataclass(frozen=True)
@@ -137,18 +160,25 @@ def load_config() -> AppConfig:
         use_websocket=bool(_must_get(lim_raw, "use_websocket")),
     )
 
-    k_raw = _must_get(ad_raw, "kalshi")
-    kalshi = KalshiCfg(
-        enabled=bool(_must_get(k_raw, "enabled")),
-        base_url=str(_must_get(k_raw, "base_url")),
-        markets_limit=int(k_raw.get("markets_limit", 50)),
-    )
 
     mf_raw = ad_raw.get("manifold", {})
     manifold = ManifoldCfg(
         enabled=bool(mf_raw.get("enabled", False)),
         base_url=str(mf_raw.get("base_url", "https://api.manifold.markets")),
         markets_limit=int(mf_raw.get("markets_limit", 50)),
+        requests_per_second=float(mf_raw.get("requests_per_second", 2.0)),
+        requests_per_minute=int(mf_raw.get("requests_per_minute", 120)),
+        burst_size=int(mf_raw.get("burst_size", 10)),
+    )
+
+    k_raw = _must_get(ad_raw, "kalshi")
+    kalshi = KalshiCfg(
+        enabled=bool(_must_get(k_raw, "enabled")),
+        base_url=str(_must_get(k_raw, "base_url")),
+        markets_limit=int(k_raw.get("markets_limit", 50)),
+        requests_per_second=float(k_raw.get("requests_per_second", 1.0)),
+        requests_per_minute=int(k_raw.get("requests_per_minute", 60)),
+        burst_size=int(k_raw.get("burst_size", 5)),
     )
 
     mc_raw = ad_raw.get("metaculus", {})
@@ -156,6 +186,9 @@ def load_config() -> AppConfig:
         enabled=bool(mc_raw.get("enabled", False)),
         base_url=str(mc_raw.get("base_url", "https://www.metaculus.com/api2")),
         questions_limit=int(mc_raw.get("questions_limit", 50)),
+        requests_per_second=float(mc_raw.get("requests_per_second", 1.5)),
+        requests_per_minute=int(mc_raw.get("requests_per_minute", 90)),
+        burst_size=int(mc_raw.get("burst_size", 8)),
     )
 
     # Secret lives ONLY in .env; we just read it (no printing).

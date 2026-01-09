@@ -51,13 +51,25 @@ adapters:
     # Kalshi public API (no auth needed for market data)
     base_url: "https://api.elections.kalshi.com/trade-api/v2"
     markets_limit: 50
+    # Rate limiting (conservative - Kalshi has strict limits)
+    requests_per_second: 1.0
+    requests_per_minute: 60
+    burst_size: 5
 
   manifold:
     enabled: true
     base_url: "https://api.manifold.markets"
     markets_limit: 50
+    # Rate limiting (moderate - Manifold is more lenient)
+    requests_per_second: 2.0
+    requests_per_minute: 120
+    burst_size: 10
 
   metaculus:
     enabled: true
     base_url: "https://www.metaculus.com/api2"
     questions_limit: 50
+    # Rate limiting (moderate - Metaculus allows reasonable usage)
+    requests_per_second: 1.5
+    requests_per_minute: 90
+    burst_size: 8

@@ -8,6 +8,7 @@ import httpx
 from bot.adapters.base import Adapter
 from bot.errors import retry_with_backoff, safe_http_get, log_error_metrics, ErrorInfo, ErrorType
 from bot.models import Market, Outcome, Quote
+from bot.rate_limit import create_rate_limited_client, get_adapter_rate_limit, RateLimitedClient
 
 
 class KalshiAdapter(Adapter):
@@ -29,10 +30,23 @@ class KalshiAdapter(Adapter):
         self,
         base_url: str = "https://api.elections.kalshi.com/trade-api/v2",
         markets_limit: int = 50,
+        rate_limit_config = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.markets_limit = markets_limit
         self._market_cache: Dict[str, dict] = {}
+        self._rate_limit_config = rate_limit_config or get_adapter_rate_limit(self.name)
+        self._client: Optional[RateLimitedClient] = None
+
+    def _get_client(self) -> RateLimitedClient:
+        """Get or create a rate-limited HTTP client."""
+        if self._client is None:
+            self._client = create_rate_limited_client(
+                self.name,
+                timeout=20.0,
+                custom_config=self._rate_limit_config
+            )
+        return self._client
 
     async def list_active_markets(self) -> list[Market]:
         """
@@ -45,13 +59,13 @@ class KalshiAdapter(Adapter):
             "limit": str(self.markets_limit),
         }
 
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            r = await retry_with_backoff(
-                safe_http_get, client, url, params=params,
-                max_retries=3,
-                adapter_name=self.name
-            )
-            data = r.json()
+        client = self._get_client()
+        r = await retry_with_backoff(
+            client.get, self.name, url, params=params,
+            max_retries=3,
+            adapter_name=self.name
+        )
+        data = r.json()
 
         markets_raw = data.get("markets", [])
         markets: list[Market] = []
@@ -107,14 +121,14 @@ class KalshiAdapter(Adapter):
         """
         url = f"{self.base_url}/markets/{quote(market.market_id, safe='')}/orderbook"
 
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            r = await retry_with_backoff(
-                safe_http_get, client, url,
-                max_retries=3,
-                adapter_name=self.name,
-                market_id=market.market_id
-            )
-            data = r.json()
+        client = self._get_client()
+        r = await retry_with_backoff(
+            client.get, self.name, url,
+            max_retries=3,
+            adapter_name=self.name,
+            market_id=market.market_id
+        )
+        data = r.json()
 
         orderbook = data.get("orderbook", {})
         yes_levels = orderbook.get("yes", [])

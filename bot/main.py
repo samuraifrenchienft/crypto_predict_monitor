@@ -18,6 +18,7 @@ from bot.adapters.limitless import LimitlessAdapter
 from bot.adapters.kalshi import KalshiAdapter
 from bot.adapters.manifold import ManifoldAdapter
 from bot.adapters.metaculus import MetaculusAdapter
+from bot.rate_limit import RateLimitConfig
 
 console = Console()
 
@@ -85,6 +86,11 @@ async def main() -> None:
         adapters.append(KalshiAdapter(
             base_url=cfg.kalshi.base_url,
             markets_limit=cfg.kalshi.markets_limit,
+            rate_limit_config=RateLimitConfig(
+                requests_per_second=cfg.kalshi.requests_per_second,
+                requests_per_minute=cfg.kalshi.requests_per_minute,
+                burst_size=cfg.kalshi.burst_size,
+            ),
         ))
 
     if cfg.manifold.enabled:
@@ -92,6 +98,11 @@ async def main() -> None:
         adapters.append(ManifoldAdapter(
             base_url=cfg.manifold.base_url,
             markets_limit=cfg.manifold.markets_limit,
+            rate_limit_config=RateLimitConfig(
+                requests_per_second=cfg.manifold.requests_per_second,
+                requests_per_minute=cfg.manifold.requests_per_minute,
+                burst_size=cfg.manifold.burst_size,
+            ),
         ))
 
     if cfg.metaculus.enabled:
@@ -99,6 +110,11 @@ async def main() -> None:
         adapters.append(MetaculusAdapter(
             base_url=cfg.metaculus.base_url,
             questions_limit=cfg.metaculus.questions_limit,
+            rate_limit_config=RateLimitConfig(
+                requests_per_second=cfg.metaculus.requests_per_second,
+                requests_per_minute=cfg.metaculus.requests_per_minute,
+                burst_size=cfg.metaculus.burst_size,
+            ),
         ))
 
     if cfg.discord.online_message:
