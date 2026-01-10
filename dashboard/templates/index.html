@@ -92,7 +92,7 @@
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-400 truncate">Total Markets</dt>
+                            <dt class="text-sm font-medium text-gray-400 truncate">Total Events</dt>
                             <dd class="text-lg font-semibold text-white" id="totalMarkets">0</dd>
                         </dl>
                     </div>
@@ -124,7 +124,7 @@
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-400 truncate">Active Sources</dt>
+                            <dt class="text-sm font-medium text-gray-400 truncate">Sources With Data</dt>
                             <dd class="text-lg font-semibold text-white" id="activeSources">0</dd>
                         </dl>
                     </div>
@@ -580,8 +580,8 @@
         }
 
         function updateStats(data) {
-            document.getElementById('totalMarkets').textContent = data.total_markets || 0;
-            document.getElementById('activeSources').textContent = data.sources ? data.sources.length : 0;
+            document.getElementById('totalMarkets').textContent = (data.total_events ?? data.total_markets ?? 0);
+            document.getElementById('activeSources').textContent = (data.active_sources ?? (data.sources ? data.sources.length : 0));
             
             // Calculate total outcomes
             let totalOutcomes = 0;

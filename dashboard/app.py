@@ -222,13 +222,22 @@ def get_markets():
         finally:
             loop.close()
     
+    total_events = sum(len(markets) for markets in market_cache.values())
+    sources = list(market_cache.keys())
+    active_sources = sum(1 for _, markets in market_cache.items() if markets)
+
     return jsonify({
         "markets": market_cache,
+        "sources": sources,
+        "active_sources": active_sources,
         "last_update": {
             source: time.isoformat() if time else None
             for source, time in last_update.items()
         },
-        "total_markets": sum(len(markets) for markets in market_cache.values()),
+        # Backwards compatible field name used by the frontend
+        "total_markets": total_events,
+        # Prefer this naming going forward (each card is an event/market)
+        "total_events": total_events,
     })
 
 
