@@ -22,7 +22,6 @@ from bot.adapters.manifold import ManifoldAdapter
 from bot.adapters.kalshi import KalshiAdapter
 from bot.adapters.metaculus import MetaculusAdapter
 from bot.adapters.polymarket import PolymarketAdapter
-from bot.adapters.limitless import LimitlessAdapter
 from bot.models import Market, Quote
 
 
@@ -101,10 +100,15 @@ async def update_all_markets():
             )))
         
         if cfg.limitless.enabled:
-            adapters.append(("limitless", LimitlessAdapter(
-                base_url=cfg.limitless.base_url,
-            )))
-        
+            try:
+                from bot.adapters.limitless import LimitlessAdapter
+
+                adapters.append(("limitless", LimitlessAdapter(
+                    base_url=cfg.limitless.base_url,
+                )))
+            except ModuleNotFoundError as e:
+                print(f"limitless disabled at runtime (missing dependency): {e}")
+
         if cfg.kalshi.enabled:
             from bot.rate_limit import RateLimitConfig
             adapters.append(("kalshi", KalshiAdapter(
