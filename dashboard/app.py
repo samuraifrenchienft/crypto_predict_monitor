@@ -6,13 +6,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 import threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, g, render_template, jsonify, request
 from flask_cors import CORS
 
 # Add parent directory to path for imports
@@ -27,9 +28,53 @@ from bot.arbitrage import detect_cross_market_arbitrage
 from bot.alerts.discord import DiscordAlerter
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 
+from dashboard.db import close_session, get_session, engine
+from dashboard.models import Base, User, UserTier
+from dashboard.auth import (
+    apply_tier_rules,
+    discord_callback_async,
+    discord_login,
+    get_current_user,
+    logout,
+    require_tier,
+    wallet_challenge,
+    wallet_verify,
+)
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
+
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
+
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"[db] failed to create tables: {e}")
+
+
+@app.before_request
+def _open_db_session():
+    g.db = get_session()
+
+    try:
+        user = get_current_user(g.db)
+        if user is not None:
+            apply_tier_rules(user)
+            g.db.commit()
+    except Exception:
+        # Fail-safe: never block request due to auth/db issues
+        return
+
+
+@app.teardown_request
+def _close_db_session(_exc):
+    try:
+        db = getattr(g, "db", None)
+        if db is not None:
+            db.close()
+    finally:
+        close_session()
 
 # Global cache for market data
 market_cache: Dict[str, List[Dict[str, Any]]] = {}
@@ -298,6 +343,107 @@ def index():
         return f"<h1>Template Error</h1><p>Error: {str(e)}</p><p>Check that templates/index.html exists</p>", 500
 
 
+@app.route("/auth/discord/login")
+def auth_discord_login():
+    return discord_login()
+
+
+@app.route("/auth/discord/callback")
+def auth_discord_callback():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        resp, status = loop.run_until_complete(discord_callback_async(g.db))
+        return resp, status
+    finally:
+        loop.close()
+
+
+@app.route("/auth/logout")
+def auth_logout():
+    return logout()
+
+
+@app.route("/api/register", methods=["POST"])
+def register_user():
+    data = request.get_json(silent=True) or {}
+    email = data.get("email")
+
+    if not isinstance(email, str) or not email.strip():
+        return jsonify({"error": "email_required"}), 400
+
+    user = User(
+        email=email.strip(),
+        user_tier=UserTier.free,
+        trial_start_date=datetime.now(timezone.utc),
+        trial_active=True,
+    )
+    g.db.add(user)
+    g.db.commit()
+    g.db.refresh(user)
+
+    return jsonify({"user_id": user.id, "user_tier": user.user_tier.value, "trial_active": user.trial_active}), 201
+
+
+@app.route("/api/me")
+def me():
+    user = get_current_user(g.db)
+    if not user:
+        return jsonify({"authenticated": False}), 200
+
+    apply_tier_rules(user)
+    g.db.commit()
+
+    return jsonify(
+        {
+            "authenticated": True,
+            "user_id": user.id,
+            "email": user.email,
+            "discord_id": user.discord_id,
+            "user_tier": user.user_tier.value,
+            "trial_active": user.trial_active,
+            "trial_start_date": user.trial_start_date.isoformat() if user.trial_start_date else None,
+            "trial_expires_at": user.trial_expires_at().isoformat() if user.trial_expires_at() else None,
+            "trial_seconds_left": user.trial_seconds_left(),
+            "subscription_active": user.subscription_active,
+            "subscription_expires_at": user.subscription_expires_at.isoformat() if user.subscription_expires_at else None,
+            "wallet_connected": user.wallet_connected,
+            "wallet_address": user.wallet_address,
+        }
+    )
+
+
+@app.route("/api/wallet/challenge", methods=["POST"])
+@require_tier(UserTier.free)
+def wallet_connect_challenge():
+    user = g.current_user
+    data = request.get_json(silent=True) or {}
+    address = data.get("address")
+    if not isinstance(address, str) or not address.strip():
+        return jsonify({"error": "address_required"}), 400
+    return jsonify(wallet_challenge(g.db, user, address.strip()))
+
+
+@app.route("/api/wallet/verify", methods=["POST"])
+@require_tier(UserTier.free)
+def wallet_connect_verify():
+    user = g.current_user
+    data = request.get_json(silent=True) or {}
+    address = data.get("address")
+    signature = data.get("signature")
+    if not isinstance(address, str) or not address.strip():
+        return jsonify({"error": "address_required"}), 400
+    if not isinstance(signature, str) or not signature.strip():
+        return jsonify({"error": "signature_required"}), 400
+
+    try:
+        ok = wallet_verify(g.db, user, address.strip(), signature.strip())
+    except Exception:
+        ok = False
+
+    return jsonify({"verified": bool(ok), "wallet_connected": bool(ok)})
+
+
 @app.route("/test")
 def test():
     """Test endpoint to verify app is running."""
@@ -447,6 +593,7 @@ def get_stats():
 
 
 @app.route("/api/arbitrage")
+@require_tier(UserTier.premium)
 def get_arbitrage():
     """Get cross-market arbitrage opportunities."""
     cfg = load_config()
@@ -487,6 +634,7 @@ def get_arbitrage():
 
 
 @app.route("/api/whales")
+@require_tier(UserTier.premium)
 def get_whale_alerts():
     """Get whale convergence alerts based on tracked wallets."""
     cfg = load_config()

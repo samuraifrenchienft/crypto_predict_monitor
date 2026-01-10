@@ -4,6 +4,9 @@ gunicorn==21.2.0
 requests==2.31.0
 httpx==0.28.1
 aiohttp==3.9.1
+SQLAlchemy==2.0.25
+psycopg2-binary==2.9.9
+eth-account==0.12.4
 annotated-types==0.7.0
 anyio==4.12.1
 certifi==2026.1.4
