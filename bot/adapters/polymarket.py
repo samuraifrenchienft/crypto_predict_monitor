@@ -59,11 +59,21 @@ class PolymarketAdapter(Adapter):
             if not market_id:
                 continue
 
+            slug = m.get("slug")
+            url_str = f"https://polymarket.com/market/{slug}" if isinstance(slug, str) and slug.strip() else None
+
             outcomes_str = m.get("outcomes")
             token_ids_str = m.get("clobTokenIds")
 
             outcome_names = _parse_json_array_str(outcomes_str)
             token_ids = _parse_json_array_str(token_ids_str)
+
+            # Only include binary YES/NO markets (otherwise UI shows N/A)
+            if len(outcome_names) != 2:
+                continue
+            outcome_set = {n.strip().lower() for n in outcome_names if isinstance(n, str)}
+            if not ({"yes", "no"} <= outcome_set):
+                continue
 
             if outcome_names and token_ids and len(outcome_names) == len(token_ids):
                 self._market_outcome_cache[market_id] = (outcome_names, token_ids)
@@ -75,7 +85,7 @@ class PolymarketAdapter(Adapter):
                     "outcomePrices": _parse_json_array_str(m.get("outcomePrices")),
                 }
 
-            markets.append(Market(source=self.name, market_id=market_id, title=title, url=None, outcomes=[]))
+            markets.append(Market(source=self.name, market_id=market_id, title=title, url=url_str, outcomes=[]))
 
         return markets
 
