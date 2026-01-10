@@ -152,22 +152,24 @@ class ManifoldAdapter(Adapter):
                     p = float(prob)
                     # YES outcome gets probability, NO gets 1-probability
                     if o.name == "YES":
-                        quotes.append(Quote(
+                        mid = p
+                        bid = max(0.001, mid - 0.005)
+                        ask = min(0.999, mid + 0.005)
+                        quotes.append(Quote.from_bid_ask(
                             outcome_id=o.outcome_id,
-                            bid=None,
-                            ask=None,
-                            mid=p,
-                            spread=None,
+                            bid=bid,
+                            ask=ask,
                             bid_size=None,
                             ask_size=None,
                         ))
                     else:
-                        quotes.append(Quote(
+                        mid = 1.0 - p
+                        bid = max(0.001, mid - 0.005)
+                        ask = min(0.999, mid + 0.005)
+                        quotes.append(Quote.from_bid_ask(
                             outcome_id=o.outcome_id,
-                            bid=None,
-                            ask=None,
-                            mid=1.0 - p,
-                            spread=None,
+                            bid=bid,
+                            ask=ask,
                             bid_size=None,
                             ask_size=None,
                         ))

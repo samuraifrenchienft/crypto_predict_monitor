@@ -94,7 +94,16 @@ class PolymarketAdapter(Adapter):
                 f"{len(names)} outcomes vs {len(token_ids)} token ids."
             )
 
-        return [Outcome(outcome_id=str(tid), name=str(name)) for name, tid in zip(names, token_ids)]
+        outcomes: list[Outcome] = []
+        for name, tid in zip(names, token_ids):
+            n = str(name)
+            nl = n.strip().lower()
+            if nl == "yes":
+                n = "YES"
+            elif nl == "no":
+                n = "NO"
+            outcomes.append(Outcome(outcome_id=str(tid), name=n))
+        return outcomes
 
     async def get_quotes(self, market: Market, outcomes: Iterable[Outcome]) -> list[Quote]:
         """
