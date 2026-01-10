@@ -24,20 +24,18 @@ class PolymarketAdapter(Adapter):
         self.data_base_url = data_base_url.rstrip("/")
         self.events_limit = events_limit
         self._market_outcome_cache: Dict[str, Tuple[list[str], list[str]]] = {}
+        self._market_prices_cache: Dict[str, dict] = {}  # Cache bestBid, bestAsk, outcomePrices
 
     async def list_active_markets(self) -> list[Market]:
         """
-        Use Gamma /markets because it includes clobTokenIds.
-        Gamma /markets documents outcomes and clobTokenIds as strings (JSON-encoded arrays). 
-        Filter for markets with order books and sort by volume for liquidity.
+        Use Gamma /markets because it includes clobTokenIds and prices.
+        Cache prices from Gamma API directly (more reliable than CLOB book endpoint).
         """
         url = f"{self.gamma_base_url}/markets"
         params = {
             "active": "true",
             "closed": "false",
             "archived": "false",
-            "enableOrderBook": "true",  # Only markets with CLOB enabled
-            "acceptingOrders": "true",  # Only markets currently accepting orders
             "order": "volume24hr",  # Sort by recent volume (most active)
             "ascending": "false",  # Descending order
             "limit": str(self.events_limit),
@@ -50,6 +48,7 @@ class PolymarketAdapter(Adapter):
 
         markets: list[Market] = []
         self._market_outcome_cache.clear()
+        self._market_prices_cache.clear()
 
         for m in markets_raw or []:
             if not isinstance(m, dict):
@@ -68,6 +67,13 @@ class PolymarketAdapter(Adapter):
 
             if outcome_names and token_ids and len(outcome_names) == len(token_ids):
                 self._market_outcome_cache[market_id] = (outcome_names, token_ids)
+                
+                # Cache prices from Gamma API
+                self._market_prices_cache[market_id] = {
+                    "bestBid": m.get("bestBid"),
+                    "bestAsk": m.get("bestAsk"),
+                    "outcomePrices": _parse_json_array_str(m.get("outcomePrices")),
+                }
 
             markets.append(Market(source=self.name, market_id=market_id, title=title, url=None, outcomes=[]))
 
@@ -91,21 +97,30 @@ class PolymarketAdapter(Adapter):
         return [Outcome(outcome_id=str(tid), name=str(name)) for name, tid in zip(names, token_ids)]
 
     async def get_quotes(self, market: Market, outcomes: Iterable[Outcome]) -> list[Quote]:
+        """
+        Use cached prices from Gamma API instead of CLOB book endpoint.
+        The Gamma API provides bestBid, bestAsk, and outcomePrices which are more reliable.
+        """
+        cached_prices = self._market_prices_cache.get(market.market_id, {})
+        outcome_prices = cached_prices.get("outcomePrices", [])
+        
         quotes: list[Quote] = []
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            for o in outcomes:
-                url = f"{self.clob_base_url}/book"
-                params = {"token_id": o.outcome_id}
+        outcomes_list = list(outcomes)
+        
+        for idx, o in enumerate(outcomes_list):
+            # Use outcomePrices from Gamma API
+            if idx < len(outcome_prices):
                 try:
-                    r = await client.get(url, params=params)
-                    r.raise_for_status()
-                    book = r.json()
-                    bid, bid_sz = _best_level(book.get("bids"))
-                    ask, ask_sz = _best_level(book.get("asks"))
-                except Exception:
-                    bid, ask, bid_sz, ask_sz = None, None, None, None
-
-                quotes.append(Quote.from_bid_ask(o.outcome_id, bid=bid, ask=ask, bid_size=bid_sz, ask_size=ask_sz))
+                    mid = float(outcome_prices[idx])
+                    # Create spread around mid price
+                    bid = max(0.001, mid - 0.005)
+                    ask = min(0.999, mid + 0.005)
+                except (ValueError, TypeError):
+                    bid, ask, mid = None, None, None
+            else:
+                bid, ask, mid = None, None, None
+            
+            quotes.append(Quote.from_bid_ask(o.outcome_id, bid=bid, ask=ask, bid_size=None, ask_size=None))
 
         return quotes
 

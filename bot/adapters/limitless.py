@@ -29,8 +29,14 @@ class LimitlessAdapter(Adapter):
             r.raise_for_status()
             resp = r.json()
 
-        # Response is dict with 'markets' list
-        data = resp.get("markets", []) if isinstance(resp, dict) else resp
+        # Response is dict with 'data' list (not 'markets')
+        data = resp.get("data", []) if isinstance(resp, dict) else resp
+        if not data and isinstance(resp, dict):
+            # Try other common keys
+            for key in ("markets", "items", "results"):
+                if isinstance(resp.get(key), list):
+                    data = resp[key]
+                    break
 
         markets: list[Market] = []
         self._market_cache.clear()
