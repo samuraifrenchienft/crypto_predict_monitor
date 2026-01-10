@@ -103,23 +103,9 @@ class KalshiCfg:
     enabled: bool
     base_url: str
     markets_limit: int = 50
-
-
-@dataclass(frozen=True)
-class ManifoldCfg:
-    enabled: bool
-    base_url: str
-    markets_limit: int = 50
-
-
-@dataclass(frozen=True)
-class MetaculusCfg:
-    enabled: bool
-    base_url: str
-    questions_limit: int = 50
-    requests_per_second: float = 1.5
-    requests_per_minute: int = 90
-    burst_size: int = 8
+    requests_per_second: float = 1.0
+    requests_per_minute: int = 60
+    burst_size: int = 5
 
 
 @dataclass(frozen=True)
@@ -133,16 +119,6 @@ class ManifoldCfg:
 
 
 @dataclass(frozen=True)
-class KalshiCfg:
-    enabled: bool
-    base_url: str
-    markets_limit: int = 50
-    requests_per_second: float = 1.0
-    requests_per_minute: int = 60
-    burst_size: int = 5
-
-
-@dataclass(frozen=True)
 class AppConfig:
     bot: BotConfig
     discord: DiscordAlertConfig
@@ -153,7 +129,6 @@ class AppConfig:
     limitless: LimitlessCfg
     kalshi: KalshiCfg
     manifold: ManifoldCfg
-    metaculus: MetaculusCfg
     discord_webhook_url: Optional[str]
 
 
@@ -251,16 +226,6 @@ def load_config() -> AppConfig:
         burst_size=int(k_raw.get("burst_size", 5)),
     )
 
-    mc_raw = ad_raw.get("metaculus", {})
-    metaculus = MetaculusCfg(
-        enabled=bool(mc_raw.get("enabled", False)),
-        base_url=str(mc_raw.get("base_url", "https://www.metaculus.com/api2")),
-        questions_limit=int(mc_raw.get("questions_limit", 50)),
-        requests_per_second=float(mc_raw.get("requests_per_second", 1.5)),
-        requests_per_minute=int(mc_raw.get("requests_per_minute", 90)),
-        burst_size=int(mc_raw.get("burst_size", 8)),
-    )
-
     # Secret lives ONLY in .env; we just read it (no printing).
     webhook = os.getenv("DISCORD_WEBHOOK_URL") or None
 
@@ -286,13 +251,6 @@ def load_config() -> AppConfig:
     mf_rps = _env_float("MANIFOLD_REQUESTS_PER_SECOND")
     mf_rpm = _env_int("MANIFOLD_REQUESTS_PER_MINUTE")
     mf_burst = _env_int("MANIFOLD_BURST_SIZE")
-
-    mc_enabled = _env_bool("METACULUS_ENABLED")
-    mc_base_url = _env_str("METACULUS_BASE_URL")
-    mc_questions_limit = _env_int("METACULUS_QUESTIONS_LIMIT")
-    mc_rps = _env_float("METACULUS_REQUESTS_PER_SECOND")
-    mc_rpm = _env_int("METACULUS_REQUESTS_PER_MINUTE")
-    mc_burst = _env_int("METACULUS_BURST_SIZE")
 
     polymarket = PolymarketCfg(
         enabled=pm_enabled if pm_enabled is not None else polymarket.enabled,
@@ -327,15 +285,6 @@ def load_config() -> AppConfig:
         burst_size=mf_burst if mf_burst is not None else manifold.burst_size,
     )
 
-    metaculus = MetaculusCfg(
-        enabled=mc_enabled if mc_enabled is not None else metaculus.enabled,
-        base_url=mc_base_url or metaculus.base_url,
-        questions_limit=mc_questions_limit if mc_questions_limit is not None else metaculus.questions_limit,
-        requests_per_second=mc_rps if mc_rps is not None else metaculus.requests_per_second,
-        requests_per_minute=mc_rpm if mc_rpm is not None else metaculus.requests_per_minute,
-        burst_size=mc_burst if mc_burst is not None else metaculus.burst_size,
-    )
-
     return AppConfig(
         bot=bot,
         discord=discord,
@@ -346,6 +295,5 @@ def load_config() -> AppConfig:
         limitless=limitless,
         kalshi=kalshi,
         manifold=manifold,
-        metaculus=metaculus,
         discord_webhook_url=webhook,
     )

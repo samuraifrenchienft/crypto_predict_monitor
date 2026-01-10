@@ -25,7 +25,6 @@
         }
         .source-manifold { background: #fbbf24; color: #78350f; }
         .source-kalshi { background: #60a5fa; color: #1e3a8a; }
-        .source-metaculus { background: #c084fc; color: #581c87; }
         .source-polymarket { background: #34d399; color: #064e3b; }
         .source-limitless { background: #f87171; color: #7f1d1d; }
         .loading-spinner {
@@ -183,9 +182,6 @@
                     <button onclick="filterMarkets('kalshi')" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Kalshi
                     </button>
-                    <button onclick="filterMarkets('metaculus')" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
-                        Metaculus
-                    </button>
                     <button onclick="filterMarkets('polymarket')" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Polymarket
                     </button>
@@ -311,7 +307,6 @@
                             <select id="walletPlatform${i}" class="bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500">
                                 <option value="manifold" ${wallet.platform === 'manifold' ? 'selected' : ''}>Manifold</option>
                                 <option value="polymarket" ${wallet.platform === 'polymarket' ? 'selected' : ''}>Polymarket</option>
-                                <option value="metaculus" ${wallet.platform === 'metaculus' ? 'selected' : ''}>Metaculus</option>
                             </select>
                             <input type="text" 
                                    id="walletAddress${i}" 

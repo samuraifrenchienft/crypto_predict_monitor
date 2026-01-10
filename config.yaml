@@ -92,12 +92,3 @@ adapters:
     requests_per_second: 2.0
     requests_per_minute: 120
     burst_size: 10
-
-  metaculus:
-    enabled: true
-    base_url: "https://www.metaculus.com/api2"
-    questions_limit: 50
-    # Rate limiting (moderate - Metaculus allows reasonable usage)
-    requests_per_second: 1.5
-    requests_per_minute: 90
-    burst_size: 8

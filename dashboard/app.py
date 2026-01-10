@@ -20,7 +20,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from bot.config import load_config
 from bot.adapters.manifold import ManifoldAdapter
 from bot.adapters.kalshi import KalshiAdapter
-from bot.adapters.metaculus import MetaculusAdapter
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
 from bot.arbitrage import detect_cross_market_arbitrage
@@ -134,20 +133,6 @@ async def update_all_markets():
                     burst_size=cfg.manifold.burst_size,
                 ),
             )))
-        
-        if cfg.metaculus.enabled:
-            from bot.rate_limit import RateLimitConfig
-            print(f"Metaculus enabled in config, creating adapter...")
-            adapters.append(("metaculus", MetaculusAdapter(
-                base_url=cfg.metaculus.base_url,
-                questions_limit=cfg.metaculus.questions_limit,
-                rate_limit_config=RateLimitConfig(
-                    requests_per_second=cfg.metaculus.requests_per_second,
-                    requests_per_minute=cfg.metaculus.requests_per_minute,
-                    burst_size=cfg.metaculus.burst_size,
-                ),
-            )))
-            print(f"Metaculus adapter created")
         
         # Fetch data from all adapters
         for adapter_name, adapter in adapters:
