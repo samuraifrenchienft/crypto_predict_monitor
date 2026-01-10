@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+import threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
@@ -23,6 +24,7 @@ from bot.adapters.kalshi import KalshiAdapter
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
 from bot.arbitrage import detect_cross_market_arbitrage
+from bot.alerts.discord import DiscordAlerter
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 
 
@@ -32,6 +34,8 @@ CORS(app)  # Enable CORS for frontend
 # Global cache for market data
 market_cache: Dict[str, List[Dict[str, Any]]] = {}
 last_update: Dict[str, datetime] = {}
+_cache_lock = threading.Lock()
+_background_started = False
 
 
 def serialize_market(market: Market, outcomes: List[Any], quotes: List[Quote]) -> Dict[str, Any]:
@@ -159,38 +163,136 @@ async def update_all_markets():
             print(f"Fetching data from {adapter_name}...")
             try:
                 data = await fetch_market_data(adapter_name, adapter)
-                market_cache[adapter_name] = data
-                last_update[adapter_name] = datetime.now(timezone.utc)
+                with _cache_lock:
+                    market_cache[adapter_name] = data
+                    last_update[adapter_name] = datetime.now(timezone.utc)
                 print(f"Fetched {len(data)} markets from {adapter_name}")
             except Exception as e:
                 print(f"Error fetching from {adapter_name}: {e}")
                 # Add empty data to show the adapter is configured
-                market_cache[adapter_name] = []
-                last_update[adapter_name] = datetime.now(timezone.utc)
+                with _cache_lock:
+                    market_cache[adapter_name] = []
+                    last_update[adapter_name] = datetime.now(timezone.utc)
                 
     except Exception as e:
         print(f"Error updating markets: {e}")
         # Add demo data if configuration fails
-        market_cache["demo"] = [
-            {
-                "source": "demo",
-                "market_id": "demo-1",
-                "title": "Demo Market - Configuration Needed",
-                "url": "#",
-                "outcomes": [
-                    {"outcome_id": "demo-1_YES", "name": "YES", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()},
-                    {"outcome_id": "demo-1_NO", "name": "NO", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()}
-                ],
-                "last_updated": datetime.now(timezone.utc).isoformat(),
-            }
-        ]
-        last_update["demo"] = datetime.now(timezone.utc)
+        with _cache_lock:
+            market_cache["demo"] = [
+                {
+                    "source": "demo",
+                    "market_id": "demo-1",
+                    "title": "Demo Market - Configuration Needed",
+                    "url": "#",
+                    "outcomes": [
+                        {"outcome_id": "demo-1_YES", "name": "YES", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()},
+                        {"outcome_id": "demo-1_NO", "name": "NO", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()}
+                    ],
+                    "last_updated": datetime.now(timezone.utc).isoformat(),
+                }
+            ]
+            last_update["demo"] = datetime.now(timezone.utc)
+
+
+def _build_quotes_for_arbitrage() -> tuple[Dict[str, List[Market]], Dict[str, Dict[str, List[Quote]]]]:
+    markets_by_source: Dict[str, List[Market]] = {}
+    quotes_by_source: Dict[str, Dict[str, List[Quote]]] = {}
+
+    with _cache_lock:
+        cache_snapshot = json.loads(json.dumps(market_cache))
+
+    for source, markets in cache_snapshot.items():
+        markets_by_source[source] = []
+        quotes_by_source[source] = {}
+        for m in markets or []:
+            market = Market(source=source, market_id=m["market_id"], title=m["title"], url=m.get("url"), outcomes=[])
+            markets_by_source[source].append(market)
+            quotes_by_source[source][m["market_id"]] = [
+                Quote(
+                    outcome_id=o["outcome_id"],
+                    bid=o.get("bid"),
+                    ask=o.get("ask"),
+                    mid=o.get("mid"),
+                    spread=o.get("spread"),
+                    bid_size=o.get("bid_size"),
+                    ask_size=o.get("ask_size"),
+                    ts=datetime.fromisoformat(o["timestamp"]) if o.get("timestamp") else None,
+                )
+                for o in (m.get("outcomes") or [])
+            ]
+
+    return markets_by_source, quotes_by_source
+
+
+async def _arbitrage_alert_loop() -> None:
+    cfg = load_config()
+    alerter = DiscordAlerter(
+        webhook_url=cfg.discord_webhook_url,
+        enabled=cfg.discord.enabled,
+        min_seconds_between_same_alert=cfg.discord.min_seconds_between_same_alert,
+    )
+
+    while True:
+        try:
+            await update_all_markets()
+
+            if cfg.arbitrage.mode == "cross_market":
+                markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
+                opportunities = detect_cross_market_arbitrage(
+                    markets_by_source,
+                    quotes_by_source,
+                    min_spread=cfg.arbitrage.min_spread,
+                    prioritize_new=cfg.arbitrage.prioritize_new_events,
+                    new_event_hours=cfg.arbitrage.new_event_hours,
+                )
+
+                for opp in opportunities[:3]:
+                    action = opp.get("action") or {}
+                    profit_cents = action.get("profit_cents")
+                    buy_yes_at = action.get("buy_yes_at")
+                    buy_no_at = action.get("buy_no_at")
+                    buy_yes_price = action.get("buy_yes_price")
+                    buy_no_price = action.get("buy_no_price")
+                    title = (opp.get("markets") or [{}])[0].get("title") or opp.get("normalized_title")
+
+                    key = f"arb:{opp.get('normalized_title')}:{buy_yes_at}:{buy_no_at}"
+                    content = (
+                        f"🎯 Arbitrage {profit_cents}¢\n"
+                        f"{title}\n"
+                        f"BUY YES on {buy_yes_at} @ {buy_yes_price}\n"
+                        f"BUY NO on {buy_no_at} @ {buy_no_price}"
+                    )
+                    await alerter.send(key=key, content=content)
+
+        except Exception as e:
+            print(f"[arbitrage_alert_loop] error: {e}")
+
+        await asyncio.sleep(cfg.bot.poll_interval_seconds)
+
+
+def _start_background_tasks() -> None:
+    global _background_started
+    if _background_started:
+        return
+    _background_started = True
+
+    def runner() -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(_arbitrage_alert_loop())
+        finally:
+            loop.close()
+
+    t = threading.Thread(target=runner, daemon=True)
+    t.start()
 
 
 @app.route("/")
 def index():
     """Main dashboard page."""
     try:
+        _start_background_tasks()
         return render_template("index.html")
     except Exception as e:
         return f"<h1>Template Error</h1><p>Error: {str(e)}</p><p>Check that templates/index.html exists</p>", 500
