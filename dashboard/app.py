@@ -34,8 +34,18 @@ market_cache: Dict[str, List[Dict[str, Any]]] = {}
 last_update: Dict[str, datetime] = {}
 
 
-def serialize_market(market: Market, quotes: List[Quote]) -> Dict[str, Any]:
+def serialize_market(market: Market, outcomes: List[Any], quotes: List[Quote]) -> Dict[str, Any]:
     """Serialize market and quotes for JSON response."""
+    outcome_name_by_id: Dict[str, str] = {}
+    for o in outcomes or []:
+        try:
+            oid = getattr(o, "outcome_id", None)
+            oname = getattr(o, "name", None)
+            if oid is not None and oname is not None:
+                outcome_name_by_id[str(oid)] = str(oname)
+        except Exception:
+            continue
+
     return {
         "source": market.source,
         "market_id": market.market_id,
@@ -44,7 +54,7 @@ def serialize_market(market: Market, quotes: List[Quote]) -> Dict[str, Any]:
         "outcomes": [
             {
                 "outcome_id": q.outcome_id,
-                "name": q.outcome_id.split("_")[-1],  # Extract YES/NO
+                "name": outcome_name_by_id.get(str(q.outcome_id), str(q.outcome_id)),
                 "bid": q.bid,
                 "ask": q.ask,
                 "mid": q.mid,
@@ -82,7 +92,7 @@ async def fetch_market_data(adapter_name: str, adapter) -> List[Dict[str, Any]]:
                     print(f"{adapter_name}: Skipping {market.market_id} - no price or probability data")
                     continue
                 
-                market_data.append(serialize_market(market, quotes))
+                market_data.append(serialize_market(market, outcomes, quotes))
             except Exception as e:
                 print(f"Error fetching quotes for {market.market_id}: {e}")
                 # Skip markets with errors
