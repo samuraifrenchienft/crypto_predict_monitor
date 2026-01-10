@@ -65,6 +65,23 @@ class Thresholds:
 
 
 @dataclass(frozen=True)
+class ArbitrageConfig:
+    mode: str  # "cross_market" or "any_market"
+    min_spread: float
+    prioritize_new_events: bool
+    new_event_hours: int
+
+
+@dataclass(frozen=True)
+class WhaleWatchConfig:
+    enabled: bool
+    wallets: List[Dict[str, str]]
+    convergence_threshold: int
+    time_window_hours: int
+    max_market_age_hours: int
+
+
+@dataclass(frozen=True)
 class PolymarketCfg:
     enabled: bool
     gamma_base_url: str
@@ -130,6 +147,8 @@ class AppConfig:
     bot: BotConfig
     discord: DiscordAlertConfig
     thresholds: Thresholds
+    arbitrage: ArbitrageConfig
+    whale_watch: WhaleWatchConfig
     polymarket: PolymarketCfg
     limitless: LimitlessCfg
     kalshi: KalshiCfg
@@ -157,6 +176,8 @@ def load_config() -> AppConfig:
     bot_raw = _must_get(raw, "bot")
     alerts_raw = _must_get(_must_get(raw, "alerts"), "discord")
     thr_raw = _must_get(raw, "thresholds")
+    arb_raw = raw.get("arbitrage", {})
+    whale_raw = raw.get("whale_watch", {})
     ad_raw = _must_get(raw, "adapters")
 
     bot = BotConfig(
@@ -175,6 +196,21 @@ def load_config() -> AppConfig:
         min_spread=float(_must_get(thr_raw, "min_spread")),
         price_move_pct=float(_must_get(thr_raw, "price_move_pct")),
         top_of_book_size_move_pct=float(_must_get(thr_raw, "top_of_book_size_move_pct")),
+    )
+
+    arbitrage = ArbitrageConfig(
+        mode=str(arb_raw.get("mode", "cross_market")),
+        min_spread=float(arb_raw.get("min_spread", thresholds.min_spread)),
+        prioritize_new_events=bool(arb_raw.get("prioritize_new_events", True)),
+        new_event_hours=int(arb_raw.get("new_event_hours", 24)),
+    )
+
+    whale_watch = WhaleWatchConfig(
+        enabled=bool(whale_raw.get("enabled", False)),
+        wallets=whale_raw.get("wallets", []),
+        convergence_threshold=int(whale_raw.get("convergence_threshold", 2)),
+        time_window_hours=int(whale_raw.get("time_window_hours", 6)),
+        max_market_age_hours=int(whale_raw.get("max_market_age_hours", 24)),
     )
 
     pm_raw = _must_get(ad_raw, "polymarket")
@@ -304,6 +340,8 @@ def load_config() -> AppConfig:
         bot=bot,
         discord=discord,
         thresholds=thresholds,
+        arbitrage=arbitrage,
+        whale_watch=whale_watch,
         polymarket=polymarket,
         limitless=limitless,
         kalshi=kalshi,

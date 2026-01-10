@@ -23,6 +23,7 @@ from bot.adapters.kalshi import KalshiAdapter
 from bot.adapters.metaculus import MetaculusAdapter
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
+from bot.arbitrage import detect_cross_market_arbitrage
 
 
 app = Flask(__name__)
@@ -262,6 +263,7 @@ def refresh_markets():
 @app.route("/api/stats")
 def get_stats():
     """Get statistics about the markets."""
+    cfg = load_config()
     stats = {
         "total_markets": sum(len(markets) for markets in market_cache.values()),
         "sources": list(market_cache.keys()),
@@ -284,7 +286,87 @@ def get_stats():
         if any(outcome["mid"] is not None for outcome in market["outcomes"])
     )
     
+    # Cross-market arbitrage summary
+    if cfg.arbitrage.mode == "cross_market" and len(market_cache) > 1:
+        # Convert cached dicts back to Market/Quote models for detection
+        markets_by_source: Dict[str, List[Market]] = {}
+        quotes_by_source: Dict[str, Dict[str, List[Quote]]] = {}
+        for source, markets in market_cache.items():
+            markets_by_source[source] = []
+            quotes_by_source[source] = {}
+            for m in markets:
+                market = Market(source=source, market_id=m["market_id"], title=m["title"], url=m.get("url"), outcomes=[])
+                markets_by_source[source].append(market)
+                quotes_by_source[source][m["market_id"]] = [
+                    Quote(
+                        outcome_id=o["outcome_id"],
+                        bid=o["bid"],
+                        ask=o["ask"],
+                        mid=o["mid"],
+                        spread=o["spread"],
+                        bid_size=o["bid_size"],
+                        ask_size=o["ask_size"],
+                        ts=datetime.fromisoformat(o["timestamp"]) if o.get("timestamp") else None,
+                    )
+                    for o in m["outcomes"]
+                ]
+        opportunities = detect_cross_market_arbitrage(
+            markets_by_source,
+            quotes_by_source,
+            min_spread=cfg.arbitrage.min_spread,
+            prioritize_new=cfg.arbitrage.prioritize_new_events,
+            new_event_hours=cfg.arbitrage.new_event_hours,
+        )
+        stats["arbitrage"] = {
+            "mode": cfg.arbitrage.mode,
+            "opportunities": len(opportunities),
+            "high_priority": sum(1 for o in opportunities if o.get("priority") == "high"),
+            "top_spreads": [o["spread"] for o in opportunities[:5]],
+        }
+    else:
+        stats["arbitrage"] = {"mode": cfg.arbitrage.mode, "opportunities": 0}
+    
     return jsonify(stats)
+
+
+@app.route("/api/arbitrage")
+def get_arbitrage():
+    """Get cross-market arbitrage opportunities."""
+    cfg = load_config()
+    if cfg.arbitrage.mode != "cross_market":
+        return jsonify({"error": "Arbitrage mode not set to cross_market"}, 400)
+    if len(market_cache) < 2:
+        return jsonify({"opportunities": []})
+    # Reuse conversion logic from /api/stats
+    markets_by_source: Dict[str, List[Market]] = {}
+    quotes_by_source: Dict[str, Dict[str, List[Quote]]] = {}
+    for source, markets in market_cache.items():
+        markets_by_source[source] = []
+        quotes_by_source[source] = {}
+        for m in markets:
+            market = Market(source=source, market_id=m["market_id"], title=m["title"], url=m.get("url"), outcomes=[])
+            markets_by_source[source].append(market)
+            quotes_by_source[source][m["market_id"]] = [
+                Quote(
+                    outcome_id=o["outcome_id"],
+                    bid=o["bid"],
+                    ask=o["ask"],
+                    mid=o["mid"],
+                    spread=o["spread"],
+                    bid_size=o["bid_size"],
+                    ask_size=o["ask_size"],
+                    ts=datetime.fromisoformat(o["timestamp"]) if o.get("timestamp") else None,
+                )
+                for o in m["outcomes"]
+            ]
+    opportunities = detect_cross_market_arbitrage(
+        markets_by_source,
+        quotes_by_source,
+        min_spread=cfg.arbitrage.min_spread,
+        prioritize_new=cfg.arbitrage.prioritize_new_events,
+        new_event_hours=cfg.arbitrage.new_event_hours,
+    )
+    return jsonify({"opportunities": opportunities})
 
 
 if __name__ == "__main__":
