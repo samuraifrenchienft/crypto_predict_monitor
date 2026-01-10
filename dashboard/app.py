@@ -377,7 +377,8 @@ def get_whale_alerts():
     if not cfg.whale_watch.enabled:
         return jsonify({"error": "Whale watching is disabled", "alerts": []})
     
-    wallets = cfg.whale_watch.wallets
+    # Load wallets from file (user-saved) or config
+    wallets = load_tracked_wallets() or cfg.whale_watch.wallets
     if not wallets:
         return jsonify({"error": "No wallets configured", "alerts": []})
     
@@ -410,6 +411,59 @@ def get_whale_alerts():
         return jsonify({"error": str(e), "alerts": []}), 500
     finally:
         loop.close()
+
+
+# Wallet tracking file path
+WALLETS_FILE = Path(__file__).parent.parent / "data" / "tracked_wallets.json"
+
+
+def load_tracked_wallets() -> List[Dict[str, str]]:
+    """Load tracked wallets from file."""
+    if WALLETS_FILE.exists():
+        try:
+            return json.loads(WALLETS_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+    return []
+
+
+def save_tracked_wallets(wallets: List[Dict[str, str]]) -> bool:
+    """Save tracked wallets to file."""
+    try:
+        WALLETS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        WALLETS_FILE.write_text(json.dumps(wallets, indent=2), encoding="utf-8")
+        return True
+    except Exception as e:
+        print(f"Failed to save wallets: {e}")
+        return False
+
+
+@app.route("/api/wallets", methods=["GET"])
+def get_wallets():
+    """Get tracked wallets."""
+    wallets = load_tracked_wallets()
+    return jsonify({"wallets": wallets})
+
+
+@app.route("/api/wallets", methods=["POST"])
+def set_wallets():
+    """Save tracked wallets."""
+    data = request.get_json()
+    wallets = data.get("wallets", [])
+    
+    # Validate: max 4 wallets
+    if len(wallets) > 4:
+        return jsonify({"error": "Maximum 4 wallets allowed"}), 400
+    
+    # Validate each wallet has required fields
+    for w in wallets:
+        if not w.get("address") or not w.get("platform"):
+            return jsonify({"error": "Each wallet must have address and platform"}), 400
+    
+    if save_tracked_wallets(wallets):
+        return jsonify({"success": True, "wallets": wallets})
+    else:
+        return jsonify({"error": "Failed to save wallets"}), 500
 
 
 if __name__ == "__main__":
