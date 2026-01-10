@@ -121,6 +121,70 @@ async def fetch_polymarket_wallet_trades(
     return trades
 
 
+async def fetch_limitless_wallet_trades(
+    wallet_address: str,
+    limit: int = 50,
+    after_time: Optional[datetime] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Fetch recent trades for a Limitless wallet.
+    Uses the Limitless API to get user activity.
+    
+    Returns list of trades with:
+    - market_id
+    - side (BUY/SELL)
+    - size
+    - price
+    - timestamp
+    """
+    # Limitless API endpoint for user trades
+    url = f"https://api.limitless.exchange/activity"
+    params = {
+        "address": wallet_address,
+        "limit": str(limit),
+    }
+    
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(url, params=params)
+            r.raise_for_status()
+            data = r.json()
+    except Exception as e:
+        print(f"[whale_watcher] Limitless trade fetch failed: {e}")
+        return []
+    
+    trades = []
+    items = data if isinstance(data, list) else data.get("data", data.get("trades", data.get("activity", [])))
+    
+    for t in items:
+        ts_str = t.get("timestamp") or t.get("created_at") or t.get("createdAt")
+        ts = None
+        if ts_str:
+            try:
+                if isinstance(ts_str, (int, float)):
+                    ts = datetime.fromtimestamp(ts_str / 1000 if ts_str > 1e12 else ts_str, tz=timezone.utc)
+                else:
+                    ts = datetime.fromisoformat(str(ts_str).replace("Z", "+00:00"))
+            except Exception:
+                pass
+        
+        if after_time and ts and ts < after_time:
+            continue
+        
+        trades.append({
+            "platform": "limitless",
+            "address": wallet_address,
+            "market_id": t.get("market_id") or t.get("marketId") or t.get("slug"),
+            "side": t.get("side") or t.get("type") or t.get("action"),
+            "outcome": t.get("outcome"),
+            "size": t.get("size") or t.get("amount"),
+            "price": t.get("price"),
+            "timestamp": ts.isoformat() if ts else None,
+        })
+    
+    return trades
+
+
 async def fetch_all_whale_positions(
     wallets: List[Dict[str, str]],
     time_window_hours: int = 6,
@@ -153,7 +217,11 @@ async def fetch_all_whale_positions(
                 for t in trades:
                     t["label"] = label
                 positions_by_platform.setdefault(platform, []).extend(trades)
-            # Add more platforms here (metaculus, etc.)
+            elif platform == "limitless":
+                trades = await fetch_limitless_wallet_trades(address, limit=50, after_time=after_time)
+                for t in trades:
+                    t["label"] = label
+                positions_by_platform.setdefault(platform, []).extend(trades)
         except Exception as e:
             print(f"[whale_watcher] Failed to fetch for {label} on {platform}: {e}")
     
