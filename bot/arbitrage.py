@@ -72,7 +72,7 @@ def score_arbitrage_opportunity(
 ) -> List[Dict[str, Any]]:
     """
     Score arbitrage opportunities for a group of matched markets.
-    Returns a list of opportunities with spreads and metadata.
+    Returns a list of opportunities with spreads, signals, and clear action guidance.
     """
     opportunities = []
     # Collect mids per source
@@ -97,12 +97,40 @@ def score_arbitrage_opportunity(
                 # Determine if this is a new event (any market in the group is new)
                 is_new = any(is_new_event(m, new_event_hours) for _, m in markets)
                 priority = "high" if prioritize_new and is_new else "normal"
+                
+                # === CLEAR BUY SIGNAL FOR NOVICES ===
+                # The cheaper platform is where you BUY YES
+                # The expensive platform is where you BUY NO (or sell YES)
+                if mid1 < mid2:
+                    cheap_source, cheap_mid = s1, mid1
+                    expensive_source, expensive_mid = s2, mid2
+                else:
+                    cheap_source, cheap_mid = s2, mid2
+                    expensive_source, expensive_mid = s1, mid1
+                
+                # Calculate potential profit per $1 wagered
+                # Buy YES at cheap_mid, effective NO at (1 - expensive_mid)
+                # Profit = 1 - cheap_mid - (1 - expensive_mid) = expensive_mid - cheap_mid = spread
+                profit_per_dollar = spread
+                
+                # Build human-readable action
+                action = {
+                    "buy_yes_at": cheap_source,
+                    "buy_yes_price": round(cheap_mid, 3),
+                    "buy_no_at": expensive_source,
+                    "buy_no_price": round(1 - expensive_mid, 3),
+                    "profit_cents": round(spread * 100, 1),
+                    "signal": "🟢 BUY" if spread >= 0.10 else "🟡 WATCH",
+                    "explanation": f"Buy YES on {cheap_source} at {cheap_mid:.0%}, Buy NO on {expensive_source} at {1-expensive_mid:.0%}. Potential profit: {spread*100:.1f}¢ per $1.",
+                }
+                
                 opportunities.append({
                     "normalized_title": normalize_title(markets[0][1].title),
                     "sources": [s1, s2],
                     "mids": {s1: mid1, s2: mid2},
                     "spread": spread,
                     "priority": priority,
+                    "action": action,
                     "markets": [{"source": s, "market_id": m.market_id, "title": m.title} for s, m in markets],
                 })
     # Sort by spread descending, then priority

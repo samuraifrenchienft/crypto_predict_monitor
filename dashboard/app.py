@@ -24,6 +24,7 @@ from bot.adapters.metaculus import MetaculusAdapter
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
 from bot.arbitrage import detect_cross_market_arbitrage
+from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 
 
 app = Flask(__name__)
@@ -367,6 +368,48 @@ def get_arbitrage():
         new_event_hours=cfg.arbitrage.new_event_hours,
     )
     return jsonify({"opportunities": opportunities})
+
+
+@app.route("/api/whales")
+def get_whale_alerts():
+    """Get whale convergence alerts based on tracked wallets."""
+    cfg = load_config()
+    if not cfg.whale_watch.enabled:
+        return jsonify({"error": "Whale watching is disabled", "alerts": []})
+    
+    wallets = cfg.whale_watch.wallets
+    if not wallets:
+        return jsonify({"error": "No wallets configured", "alerts": []})
+    
+    # Fetch positions asynchronously
+    loop = asyncio.new_event_loop()
+    try:
+        positions = loop.run_until_complete(
+            fetch_all_whale_positions(wallets, cfg.whale_watch.time_window_hours)
+        )
+        alerts = detect_convergence(positions, cfg.whale_watch.convergence_threshold)
+        
+        # Add signal clarity for novices
+        for alert in alerts:
+            if alert.get("consensus") == "YES":
+                alert["signal"] = "🟢 WHALES BULLISH"
+                alert["action"] = f"Multiple tracked wallets are betting YES on this market"
+            elif alert.get("consensus") == "NO":
+                alert["signal"] = "🔴 WHALES BEARISH"
+                alert["action"] = f"Multiple tracked wallets are betting NO on this market"
+            else:
+                alert["signal"] = "🟡 WHALES SPLIT"
+                alert["action"] = f"Tracked wallets disagree on direction"
+        
+        return jsonify({
+            "alerts": alerts,
+            "wallets_tracked": len(wallets),
+            "time_window_hours": cfg.whale_watch.time_window_hours,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e), "alerts": []}), 500
+    finally:
+        loop.close()
 
 
 if __name__ == "__main__":
