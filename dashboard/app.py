@@ -5,6 +5,7 @@ Flask web application for the crypto prediction monitor dashboard.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import sys
@@ -13,6 +14,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
 
+import httpx
 from flask import Flask, g, render_template, jsonify, request
 from flask_cors import CORS
 
@@ -29,7 +31,7 @@ from bot.alerts.discord import DiscordAlerter
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 
 from dashboard.db import close_session, get_session, engine
-from dashboard.models import Base, User, UserTier
+from dashboard.models import Alert, AlertStatus, Base, User, UserAlertState, UserTier
 from dashboard.auth import (
     apply_tier_rules,
     discord_callback_async,
@@ -277,9 +279,17 @@ async def _arbitrage_alert_loop() -> None:
         min_seconds_between_same_alert=cfg.discord.min_seconds_between_same_alert,
     )
 
+    min_profit = float(os.environ.get("ALERT_MIN_PROFIT", "0.01"))
+
     while True:
         try:
             await update_all_markets()
+
+            # Queue classic YES+NO < 1.0 opportunities for users.
+            try:
+                _enqueue_classic_arbs(min_profit=min_profit)
+            except Exception as e:
+                print(f"[alert_queue] error: {e}")
 
             if cfg.arbitrage.mode == "cross_market":
                 markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
@@ -331,6 +341,152 @@ def _start_background_tasks() -> None:
 
     t = threading.Thread(target=runner, daemon=True)
     t.start()
+
+
+def _classic_arb_opportunities_from_cache() -> List[Dict[str, Any]]:
+    opportunities: List[Dict[str, Any]] = []
+
+    with _cache_lock:
+        snapshot = json.loads(json.dumps(market_cache))
+
+    for source in ("polymarket", "kalshi"):
+        for m in snapshot.get(source, []) or []:
+            outcomes = m.get("outcomes") or []
+            yes = next((o for o in outcomes if str(o.get("name")).upper() == "YES"), None)
+            no = next((o for o in outcomes if str(o.get("name")).upper() == "NO"), None)
+
+            if not yes or not no:
+                continue
+
+            yes_ask = yes.get("ask")
+            no_ask = no.get("ask")
+            if yes_ask is None or no_ask is None:
+                continue
+
+            try:
+                yes_ask_f = float(yes_ask)
+                no_ask_f = float(no_ask)
+            except Exception:
+                continue
+
+            sum_price = yes_ask_f + no_ask_f
+            if sum_price >= 1.0:
+                continue
+
+            profit_est = 1.0 - sum_price
+
+            opportunities.append(
+                {
+                    "source": source,
+                    "market_id": m.get("market_id"),
+                    "question": m.get("title"),
+                    "market_link": m.get("url"),
+                    "yes_price": yes_ask_f,
+                    "no_price": no_ask_f,
+                    "sum_price": sum_price,
+                    "profit_est": profit_est,
+                }
+            )
+
+    opportunities.sort(key=lambda x: float(x.get("profit_est") or 0.0), reverse=True)
+    return opportunities
+
+
+def _should_queue_for_user(user: User, db, opp: Dict[str, Any]) -> bool:
+    # Premium/Pro: queue everything.
+    if user.user_tier in {UserTier.premium, UserTier.pro} and user.subscription_active:
+        return True
+
+    # Free (including trial): queue only 1st, 3rd, 5th... detections.
+    state = db.get(UserAlertState, user.id)
+    if state is None:
+        state = UserAlertState(user_id=user.id, counter=0)
+        db.add(state)
+        db.flush()
+
+    state.counter = int(state.counter or 0) + 1
+    return (state.counter % 2) == 1
+
+
+def _enqueue_classic_arbs(min_profit: float) -> int:
+    db = get_session()
+    try:
+        opportunities = _classic_arb_opportunities_from_cache()
+        if not opportunities:
+            return 0
+
+        users = db.query(User).filter(User.discord_id.isnot(None)).all()
+        now = datetime.now(timezone.utc)
+
+        created = 0
+        for user in users:
+            apply_tier_rules(user, now=now)
+
+            for opp in opportunities[:10]:
+                profit_est = float(opp.get("profit_est") or 0.0)
+                if profit_est < min_profit:
+                    continue
+
+                market_id = str(opp.get("market_id") or "")
+                source = str(opp.get("source") or "")
+                yes_price = float(opp.get("yes_price") or 0.0)
+                no_price = float(opp.get("no_price") or 0.0)
+                minute_bucket = now.strftime("%Y%m%d%H%M")
+                raw = f"{user.id}:{source}:{market_id}:{minute_bucket}:{yes_price:.4f}:{no_price:.4f}".encode("utf-8")
+                alert_id = hashlib.sha256(raw).hexdigest()[:32]
+
+                if db.query(Alert).filter(Alert.alert_id == alert_id).first() is not None:
+                    continue
+
+                if not _should_queue_for_user(user, db, opp):
+                    continue
+
+                a = Alert(
+                    user_id=user.id,
+                    alert_id=alert_id,
+                    source=source,
+                    market_id=market_id,
+                    question=str(opp.get("question") or market_id),
+                    market_link=opp.get("market_link"),
+                    yes_price=float(opp.get("yes_price") or 0.0),
+                    no_price=float(opp.get("no_price") or 0.0),
+                    sum_price=float(opp.get("sum_price") or 0.0),
+                    profit_est=profit_est,
+                    status=AlertStatus.queued,
+                    created_at=now,
+                )
+                db.add(a)
+                created += 1
+
+        db.commit()
+        return created
+    finally:
+        db.close()
+
+
+def _discord_dm(bot_token: str, recipient_id: str, content: str) -> bool:
+    if not bot_token:
+        return False
+
+    headers = {
+        "Authorization": f"Bot {bot_token}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        with httpx.Client(timeout=20.0, headers=headers) as client:
+            # Create DM channel
+            r = client.post("https://discord.com/api/v10/users/@me/channels", json={"recipient_id": recipient_id})
+            if r.status_code < 200 or r.status_code >= 300:
+                return False
+            channel_id = r.json().get("id")
+            if not channel_id:
+                return False
+
+            r2 = client.post(f"https://discord.com/api/v10/channels/{channel_id}/messages", json={"content": content})
+            return 200 <= r2.status_code < 300
+    except Exception:
+        return False
 
 
 @app.route("/")
@@ -487,6 +643,82 @@ def get_markets():
         # Prefer this naming going forward (each card is an event/market)
         "total_events": total_events,
     })
+
+
+@app.route("/api/alerts/queued")
+@require_tier(UserTier.free)
+def list_queued_alerts():
+    user = g.current_user
+    alerts = (
+        g.db.query(Alert)
+        .filter(Alert.user_id == user.id)
+        .filter(Alert.status == AlertStatus.queued)
+        .order_by(Alert.created_at.asc())
+        .limit(100)
+        .all()
+    )
+
+    return jsonify(
+        {
+            "queued": [
+                {
+                    "alert_id": a.alert_id,
+                    "source": a.source,
+                    "market_id": a.market_id,
+                    "question": a.question,
+                    "market_link": a.market_link,
+                    "yes_price": a.yes_price,
+                    "no_price": a.no_price,
+                    "sum_price": a.sum_price,
+                    "profit_est": a.profit_est,
+                    "status": a.status.value,
+                    "created_at": a.created_at.isoformat() if a.created_at else None,
+                }
+                for a in alerts
+            ],
+            "count": len(alerts),
+        }
+    )
+
+
+@app.route("/api/alerts/release", methods=["POST"])
+@require_tier(UserTier.free)
+def release_queued_alerts():
+    user = g.current_user
+    if not user.discord_id:
+        return jsonify({"error": "missing_discord_id"}), 400
+
+    bot_token = os.environ.get("DISCORD_BOT_TOKEN") or ""
+    if not bot_token:
+        return jsonify({"error": "missing_discord_bot_token"}), 500
+
+    alerts = (
+        g.db.query(Alert)
+        .filter(Alert.user_id == user.id)
+        .filter(Alert.status == AlertStatus.queued)
+        .order_by(Alert.created_at.asc())
+        .limit(25)
+        .all()
+    )
+
+    sent = 0
+    now = datetime.now(timezone.utc)
+    for a in alerts:
+        profit_cents = (float(a.profit_est or 0.0) * 100.0)
+        content = (
+            f"🎯 Classic Arb {profit_cents:.1f}¢\n"
+            f"{a.question}\n"
+            f"YES ask: {float(a.yes_price or 0.0):.3f} | NO ask: {float(a.no_price or 0.0):.3f} | Sum: {float(a.sum_price or 0.0):.3f}\n"
+            f"{a.market_link or ''}"
+        ).strip()
+
+        if _discord_dm(bot_token=bot_token, recipient_id=str(user.discord_id), content=content):
+            a.status = AlertStatus.released
+            a.released_at = now
+            sent += 1
+
+    g.db.commit()
+    return jsonify({"released": sent, "queued_remaining": max(0, len(alerts) - sent)})
 
 
 @app.route("/api/markets/<source>")

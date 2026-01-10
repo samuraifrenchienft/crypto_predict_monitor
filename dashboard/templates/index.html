@@ -63,6 +63,17 @@
                     <span class="text-sm text-gray-400">Real-time market data</span>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <button id="loginBtn" onclick="window.location.href='/auth/discord/login'" class="hidden bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition">
+                            Login
+                        </button>
+                        <button id="logoutBtn" onclick="window.location.href='/auth/logout'" class="hidden bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition">
+                            Logout
+                        </button>
+                        <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-yellow-600 hover:bg-yellow-500 text-black px-3 py-2 rounded-lg font-semibold transition">
+                            Release Alerts (<span id="queuedAlertsCount">0</span>)
+                        </button>
+                    </div>
                     <button onclick="openWhaleModal()" class="bg-[#0001ff] hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition neon-glow">
                         <span>🐋</span>
                         <span>Track Wallets</span>
@@ -265,17 +276,87 @@
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            loadMe();
             loadTrackedWallets();
             loadMarkets();
             loadArbitrageOpportunities();
             loadWhaleAlerts();
             // Auto-refresh every 30 seconds
             setInterval(() => {
+                loadQueuedAlertsCount();
                 loadMarkets();
                 loadArbitrageOpportunities();
                 loadWhaleAlerts();
             }, 30000);
         });
+
+        async function loadMe() {
+            try {
+                const r = await axios.get('/api/me');
+                const me = r.data || {};
+                const authed = !!me.authenticated;
+                document.getElementById('loginBtn').classList.toggle('hidden', authed);
+                document.getElementById('logoutBtn').classList.toggle('hidden', !authed);
+                document.getElementById('releaseAlertsBtn').classList.toggle('hidden', !authed);
+                if (authed) {
+                    loadQueuedAlertsCount();
+                }
+            } catch (e) {
+                document.getElementById('loginBtn').classList.remove('hidden');
+                document.getElementById('logoutBtn').classList.add('hidden');
+                document.getElementById('releaseAlertsBtn').classList.add('hidden');
+            }
+        }
+
+        async function loadQueuedAlertsCount() {
+            try {
+                const r = await axios.get('/api/alerts/queued');
+                const count = r.data?.count ?? 0;
+                document.getElementById('queuedAlertsCount').textContent = count;
+            } catch (e) {
+                document.getElementById('queuedAlertsCount').textContent = '0';
+            }
+        }
+
+        function beep() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'sine';
+                o.frequency.value = 880;
+                g.gain.value = 0.05;
+                o.connect(g);
+                g.connect(ctx.destination);
+                o.start();
+                setTimeout(() => {
+                    o.stop();
+                    ctx.close();
+                }, 180);
+            } catch (e) {
+                return;
+            }
+        }
+
+        async function releaseAlerts() {
+            try {
+                const r = await axios.post('/api/alerts/release', {});
+                const released = r.data?.released ?? 0;
+                showSuccess(`Released ${released} alerts to Discord DM`);
+                beep();
+                loadQueuedAlertsCount();
+            } catch (e) {
+                const status = e?.response?.status;
+                if (status === 401) {
+                    showError('Please login with Discord first');
+                    loadMe();
+                    return;
+                }
+                const err = e?.response?.data?.error;
+                showError(err ? `Release failed: ${err}` : 'Release failed');
+            }
+        }
 
         // Wallet Tracking Functions
         function loadTrackedWallets() {
