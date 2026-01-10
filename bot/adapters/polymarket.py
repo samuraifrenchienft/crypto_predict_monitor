@@ -24,6 +24,7 @@ class PolymarketAdapter(Adapter):
         self.data_base_url = data_base_url.rstrip("/")
         self.events_limit = events_limit
         self._market_outcome_cache: Dict[str, Tuple[list[str], list[str]]] = {}
+        self._market_prices_cache: Dict[str, list[float]] = {}  # Fallback prices from Gamma
 
     async def list_active_markets(self) -> list[Market]:
         """
@@ -63,6 +64,15 @@ class PolymarketAdapter(Adapter):
 
             if outcome_names and token_ids and len(outcome_names) == len(token_ids):
                 self._market_outcome_cache[market_id] = (outcome_names, token_ids)
+            
+            # Cache outcome prices for fallback when CLOB has no book
+            outcome_prices = m.get("outcomePrices")
+            if outcome_prices:
+                prices = _parse_json_array_str(outcome_prices)
+                try:
+                    self._market_prices_cache[market_id] = [float(p) for p in prices]
+                except (ValueError, TypeError):
+                    pass
 
             markets.append(Market(source=self.name, market_id=market_id, title=title, url=None, outcomes=[]))
 
@@ -87,16 +97,30 @@ class PolymarketAdapter(Adapter):
 
     async def get_quotes(self, market: Market, outcomes: Iterable[Outcome]) -> list[Quote]:
         quotes: list[Quote] = []
+        outcomes_list = list(outcomes)
+        fallback_prices = self._market_prices_cache.get(market.market_id, [])
+        
         async with httpx.AsyncClient(timeout=20.0) as client:
-            for o in outcomes:
+            for idx, o in enumerate(outcomes_list):
                 url = f"{self.clob_base_url}/book"
                 params = {"token_id": o.outcome_id}
-                r = await client.get(url, params=params)
-                r.raise_for_status()
-                book = r.json()
-
-                bid, bid_sz = _best_level(book.get("bids"))
-                ask, ask_sz = _best_level(book.get("asks"))
+                try:
+                    r = await client.get(url, params=params)
+                    r.raise_for_status()
+                    book = r.json()
+                    bid, bid_sz = _best_level(book.get("bids"))
+                    ask, ask_sz = _best_level(book.get("asks"))
+                except Exception:
+                    bid, ask, bid_sz, ask_sz = None, None, None, None
+                
+                # Fallback to Gamma probability if CLOB has no data
+                if bid is None and ask is None and idx < len(fallback_prices):
+                    prob = fallback_prices[idx]
+                    # Use probability as mid, create synthetic spread
+                    bid = max(0.01, prob - 0.02)
+                    ask = min(0.99, prob + 0.02)
+                    bid_sz = None
+                    ask_sz = None
 
                 quotes.append(Quote.from_bid_ask(o.outcome_id, bid=bid, ask=ask, bid_size=bid_sz, ask_size=ask_sz))
 

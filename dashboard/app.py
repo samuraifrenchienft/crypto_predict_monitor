@@ -72,13 +72,23 @@ async def fetch_market_data(adapter_name: str, adapter) -> List[Dict[str, Any]]:
                 outcomes = await adapter.list_outcomes(market)
                 quotes = await adapter.get_quotes(market, outcomes)
                 print(f"{adapter_name}: Market {market.market_id} has {len(quotes)} quotes")
+                
+                # Only filter out markets with absolutely no price data (no bid, ask, or mid)
+                has_any_price = any(
+                    q.bid is not None or q.ask is not None or q.mid is not None 
+                    for q in quotes
+                )
+                if not has_any_price and quotes:
+                    print(f"{adapter_name}: Skipping {market.market_id} - no price or probability data")
+                    continue
+                
                 market_data.append(serialize_market(market, quotes))
             except Exception as e:
                 print(f"Error fetching quotes for {market.market_id}: {e}")
-                # Add market without quotes
-                market_data.append(serialize_market(market, []))
+                # Skip markets with errors
+                continue
         
-        print(f"{adapter_name}: Returning {len(market_data)} markets")
+        print(f"{adapter_name}: Returning {len(market_data)} markets with price data")
         return market_data
     except Exception as e:
         print(f"Error fetching data from {adapter_name}: {e}")
