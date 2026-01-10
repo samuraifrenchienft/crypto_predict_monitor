@@ -6,7 +6,7 @@ services:
     rootDir: .
     buildCommand: |
       pip install -r requirements.txt
-    startCommand: gunicorn dashboard.app:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 3 --timeout 120 dashboard.app:app
     healthCheckPath: /api/stats
     autoDeploy: true
     envVars:
@@ -16,7 +16,5 @@ services:
         value: production
       - key: PYTHONPATH
         value: .
-      - key: GUNICORN_CMD_ARGS
-        value: --bind 0.0.0.0:$PORT --workers 3 --timeout 120
     domains:
       - crypto-prediction-dashboard.onrender.com
