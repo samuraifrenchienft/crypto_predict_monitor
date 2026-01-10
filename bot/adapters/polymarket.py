@@ -37,7 +37,8 @@ class PolymarketAdapter(Adapter):
             "closed": "false",
             "archived": "false",
             "enableOrderBook": "true",  # Only markets with CLOB enabled
-            "order": "volumeNum",  # Sort by volume (most liquid first)
+            "acceptingOrders": "true",  # Only markets currently accepting orders
+            "order": "volume24hr",  # Sort by recent volume (most active)
             "ascending": "false",  # Descending order
             "limit": str(self.events_limit),
         }

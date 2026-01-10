@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Iterable, Optional, Any
 
+import httpx
+
 from bot.adapters.base import Adapter
 from bot.models import Market, Outcome, Quote
-
-from limitless_sdk.api import HttpClient
-from limitless_sdk.markets import MarketFetcher
 
 
 class LimitlessAdapter(Adapter):
@@ -14,68 +13,53 @@ class LimitlessAdapter(Adapter):
 
     def __init__(self, base_url: str) -> None:
         self.base_url = base_url.rstrip("/")
-        self._http_client: Optional[HttpClient] = None
-        self._market_fetcher: Optional[MarketFetcher] = None
-
-    async def _ensure(self) -> None:
-        if self._http_client is None:
-            self._http_client = HttpClient(base_url=self.base_url)
-            self._market_fetcher = MarketFetcher(self._http_client)
+        self._market_cache: dict[str, dict] = {}  # Cache market data including prices
 
     async def close(self) -> None:
-        if self._http_client is not None:
-            await self._http_client.close()
-            self._http_client = None
-            self._market_fetcher = None
+        self._market_cache.clear()
 
     async def list_active_markets(self) -> list[Market]:
         """
-        Uses the installed SDK method: get_active_markets()
-        (confirmed by debug_limitless_sdk.py output).
+        Fetches active markets from Limitless Exchange API.
         """
-        await self._ensure()
-        assert self._market_fetcher is not None
+        url = f"{self.base_url}/markets/active"
+        
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.get(url)
+            r.raise_for_status()
+            resp = r.json()
 
-        resp = await self._market_fetcher.get_active_markets()
-
-        # Resp is expected to be dict-like with a list somewhere.
-        # We avoid guessing exact key names; we handle common shapes.
-        data = []
-        if isinstance(resp, dict):
-            for key in ("data", "markets", "items", "results"):
-                if isinstance(resp.get(key), list):
-                    data = resp[key]
-                    break
-            if not data and isinstance(resp.get("data"), dict):
-                # sometimes nested
-                for key in ("markets", "items", "results"):
-                    if isinstance(resp["data"].get(key), list):
-                        data = resp["data"][key]
-                        break
+        # Response is dict with 'markets' list
+        data = resp.get("markets", []) if isinstance(resp, dict) else resp
 
         markets: list[Market] = []
+        self._market_cache.clear()
+        
         for m in data:
             if not isinstance(m, dict):
                 continue
-            slug = str(m.get("slug") or m.get("id") or m.get("marketSlug") or "")
+            slug = str(m.get("slug") or m.get("id") or "")
             title = str(m.get("title") or m.get("question") or m.get("name") or slug).strip()
             if not slug:
                 continue
+            
+            # Cache the full market data including prices
+            self._market_cache[slug] = m
             markets.append(Market(source=self.name, market_id=slug, title=title, url=None, outcomes=[]))
 
         return markets
 
     async def list_outcomes(self, market: Market) -> list[Outcome]:
         """
-        Uses SDK get_market(slug) and extracts YES/NO token IDs.
+        Extracts YES/NO token IDs from cached market data.
         """
-        await self._ensure()
-        assert self._market_fetcher is not None
+        cached = self._market_cache.get(market.market_id)
+        if not cached:
+            raise RuntimeError(f"Limitless market not in cache: {market.market_id}")
 
-        m = await self._market_fetcher.get_market(market.market_id)
-
-        yes_token = getattr(getattr(m, "tokens", None), "yes", None)
-        no_token = getattr(getattr(m, "tokens", None), "no", None)
+        tokens = cached.get("tokens", {})
+        yes_token = tokens.get("yes")
+        no_token = tokens.get("no")
 
         if not yes_token or not no_token:
             raise RuntimeError(f"Limitless market missing yes/no tokens for {market.market_id}")
@@ -87,48 +71,37 @@ class LimitlessAdapter(Adapter):
 
     async def get_quotes(self, market: Market, outcomes: Iterable[Outcome]) -> list[Quote]:
         """
-        Uses SDK get_orderbook(slug) to get actual quotes.
+        Uses cached prices from the market data.
+        Limitless returns prices as [yes_price, no_price] in the market response.
         """
-        await self._ensure()
-        assert self._market_fetcher is not None
+        cached = self._market_cache.get(market.market_id)
+        if not cached:
+            # Return empty quotes if not cached
+            return [Quote(outcome_id=o.outcome_id, bid=None, ask=None, mid=None, spread=None, bid_size=None, ask_size=None) for o in outcomes]
 
-        try:
-            orderbook = await self._market_fetcher.get_orderbook(market.market_id)
+        prices = cached.get("prices", [])
+        
+        quotes: list[Quote] = []
+        outcomes_list = list(outcomes)
+        
+        for idx, o in enumerate(outcomes_list):
+            if idx < len(prices) and prices[idx] is not None:
+                mid = float(prices[idx])
+                # Create synthetic spread around the price
+                bid = max(0.01, mid - 0.02)
+                ask = min(0.99, mid + 0.02)
+                spread = ask - bid
+            else:
+                mid, bid, ask, spread = None, None, None, None
             
-            # For now, return demo quotes since orderbook parsing needs investigation
-            quotes: list[Quote] = []
-            for o in outcomes:
-                # Generate demo quotes based on outcome ID
-                if o.name == "YES":
-                    mid = 0.5  # Demo price
-                else:
-                    mid = 0.5  # Demo price
-                
-                quotes.append(
-                    Quote(
-                        outcome_id=o.outcome_id,
-                        bid=mid - 0.02,
-                        ask=mid + 0.02,
-                        mid=mid,
-                        spread=0.04,
-                        bid_size=100,
-                        ask_size=100,
-                    )
-                )
-            return quotes
-        except Exception as e:
-            # If orderbook fails, return empty quotes
-            quotes: list[Quote] = []
-            for o in outcomes:
-                quotes.append(
-                    Quote(
-                        outcome_id=o.outcome_id,
-                        bid=None,
-                        ask=None,
-                        mid=None,
-                        spread=None,
-                        bid_size=None,
-                        ask_size=None,
-                    )
-                )
-            return quotes
+            quotes.append(Quote(
+                outcome_id=o.outcome_id,
+                bid=bid,
+                ask=ask,
+                mid=mid,
+                spread=spread,
+                bid_size=None,
+                ask_size=None,
+            ))
+        
+        return quotes
