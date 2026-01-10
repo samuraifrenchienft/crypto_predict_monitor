@@ -16,7 +16,7 @@ alerts:
     online_message: true
 
     # Dedupe/cooldown: minimum seconds between identical alerts
-    min_seconds_between_same_alert: 120
+    min_seconds_between_same_alert: 600
 
 thresholds:
   # Alert if spread >= this (0.08 = 8 cents wide)
