@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import enum
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -91,3 +92,85 @@ class Alert(Base):
     status: Mapped[AlertStatus] = mapped_column(Enum(AlertStatus), nullable=False, default=AlertStatus.queued)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     released_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class MonitorStatus(str, enum.Enum):
+    active = "active"
+    finalized = "finalized"
+    canceled = "canceled"
+
+
+class TradeMonitor(Base):
+    __tablename__ = "trade_monitors"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    alert_id: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
+
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    market_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    market_name: Mapped[str] = mapped_column(Text, nullable=False)
+
+    entry_yes_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    entry_no_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    entry_cost: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+
+    status: Mapped[MonitorStatus] = mapped_column(Enum(MonitorStatus), nullable=False, default=MonitorStatus.active, index=True)
+    finalized_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class TradeExecution(Base):
+    __tablename__ = "trade_executions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    trade_id: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True, default=lambda: uuid.uuid4().hex)
+    alert_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
+
+    source: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    market_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    market_name: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    entry_cost: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    exit_proceeds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    pnl: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    executed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    wallet_address: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
+
+
+class UserGrowth(Base):
+    __tablename__ = "user_growth"
+
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), primary_key=True)
+    referral_code: Mapped[str] = mapped_column(String(32), nullable=False, unique=True, index=True, default=lambda: uuid.uuid4().hex[:12])
+    referred_by_user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    referred_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    points_earned: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    commission_earned: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class ReferralConversion(Base):
+    __tablename__ = "referral_conversions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    referrer_user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    referred_user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    from_tier: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    to_tier: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+
+    points_awarded: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    commission_awarded: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+
+    converted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True, default=lambda: datetime.now(timezone.utc))

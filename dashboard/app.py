@@ -17,6 +17,8 @@ from typing import Any, Dict, List
 import httpx
 from flask import Flask, g, render_template, jsonify, request
 from flask_cors import CORS
+from sqlalchemy import func
+from typing import Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -31,7 +33,19 @@ from bot.alerts.discord import DiscordAlerter
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 
 from dashboard.db import close_session, get_session, engine
-from dashboard.models import Alert, AlertStatus, Base, User, UserAlertState, UserTier
+from dashboard.models import (
+    Alert,
+    AlertStatus,
+    Base,
+    MonitorStatus,
+    ReferralConversion,
+    TradeExecution,
+    TradeMonitor,
+    User,
+    UserAlertState,
+    UserGrowth,
+    UserTier,
+)
 from dashboard.auth import (
     apply_tier_rules,
     discord_callback_async,
@@ -63,6 +77,7 @@ def _open_db_session():
         user = get_current_user(g.db)
         if user is not None:
             apply_tier_rules(user)
+            _ensure_user_growth(g.db, user)
             g.db.commit()
     except Exception:
         # Fail-safe: never block request due to auth/db issues
@@ -285,11 +300,15 @@ async def _arbitrage_alert_loop() -> None:
         try:
             await update_all_markets()
 
-            # Queue classic YES+NO < 1.0 opportunities for users.
             try:
                 _enqueue_classic_arbs(min_profit=min_profit)
             except Exception as e:
                 print(f"[alert_queue] error: {e}")
+
+            try:
+                _finalize_due_trade_monitors()
+            except Exception as e:
+                print(f"[trade_monitor] error: {e}")
 
             if cfg.arbitrage.mode == "cross_market":
                 markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
@@ -390,6 +409,158 @@ def _classic_arb_opportunities_from_cache() -> List[Dict[str, Any]]:
 
     opportunities.sort(key=lambda x: float(x.get("profit_est") or 0.0), reverse=True)
     return opportunities
+
+
+def _tier_status_label(user: User) -> str:
+    if user.user_tier == UserTier.pro and user.subscription_active:
+        return "oni"
+    if user.user_tier == UserTier.premium and user.subscription_active:
+        return "samurai"
+    return "ronin"
+
+
+def _obfuscate_wallet(addr: Optional[str]) -> Optional[str]:
+    if not addr:
+        return None
+    a = str(addr).strip()
+    if len(a) <= 12:
+        return a
+    return f"{a[:6]}...{a[-4:]}"
+
+
+def _ensure_user_growth(db, user: User) -> UserGrowth:
+    g_row = db.get(UserGrowth, user.id)
+    if g_row is None:
+        g_row = UserGrowth(user_id=user.id)
+        db.add(g_row)
+        db.flush()
+    return g_row
+
+
+def _env_admin_key() -> Optional[str]:
+    v = os.environ.get("ADMIN_API_KEY")
+    if not isinstance(v, str):
+        return None
+    v = v.strip()
+    return v or None
+
+
+def _record_referral_conversion_if_applicable(db, referred_user: User, old_tier: UserTier, new_tier: UserTier) -> None:
+    if old_tier == new_tier:
+        return
+    if new_tier not in {UserTier.premium, UserTier.pro}:
+        return
+
+    g_row = db.get(UserGrowth, referred_user.id)
+    if g_row is None or g_row.referred_by_user_id is None:
+        return
+
+    referrer_id = int(g_row.referred_by_user_id)
+    existing = (
+        db.query(ReferralConversion)
+        .filter(ReferralConversion.referrer_user_id == referrer_id)
+        .filter(ReferralConversion.referred_user_id == int(referred_user.id))
+        .filter(ReferralConversion.to_tier == new_tier.value)
+        .first()
+    )
+    if existing is not None:
+        return
+
+    points = 250 if new_tier == UserTier.pro else 100
+    commission = 0.0
+
+    db.add(
+        ReferralConversion(
+            referrer_user_id=referrer_id,
+            referred_user_id=int(referred_user.id),
+            from_tier=old_tier.value,
+            to_tier=new_tier.value,
+            points_awarded=int(points),
+            commission_awarded=float(commission),
+        )
+    )
+
+    referrer_growth = db.get(UserGrowth, referrer_id)
+    if referrer_growth is None:
+        referrer_growth = UserGrowth(user_id=referrer_id)
+        db.add(referrer_growth)
+        db.flush()
+
+    referrer_growth.points_earned = int(referrer_growth.points_earned or 0) + int(points)
+    referrer_growth.commission_earned = float(referrer_growth.commission_earned or 0.0) + float(commission)
+
+
+def _market_bids_from_cache(source: str, market_id: str) -> Dict[str, float] | None:
+    with _cache_lock:
+        snapshot = json.loads(json.dumps(market_cache))
+
+    for m in snapshot.get(source, []) or []:
+        if str(m.get("market_id") or "") != str(market_id):
+            continue
+        outcomes = m.get("outcomes") or []
+        yes = next((o for o in outcomes if str(o.get("name")).upper() == "YES"), None)
+        no = next((o for o in outcomes if str(o.get("name")).upper() == "NO"), None)
+        if not yes or not no:
+            return None
+        yb = yes.get("bid")
+        nb = no.get("bid")
+        if yb is None or nb is None:
+            return None
+        try:
+            return {"yes_bid": float(yb), "no_bid": float(nb)}
+        except Exception:
+            return None
+    return None
+
+
+def _finalize_due_trade_monitors() -> int:
+    db = get_session()
+    try:
+        now = datetime.now(timezone.utc)
+        due = (
+            db.query(TradeMonitor)
+            .filter(TradeMonitor.status == MonitorStatus.active)
+            .filter(TradeMonitor.ends_at <= now)
+            .order_by(TradeMonitor.ends_at.asc())
+            .limit(100)
+            .all()
+        )
+
+        finalized = 0
+        for mon in due:
+            bids = _market_bids_from_cache(mon.source, mon.market_id)
+            exit_proceeds = None
+            pnl = None
+
+            if bids and mon.entry_cost is not None:
+                exit_proceeds = float(bids["yes_bid"]) + float(bids["no_bid"])
+                pnl = float(exit_proceeds) - float(mon.entry_cost)
+
+            ex = TradeExecution(
+                user_id=mon.user_id,
+                alert_id=mon.alert_id,
+                source=mon.source,
+                market_id=mon.market_id,
+                market_name=mon.market_name,
+                entry_cost=mon.entry_cost,
+                exit_proceeds=exit_proceeds,
+                pnl=pnl,
+                executed_at=now,
+            )
+
+            user = db.get(User, mon.user_id)
+            if user is not None:
+                ex.wallet_address = user.wallet_address
+
+            db.add(ex)
+            mon.status = MonitorStatus.finalized
+            mon.finalized_at = now
+            finalized += 1
+
+        db.commit()
+        return finalized
+    finally:
+        db.close()
 
 
 def _should_queue_for_user(user: User, db, opp: Dict[str, Any]) -> bool:
@@ -715,10 +886,267 @@ def release_queued_alerts():
         if _discord_dm(bot_token=bot_token, recipient_id=str(user.discord_id), content=content):
             a.status = AlertStatus.released
             a.released_at = now
+            if g.db.query(TradeMonitor).filter(TradeMonitor.alert_id == a.alert_id).first() is None:
+                g.db.add(
+                    TradeMonitor(
+                        user_id=user.id,
+                        alert_id=a.alert_id,
+                        source=a.source,
+                        market_id=a.market_id,
+                        market_name=a.question,
+                        entry_yes_price=a.yes_price,
+                        entry_no_price=a.no_price,
+                        entry_cost=a.sum_price,
+                        started_at=now,
+                        ends_at=now + timedelta(hours=2),
+                        status=MonitorStatus.active,
+                    )
+                )
             sent += 1
 
     g.db.commit()
     return jsonify({"released": sent, "queued_remaining": max(0, len(alerts) - sent)})
+
+
+@app.route("/api/executions")
+@require_tier(UserTier.free)
+def my_executions():
+    user = g.current_user
+    rows = (
+        g.db.query(TradeExecution)
+        .filter(TradeExecution.user_id == user.id)
+        .order_by(TradeExecution.executed_at.desc())
+        .limit(200)
+        .all()
+    )
+
+    return jsonify(
+        {
+            "executions": [
+                {
+                    "trade_id": r.trade_id,
+                    "alert_id": r.alert_id,
+                    "source": r.source,
+                    "market_id": r.market_id,
+                    "market_name": r.market_name,
+                    "entry_cost": r.entry_cost,
+                    "exit_proceeds": r.exit_proceeds,
+                    "pnl": r.pnl,
+                    "executed_at": r.executed_at.isoformat() if r.executed_at else None,
+                }
+                for r in rows
+            ]
+        }
+    )
+
+
+@app.route("/api/leaderboard/trading")
+def trading_leaderboard():
+    now = datetime.now(timezone.utc)
+
+    def compute(start: Optional[datetime]) -> Dict[int, Dict[str, Any]]:
+        q = g.db.query(TradeExecution)
+        if start is not None:
+            q = q.filter(TradeExecution.executed_at >= start)
+        rows = q.all()
+
+        by_user: Dict[int, Dict[str, Any]] = {}
+        for r in rows:
+            uid = int(r.user_id)
+            b = by_user.setdefault(
+                uid,
+                {
+                    "total_pnl": 0.0,
+                    "trade_count": 0,
+                    "win_count": 0,
+                    "best_trade": None,
+                    "worst_trade": None,
+                    "volume_traded": 0.0,
+                    "wallet_address": None,
+                },
+            )
+
+            pnl = float(r.pnl or 0.0)
+            b["total_pnl"] += pnl
+            b["trade_count"] += 1
+            if pnl > 0:
+                b["win_count"] += 1
+            if b["best_trade"] is None or pnl > float(b["best_trade"]):
+                b["best_trade"] = pnl
+            if b["worst_trade"] is None or pnl < float(b["worst_trade"]):
+                b["worst_trade"] = pnl
+            b["volume_traded"] += float(r.entry_cost or 0.0)
+            if not b["wallet_address"] and r.wallet_address:
+                b["wallet_address"] = r.wallet_address
+
+        return by_user
+
+    all_time = compute(None)
+    d30 = compute(now - timedelta(days=30))
+    d7 = compute(now - timedelta(days=7))
+
+    user_ids = set(all_time.keys()) | set(d30.keys()) | set(d7.keys())
+    leaders = []
+    for uid in user_ids:
+        b_all = all_time.get(uid) or {}
+        b_30 = d30.get(uid) or {}
+        b_7 = d7.get(uid) or {}
+
+        trade_count = int(b_all.get("trade_count") or 0)
+        win_rate = (float(b_all.get("win_count") or 0) / trade_count * 100.0) if trade_count else 0.0
+
+        leaders.append(
+            {
+                "user_id": uid,
+                "wallet": _obfuscate_wallet(b_all.get("wallet_address") or b_30.get("wallet_address") or b_7.get("wallet_address")),
+                "trade_count": trade_count,
+                "win_rate_pct": float(win_rate),
+                "best_trade": b_all.get("best_trade"),
+                "worst_trade": b_all.get("worst_trade"),
+                "volume_traded": float(b_all.get("volume_traded") or 0.0),
+                "total_pnl_all_time": float(b_all.get("total_pnl") or 0.0),
+                "total_pnl_30d": float(b_30.get("total_pnl") or 0.0),
+                "total_pnl_7d": float(b_7.get("total_pnl") or 0.0),
+            }
+        )
+
+    leaders.sort(key=lambda x: float(x.get("total_pnl_all_time") or 0.0), reverse=True)
+    return jsonify({"leaders": leaders[:100]})
+
+
+@app.route("/api/leaderboard/community")
+def community_leaderboard():
+    for u in g.db.query(User).limit(5000).all():
+        _ensure_user_growth(g.db, u)
+    g.db.commit()
+
+    conversions_all = (
+        g.db.query(ReferralConversion.referrer_user_id, func.count(ReferralConversion.id))
+        .group_by(ReferralConversion.referrer_user_id)
+        .all()
+    )
+    conv_by_user = {int(uid): int(cnt) for uid, cnt in conversions_all}
+
+    conversions_by_tier = (
+        g.db.query(ReferralConversion.referrer_user_id, ReferralConversion.to_tier, func.count(ReferralConversion.id))
+        .group_by(ReferralConversion.referrer_user_id, ReferralConversion.to_tier)
+        .all()
+    )
+    conv_tier_map: Dict[int, Dict[str, int]] = {}
+    for uid, to_tier, cnt in conversions_by_tier:
+        conv_tier_map.setdefault(int(uid), {})[str(to_tier or "") or "unknown"] = int(cnt)
+
+    rows = g.db.query(User, UserGrowth).join(UserGrowth, UserGrowth.user_id == User.id).all()
+    leaders = []
+    for u, g_row in rows:
+        leaders.append(
+            {
+                "user_id": u.id,
+                "tier_status": _tier_status_label(u),
+                "referrals_converted": conv_by_user.get(int(u.id), 0),
+                "referrals_converted_breakdown": conv_tier_map.get(int(u.id), {}),
+                "points_earned": int(g_row.points_earned or 0),
+                "commission_earned": float(g_row.commission_earned or 0.0),
+            }
+        )
+
+    leaders.sort(key=lambda x: (int(x.get("points_earned") or 0), int(x.get("referrals_converted") or 0)), reverse=True)
+    return jsonify({"leaders": leaders[:200]})
+
+
+@app.route("/api/referral/code")
+@require_tier(UserTier.free)
+def my_referral_code():
+    user = g.current_user
+    g_row = _ensure_user_growth(g.db, user)
+    g.db.commit()
+    return jsonify({"referral_code": g_row.referral_code})
+
+
+@app.route("/api/referral/claim", methods=["POST"])
+@require_tier(UserTier.free)
+def claim_referral_code():
+    user = g.current_user
+    data = request.get_json(silent=True) or {}
+    code = data.get("code")
+    if not isinstance(code, str) or not code.strip():
+        return jsonify({"error": "code_required"}), 400
+
+    g_row = _ensure_user_growth(g.db, user)
+    if g_row.referred_by_user_id is not None:
+        return jsonify({"error": "already_referred"}), 400
+
+    ref = g.db.query(UserGrowth).filter(UserGrowth.referral_code == code.strip()).first()
+    if ref is None:
+        return jsonify({"error": "invalid_code"}), 404
+    if int(ref.user_id) == int(user.id):
+        return jsonify({"error": "cannot_self_refer"}), 400
+
+    g_row.referred_by_user_id = int(ref.user_id)
+    g_row.referred_at = datetime.now(timezone.utc)
+    g.db.commit()
+    return jsonify({"claimed": True, "referred_by_user_id": g_row.referred_by_user_id})
+
+
+@app.route("/api/admin/set_tier", methods=["POST"])
+def admin_set_tier():
+    admin_key = _env_admin_key()
+    provided = request.headers.get("X-Admin-Key")
+    if not admin_key or not provided or provided.strip() != admin_key:
+        return jsonify({"error": "unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    user_id = data.get("user_id")
+    discord_id = data.get("discord_id")
+    email = data.get("email")
+    tier = data.get("tier")
+
+    if not isinstance(tier, str) or tier.strip() not in {"free", "premium", "pro"}:
+        return jsonify({"error": "invalid_tier"}), 400
+
+    user = None
+    if isinstance(user_id, int):
+        user = g.db.get(User, user_id)
+    elif isinstance(user_id, str) and user_id.strip().isdigit():
+        user = g.db.get(User, int(user_id.strip()))
+    elif isinstance(discord_id, str) and discord_id.strip():
+        user = g.db.query(User).filter(User.discord_id == discord_id.strip()).first()
+    elif isinstance(email, str) and email.strip():
+        user = g.db.query(User).filter(User.email == email.strip()).first()
+
+    if user is None:
+        return jsonify({"error": "user_not_found"}), 404
+
+    old_tier = user.user_tier
+    new_tier = UserTier(tier.strip())
+
+    subscription_active = data.get("subscription_active")
+    if subscription_active is not None:
+        user.subscription_active = bool(subscription_active)
+
+    expires_at = data.get("subscription_expires_at")
+    if isinstance(expires_at, str) and expires_at.strip():
+        try:
+            user.subscription_expires_at = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+        except Exception:
+            return jsonify({"error": "invalid_subscription_expires_at"}), 400
+
+    user.user_tier = new_tier
+    apply_tier_rules(user)
+
+    _ensure_user_growth(g.db, user)
+    _record_referral_conversion_if_applicable(g.db, user, old_tier=old_tier, new_tier=new_tier)
+    g.db.commit()
+
+    return jsonify(
+        {
+            "user_id": user.id,
+            "old_tier": old_tier.value,
+            "new_tier": user.user_tier.value,
+            "subscription_active": bool(user.subscription_active),
+            "subscription_expires_at": user.subscription_expires_at.isoformat() if user.subscription_expires_at else None,
+        }
+    )
 
 
 @app.route("/api/markets/<source>")
