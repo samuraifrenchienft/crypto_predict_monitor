@@ -223,3 +223,10 @@ __marimo__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local IDE / tooling
+.vscode/
+mcp_servers/
+
+# Dependency source (optional)
+requirements.in
