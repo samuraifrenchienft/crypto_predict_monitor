@@ -62,19 +62,26 @@ class MetaculusAdapter(Adapter):
             "order_by": "-activity",
             "type": "forecast",
         }
+        print(f"[{self.name}] Fetching markets from {url} with params {params}")
 
         client = self._get_client()
-        r = await retry_with_backoff(
-            client.get, self.name, url, params=params,
-            max_retries=3,
-            adapter_name=self.name
-        )
-        data = r.json()
+        try:
+            r = await retry_with_backoff(
+                client.get, self.name, url, params=params,
+                max_retries=3,
+                adapter_name=self.name
+            )
+            print(f"[{self.name}] Got response status {r.status_code}")
+            data = r.json()
+        except Exception as e:
+            print(f"[{self.name}] HTTP/API error: {e}")
+            return []
 
         # Response can be paginated with "results" key or direct list
         questions_raw = data.get("results", data) if isinstance(data, dict) else data
         if not isinstance(questions_raw, list):
             questions_raw = []
+        print(f"[{self.name}] Parsed {len(questions_raw)} raw questions")
 
         markets: list[Market] = []
         self._question_cache.clear()
@@ -108,6 +115,7 @@ class MetaculusAdapter(Adapter):
                 )
             )
 
+        print(f"[{self.name}] Returning {len(markets)} markets")
         return markets
 
     async def list_outcomes(self, market: Market) -> list[Outcome]:

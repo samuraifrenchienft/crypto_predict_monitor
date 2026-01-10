@@ -135,6 +135,7 @@ async def update_all_markets():
         
         if cfg.metaculus.enabled:
             from bot.rate_limit import RateLimitConfig
+            print(f"Metaculus enabled in config, creating adapter...")
             adapters.append(("metaculus", MetaculusAdapter(
                 base_url=cfg.metaculus.base_url,
                 questions_limit=cfg.metaculus.questions_limit,
@@ -144,6 +145,7 @@ async def update_all_markets():
                     burst_size=cfg.metaculus.burst_size,
                 ),
             )))
+            print(f"Metaculus adapter created")
         
         # Fetch data from all adapters
         for adapter_name, adapter in adapters:
