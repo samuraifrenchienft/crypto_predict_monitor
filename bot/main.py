@@ -9,9 +9,26 @@ from typing import Dict, List, Optional, Tuple
 
 try:
     from dotenv import load_dotenv
-    load_dotenv(".env.txt")  # Load from .env.txt for security
+    load_dotenv(".env")  # Load from .env for security
 except ImportError:
     pass  # dotenv not installed, use environment variables directly
+
+# Helper to get env vars (handles PowerShell format)
+def get_env(key: str) -> Optional[str]:
+    # Try standard env var first
+    value = os.getenv(key)
+    if value:
+        return value
+    
+    # Try PowerShell format (remove $env: and quotes)
+    ps_key = key.replace("KALSHI_", "env:KALSHI_")
+    value = os.getenv(ps_key)
+    if value:
+        # Remove quotes if present
+        value = value.strip().strip('"').strip("'")
+        return value
+    
+    return None
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -99,8 +116,8 @@ async def main() -> None:
                 requests_per_minute=cfg.kalshi.requests_per_minute,
                 burst_size=cfg.kalshi.burst_size,
             ),
-            kalshi_access_key=os.getenv("KALSHI_ACCESS_KEY"),
-            kalshi_private_key=os.getenv("KALSHI_PRIVATE_KEY"),
+            kalshi_access_key=get_env("KALSHI_ACCESS_KEY"),
+            kalshi_private_key=get_env("KALSHI_PRIVATE_KEY"),
         ))
 
     if cfg.manifold.enabled:

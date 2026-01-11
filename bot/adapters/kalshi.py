@@ -71,16 +71,32 @@ class KalshiAdapter(Adapter):
         
         # Load the private key
         if isinstance(self.kalshi_private_key, str):
-            if self.kalshi_private_key.startswith('-----BEGIN'):
-                # PEM format
-                private_key = serialization.load_pem_private_key(
-                    self.kalshi_private_key.encode('utf-8'),
-                    password=None,
-                    backend=None
-                )
-            else:
-                # Assume it's a simple string (not correct for RSA)
-                raise ValueError("Private key must be in PEM format")
+            try:
+                if self.kalshi_private_key.startswith('-----BEGIN'):
+                    # PEM format
+                    private_key = serialization.load_pem_private_key(
+                        self.kalshi_private_key.encode('utf-8'),
+                        password=None,
+                        backend=None
+                    )
+                else:
+                    # Try to parse as raw key (base64 or hex)
+                    try:
+                        # Try base64 decode first
+                        key_bytes = base64.b64decode(self.kalshi_private_key)
+                        private_key = serialization.load_der_private_key(
+                            key_bytes,
+                            password=None
+                        )
+                    except:
+                        # Try hex decode
+                        key_bytes = bytes.fromhex(self.kalshi_private_key)
+                        private_key = serialization.load_der_private_key(
+                            key_bytes,
+                            password=None
+                        )
+            except Exception as e:
+                raise ValueError(f"Failed to parse private key: {e}. Expected PEM format starting with '-----BEGIN'")
         else:
             private_key = self.kalshi_private_key
         
@@ -194,17 +210,37 @@ class KalshiAdapter(Adapter):
         
         Note: Kalshi requires authentication for real-time orderbook data.
         Without auth, the API returns None for orderbook levels.
-        For now, we'll return None quotes to indicate no liquidity data available.
         """
         url = f"{self.base_url}/markets/{quote(market.market_id, safe='')}/orderbook"
 
-        client = self._get_client()
-        r = await retry_with_backoff(
-            client.get, self.name, url,
-            max_retries=3,
-            adapter_name=self.name,
-            market_id=market.market_id
-        )
+        # Try authenticated request if keys are available
+        if self.kalshi_access_key and self.kalshi_private_key:
+            timestamp = str(int(time.time() * 1000))
+            signature = self._generate_signature(timestamp, "GET", f"/trade-api/v2/markets/{market.market_id}/orderbook")
+            
+            headers = {
+                "KALSHI-ACCESS-KEY": self.kalshi_access_key,
+                "KALSHI-ACCESS-SIGNATURE": signature,
+                "KALSHI-ACCESS-TIMESTAMP": timestamp
+            }
+            
+            client = self._get_client()
+            r = await retry_with_backoff(
+                client.get, self.name, url, headers=headers,
+                max_retries=3,
+                adapter_name=self.name,
+                market_id=market.market_id
+            )
+        else:
+            # Fallback to unauthenticated request
+            client = self._get_client()
+            r = await retry_with_backoff(
+                client.get, self.name, url,
+                max_retries=3,
+                adapter_name=self.name,
+                market_id=market.market_id
+            )
+        
         data = r.json()
 
         orderbook = data.get("orderbook", {})
