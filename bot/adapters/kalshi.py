@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Optional, Dict, Tuple
+from typing import Iterable, Optional, Dict, Tuple, Awaitable
 from urllib.parse import quote
 
 import httpx
@@ -170,6 +170,12 @@ class KalshiAdapter(Adapter):
                 ))
 
         return quotes
+
+    async def close(self) -> None:
+        """Clean up resources."""
+        self._market_cache.clear()
+        if self._client and hasattr(self._client, 'close'):
+            await self._client.close()
 
 
 def _best_level(levels: list) -> Tuple[Optional[float], Optional[float]]:

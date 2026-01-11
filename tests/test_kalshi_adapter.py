@@ -75,11 +75,10 @@ class TestKalshiAdapter:
     async def test_list_active_markets_success(self, adapter, sample_markets_response):
         """Test successful market listing."""
         with patch('bot.adapters.kalshi.retry_with_backoff') as mock_retry, \
-             patch('bot.adapters.kalshi.safe_http_get') as mock_get:
+             patch.object(adapter, '_get_client') as mock_client:
             
             mock_response = AsyncMock()
             mock_response.json.return_value = sample_markets_response
-            mock_get.return_value = mock_response
             mock_retry.return_value = mock_response
 
             markets = await adapter.list_active_markets()
@@ -107,13 +106,13 @@ class TestKalshiAdapter:
             ]
         }
 
-        with patch('bot.adapters.kalshi.retry_with_backoff') as mock_retry, \
-             patch('bot.adapters.kalshi.safe_http_get') as mock_get:
+        with patch.object(adapter, '_get_client') as mock_client:
             
+            mock_http_client = AsyncMock()
             mock_response = AsyncMock()
             mock_response.json.return_value = response_with_subtitle
-            mock_get.return_value = mock_response
-            mock_retry.return_value = mock_response
+            mock_http_client.get.return_value = mock_response
+            mock_client.return_value = mock_http_client
 
             markets = await adapter.list_active_markets()
 
@@ -132,13 +131,13 @@ class TestKalshiAdapter:
             ]
         }
 
-        with patch('bot.adapters.kalshi.retry_with_backoff') as mock_retry, \
-             patch('bot.adapters.kalshi.safe_http_get') as mock_get:
+        with patch.object(adapter, '_get_client') as mock_client:
             
+            mock_http_client = AsyncMock()
             mock_response = AsyncMock()
             mock_response.json.return_value = response_minimal
-            mock_get.return_value = mock_response
-            mock_retry.return_value = mock_response
+            mock_http_client.get.return_value = mock_response
+            mock_client.return_value = mock_http_client
 
             markets = await adapter.list_active_markets()
 
@@ -176,13 +175,13 @@ class TestKalshiAdapter:
         )
         outcomes = await adapter.list_outcomes(market)
 
-        with patch('bot.adapters.kalshi.retry_with_backoff') as mock_retry, \
-             patch('bot.adapters.kalshi.safe_http_get') as mock_get:
+        with patch.object(adapter, '_get_client') as mock_client:
             
+            mock_http_client = AsyncMock()
             mock_response = AsyncMock()
             mock_response.json.return_value = sample_orderbook_response
-            mock_get.return_value = mock_response
-            mock_retry.return_value = mock_response
+            mock_http_client.get.return_value = mock_response
+            mock_client.return_value = mock_http_client
 
             quotes = await adapter.get_quotes(market, outcomes)
 
@@ -216,13 +215,13 @@ class TestKalshiAdapter:
         )
         outcomes = await adapter.list_outcomes(market)
 
-        with patch('bot.adapters.kalshi.retry_with_backoff') as mock_retry, \
-             patch('bot.adapters.kalshi.safe_http_get') as mock_get:
+        with patch.object(adapter, '_get_client') as mock_client:
             
+            mock_http_client = AsyncMock()
             mock_response = AsyncMock()
             mock_response.json.return_value = empty_orderbook_response
-            mock_get.return_value = mock_response
-            mock_retry.return_value = mock_response
+            mock_http_client.get.return_value = mock_response
+            mock_client.return_value = mock_http_client
 
             quotes = await adapter.get_quotes(market, outcomes)
 
@@ -257,13 +256,13 @@ class TestKalshiAdapter:
         )
         outcomes = await adapter.list_outcomes(market)
 
-        with patch('bot.adapters.kalshi.retry_with_backoff') as mock_retry, \
-             patch('bot.adapters.kalshi.safe_http_get') as mock_get:
+        with patch.object(adapter, '_get_client') as mock_client:
             
+            mock_http_client = AsyncMock()
             mock_response = AsyncMock()
             mock_response.json.return_value = malformed_response
-            mock_get.return_value = mock_response
-            mock_retry.return_value = mock_response
+            mock_http_client.get.return_value = mock_response
+            mock_client.return_value = mock_http_client
 
             quotes = await adapter.get_quotes(market, outcomes)
 
