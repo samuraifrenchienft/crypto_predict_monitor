@@ -74,16 +74,26 @@
                             Release Alerts (<span id="queuedAlertsCount">0</span>)
                         </button>
                     </div>
-                    <button onclick="openWhaleModal()" class="bg-[#0001ff] hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition neon-glow">
-                        <span>🐋</span>
-                        <span>Track Wallets</span>
-                    </button>
-                    <button onclick="refreshData()" class="bg-[#0001ff] hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition neon-glow">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        <span>Refresh</span>
-                    </button>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="refreshData()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition">
+                            <span>🔄</span>
+                            <span>Refresh</span>
+                        </button>
+                        <button onclick="releaseAlerts()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition">
+                            <span>🚀</span>
+                            <span>Release Alerts (<span id="queuedAlertsCount">0</span>)</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="openLeaderboardModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition border border-gray-700">
+                            <span>🏆</span>
+                            <span>Leaderboards</span>
+                        </button>
+                        <button onclick="openWhaleModal()" class="bg-[#0001ff] hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition neon-glow">
+                            <span>🐋</span>
+                            <span>Track Wallets</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -156,24 +166,6 @@
             </div>
         </div>
 
-        <div class="bg-gray-900 rounded-lg shadow-lg mb-8 border border-gray-800">
-            <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                <h2 class="text-xl font-bold text-white">🏆 Leaderboards</h2>
-                <div class="flex items-center gap-2">
-                    <button id="leaderboardTabCommunity" onclick="setLeaderboardTab('community')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow">
-                        Community
-                    </button>
-                    <button id="leaderboardTabTrading" onclick="setLeaderboardTab('trading')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700">
-                        Trading
-                    </button>
-                </div>
-            </div>
-            <div class="p-6">
-                <div id="leaderboardError" class="hidden text-sm text-red-300 mb-4"></div>
-                <div id="leaderboardContent" class="overflow-x-auto"></div>
-            </div>
-        </div>
-
         <!-- Arbitrage Alerts Section -->
         <div id="arbitrageSection" class="mb-8 hidden">
             <h2 class="text-xl font-bold text-white mb-4">🎯 Arbitrage Opportunities</h2>
@@ -235,6 +227,42 @@
         </div>
     </main>
 
+    <div id="leaderboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0" onclick="closeLeaderboardModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-950 rounded-lg shadow-xl max-w-4xl w-full relative z-10 border border-gray-800">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-white">🏆 Leaderboards</h2>
+                        <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <button id="leaderboardTabCommunity" onclick="setLeaderboardTab('community')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow">
+                            Community
+                        </button>
+                        <button id="leaderboardTabTrading" onclick="setLeaderboardTab('trading')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700">
+                            Trading
+                        </button>
+                    </div>
+                    <div id="leaderboardError" class="hidden text-sm text-red-300 mb-4"></div>
+                    <div id="leaderboardContent" class="overflow-x-auto"></div>
+                    <div class="flex space-x-3 mt-6">
+                        <button onclick="refreshLeaderboardActive()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Refresh
+                        </button>
+                        <button onclick="closeLeaderboardModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Whale Tracking Modal -->
     <div id="whaleModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
         <div class="modal-backdrop fixed inset-0" onclick="closeWhaleModal()"></div>
@@ -279,14 +307,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadMe();
             loadTrackedWallets();
-            setLeaderboardTab('community');
             loadMarkets();
             loadArbitrageOpportunities();
             loadWhaleAlerts();
             // Auto-refresh every 30 seconds
             setInterval(() => {
                 loadQueuedAlertsCount();
-                refreshLeaderboardActive();
+                if (isLeaderboardModalOpen()) {
+                    refreshLeaderboardActive();
+                }
                 loadMarkets();
                 loadArbitrageOpportunities();
                 loadWhaleAlerts();
@@ -521,6 +550,25 @@
 
         let activeLeaderboardTab = 'community';
 
+        function isLeaderboardModalOpen() {
+            const el = document.getElementById('leaderboardModal');
+            if (!el) return false;
+            return !el.classList.contains('hidden');
+        }
+
+        function openLeaderboardModal() {
+            const el = document.getElementById('leaderboardModal');
+            if (!el) return;
+            el.classList.remove('hidden');
+            setLeaderboardTab(activeLeaderboardTab);
+        }
+
+        function closeLeaderboardModal() {
+            const el = document.getElementById('leaderboardModal');
+            if (!el) return;
+            el.classList.add('hidden');
+        }
+
         function setLeaderboardTab(tab) {
             activeLeaderboardTab = (tab === 'trading') ? 'trading' : 'community';
             const btnC = document.getElementById('leaderboardTabCommunity');
@@ -538,6 +586,9 @@
         }
 
         async function refreshLeaderboardActive() {
+            if (!isLeaderboardModalOpen()) {
+                return;
+            }
             if (activeLeaderboardTab === 'trading') {
                 await loadTradingLeaderboard();
             } else {
