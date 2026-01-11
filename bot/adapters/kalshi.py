@@ -6,8 +6,11 @@ import json
 import asyncio
 import logging
 import time
-import hmac
-import hashlib
+import base64
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import InvalidSignature
 
 import httpx
 import websockets
@@ -59,21 +62,39 @@ class KalshiAdapter(Adapter):
         self.kalshi_private_key = kalshi_private_key
 
     def _generate_signature(self, timestamp: str, method: str, path: str) -> str:
-        """Generate Kalshi API signature."""
+        """Generate Kalshi API signature using RSA-PSS."""
         if not self.kalshi_private_key:
             raise ValueError("Private key required for signature generation")
         
         # Create message to sign
         message = timestamp + method + path
         
-        # Generate signature using HMAC-SHA256
-        signature = hmac.new(
-            self.kalshi_private_key.encode('utf-8'),
-            message.encode('utf-8'),
-            hashlib.sha256
-        ).hexdigest()
+        # Load the private key
+        if isinstance(self.kalshi_private_key, str):
+            if self.kalshi_private_key.startswith('-----BEGIN'):
+                # PEM format
+                private_key = serialization.load_pem_private_key(
+                    self.kalshi_private_key.encode('utf-8'),
+                    password=None,
+                    backend=None
+                )
+            else:
+                # Assume it's a simple string (not correct for RSA)
+                raise ValueError("Private key must be in PEM format")
+        else:
+            private_key = self.kalshi_private_key
         
-        return signature
+        # Sign using RSA-PSS
+        signature = private_key.sign(
+            message.encode('utf-8'),
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.DIGEST_LENGTH
+            ),
+            hashes.SHA256()
+        )
+        
+        return base64.b64encode(signature).decode('utf-8')
 
     def _get_auth_headers(self) -> Dict[str, str]:
         """Get authentication headers for WebSocket connection."""
@@ -279,13 +300,10 @@ class KalshiAdapter(Adapter):
 
     async def subscribe_to_markets(self, channels: List[str], market_tickers: List[str], endpoint: str = "/orderbook_delta") -> None:
         """Subscribe to specific channels and markets on a WebSocket endpoint"""
-        if not self.ws:
-            await self.connect_websocket()
-        
         # Build full WebSocket URL with endpoint
         ws_endpoint = f"{self.ws_url}{endpoint}"
         
-        # Reconnect with the specific endpoint
+        # Connect to the specific endpoint
         if self.ws:
             await self.ws.close()
         

@@ -1,18 +1,26 @@
 from __future__ import annotations
 
+import os
 import asyncio
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, List, Optional, Tuple
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(".env.txt")  # Load from .env.txt for security
+except ImportError:
+    pass  # dotenv not installed, use environment variables directly
 
 from rich.console import Console
+from rich.logging import RichHandler
 from rich.table import Table
 
 from bot.alerts.discord import DiscordAlerter
 from bot.config import load_config
 from bot.errors import ErrorInfo, ErrorType, log_error_metrics, FatalError, RetryableError
-from bot.models import Quote
+from bot.models import Market, Outcome, Quote
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.adapters.limitless import LimitlessAdapter
 from bot.adapters.kalshi import KalshiAdapter
@@ -91,6 +99,8 @@ async def main() -> None:
                 requests_per_minute=cfg.kalshi.requests_per_minute,
                 burst_size=cfg.kalshi.burst_size,
             ),
+            kalshi_access_key=os.getenv("KALSHI_ACCESS_KEY"),
+            kalshi_private_key=os.getenv("KALSHI_PRIVATE_KEY"),
         ))
 
     if cfg.manifold.enabled:

@@ -7,6 +7,7 @@ aiohttp==3.9.1
 SQLAlchemy==2.0.25
 psycopg2-binary==2.9.9
 eth-account==0.12.4
+cryptography>=41.0.0
 annotated-types==0.7.0
 anyio==4.12.1
 certifi==2026.1.4
@@ -20,16 +21,13 @@ markdown-it-py==4.0.0
 mdurl==0.1.2
 packaging==25.0
 pluggy==1.6.0
-pydantic==2.12.5
-pydantic_core==2.41.5
 Pygments==2.19.2
 pytest==9.0.2
-python-dotenv==1.2.1
 Pillow==10.4.0
 PyYAML==6.0.3
-rich==14.2.0
 tenacity==9.1.2
 tomli==2.3.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
+uvicorn>=0.24.0
 websockets==15.0.1
