@@ -253,41 +253,27 @@
         }
 
         header h1.text-2xl {
-            position: relative;
-            padding-left: 54px;
-            font-size: 0 !important;
-            line-height: 1 !important;
-            color: transparent !important;
-            text-shadow: none !important;
+            position: static !important;
+            padding-left: 0 !important;
+            font-size: 24px !important;
+            line-height: 1.2 !important;
+            color: #ffffff !important;
         }
 
-        header h1.text-2xl::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 46px;
-            height: 46px;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cdefs%3E%3ClinearGradient id='pmG' x1='40' y1='24' x2='216' y2='232' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%239D4EDD'/%3E%3Cstop offset='0.55' stop-color='%2300D9FF'/%3E%3Cstop offset='1' stop-color='%2300D9FF'/%3E%3C/linearGradient%3E%3ClinearGradient id='pmG2' x1='60' y1='44' x2='196' y2='220' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%239D4EDD'/%3E%3Cstop offset='1' stop-color='%2300D9FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M74 78C50 78 34 60 34 44C34 28 46 22 58 22C76 22 90 38 96 54' fill='none' stroke='url(%23pmG)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M182 78C206 78 222 60 222 44C222 28 210 22 198 22C180 22 166 38 160 54' fill='none' stroke='url(%23pmG)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M92 70C104 56 116 50 128 50C140 50 152 56 164 70' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M64 104L92 84H164L192 104L176 188H80L64 104Z' fill='none' stroke='url(%23pmG)' stroke-width='10' stroke-linejoin='round'/%3E%3Cpath d='M108 120C108 108 117 98 128 98C139 98 148 108 148 120' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round'/%3E%3Cpath d='M94 150C104 138 116 132 128 132C140 132 152 138 162 150' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M112 160C120 154 136 154 144 160' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round'/%3E%3Ccircle cx='128' cy='86' r='14' fill='none' stroke='url(%23pmG)' stroke-width='10'/%3E%3C/svg%3E");
-            filter: drop-shadow(0 0 14px rgba(0, 217, 255, 0.25)) drop-shadow(0 0 18px rgba(157, 78, 221, 0.22));
-        }
-
+        header h1.text-2xl::before,
         header h1.text-2xl::after {
-            content: 'Prediction Monitor';
-            position: absolute;
-            left: 54px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #ffffff;
-            font-size: 24px;
-            line-height: 1.2;
-            font-weight: 800;
-            white-space: nowrap;
-            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75), 0 0 18px rgba(0, 217, 255, 0.18);
+            content: none !important;
+            display: none !important;
+        }
+
+        .referral-stat-card {
+            transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .referral-stat-card:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.07);
+            box-shadow: 0 0 26px rgba(0, 217, 255, 0.42), 0 0 38px rgba(157, 78, 221, 0.28) !important;
         }
     </style>
 </head>
@@ -337,7 +323,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-3">
-                    <h1 class="text-2xl font-bold text-white">📊 Prediction Monitor</h1>
+                    <h1 class="text-2xl font-bold text-white">Prediction Monitor</h1>
                     <span class="text-sm text-gray-400">Real-time market data</span>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -409,7 +395,7 @@
                 </div>
             </div>
 
-            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-blue-700/60 cursor-pointer" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);" onclick="openReferralModal()">
+            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-blue-700/60 cursor-pointer referral-stat-card" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);" onclick="openReferralModal()">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 stat-icon rounded-md p-4 neon-glow">
                         <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -418,8 +404,8 @@
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Referrals</dt>
-                            <dd class="text-2xl font-bold text-white" id="referralEntry">Open</dd>
+                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Referral</dt>
+                            <dd class="hidden" id="referralEntry"></dd>
                         </dl>
                     </div>
                 </div>
@@ -462,19 +448,19 @@
         <div class="bg-gray-900 rounded-lg shadow-lg mb-6 border border-gray-800">
             <div class="border-b border-gray-700">
                 <nav class="flex -mb-px">
-                    <button onclick="filterMarkets('all')" class="filter-tab active border-b-2 border-blue-500 py-2 px-6 text-sm font-medium text-blue-400">
+                    <button onclick="filterMarkets('all', this)" class="filter-tab active border-b-2 border-blue-500 py-2 px-6 text-sm font-medium text-blue-400">
                         All Markets
                     </button>
-                    <button onclick="filterMarkets('manifold')" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
+                    <button onclick="filterMarkets('manifold', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Manifold
                     </button>
-                    <button onclick="filterMarkets('kalshi')" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
+                    <button onclick="filterMarkets('kalshi', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Kalshi
                     </button>
-                    <button onclick="filterMarkets('polymarket')" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
+                    <button onclick="filterMarkets('polymarket', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Polymarket
                     </button>
-                    <button onclick="filterMarkets('limitless')" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
+                    <button onclick="filterMarkets('limitless', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Limitless
                     </button>
                 </nav>
@@ -1146,8 +1132,15 @@
             }
         }
 
-        async function refreshData() {
-            const button = event.target.closest('button');
+        async function refreshData(evt) {
+            const e = evt || (typeof event !== 'undefined' ? event : null);
+            const button = e && e.target && e.target.closest ? e.target.closest('button') : null;
+            if (!button) {
+                await loadMarkets();
+                await loadArbitrageOpportunities();
+                await loadWhaleAlerts();
+                return;
+            }
             const originalContent = button.innerHTML;
             button.innerHTML = '<div class="loading-spinner w-4 h-4"></div> Refreshing...';
             button.disabled = true;
@@ -1166,7 +1159,7 @@
             }
         }
 
-        function filterMarkets(source) {
+        function filterMarkets(source, el) {
             currentFilter = source;
             
             // Update tab styles
@@ -1174,8 +1167,11 @@
                 tab.classList.remove('border-blue-500', 'text-blue-400');
                 tab.classList.add('border-transparent', 'text-gray-400');
             });
-            event.target.classList.remove('border-transparent', 'text-gray-400');
-            event.target.classList.add('border-blue-500', 'text-blue-400');
+            const target = el || (typeof event !== 'undefined' ? event.target : null);
+            if (target && target.classList) {
+                target.classList.remove('border-transparent', 'text-gray-400');
+                target.classList.add('border-blue-500', 'text-blue-400');
+            }
             
             displayMarkets();
         }
