@@ -800,6 +800,8 @@
         function createMarketCard(market) {
             const yesOutcome = market.outcomes.find(o => o.name === 'YES');
             const noOutcome = market.outcomes.find(o => o.name === 'NO');
+
+            const marketUrl = (market && typeof market.url === 'string') ? market.url.trim() : '';
             
             return `
                 <div class="market-card bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700">
@@ -809,11 +811,19 @@
                                 <h3 class="text-lg font-semibold text-white mb-1">${market.title}</h3>
                                 <span class="source-badge source-${market.source}">${market.source.toUpperCase()}</span>
                             </div>
-                            <a href="${market.url}" target="_blank" class="text-blue-400 hover:text-blue-300">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                </svg>
-                            </a>
+                            ${marketUrl ? `
+                                <a href="${marketUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                </a>
+                            ` : `
+                                <span class="text-gray-600 cursor-not-allowed">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                </span>
+                            `}
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">

@@ -48,10 +48,19 @@ class LimitlessAdapter(Adapter):
             title = str(m.get("title") or m.get("question") or m.get("name") or slug).strip()
             if not slug:
                 continue
-            
+
+            url_val: Optional[str] = None
+            for k in ("url", "market_url", "marketUrl", "link", "href", "market_link", "marketLink"):
+                v = m.get(k)
+                if isinstance(v, str) and v.strip():
+                    url_val = v.strip()
+                    break
+            if url_val is None:
+                url_val = f"https://limitless.exchange/markets/{slug}"
+
             # Cache the full market data including prices
             self._market_cache[slug] = m
-            markets.append(Market(source=self.name, market_id=slug, title=title, url=None, outcomes=[]))
+            markets.append(Market(source=self.name, market_id=slug, title=title, url=url_val, outcomes=[]))
 
         return markets
 
