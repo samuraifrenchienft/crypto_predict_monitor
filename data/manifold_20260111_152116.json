@@ -1,0 +1,1030 @@
+{
+  "source": "manifold",
+  "markets": [
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "ELcyy5p62S",
+        "title": "Spain's population end of 2026? [in MM]",
+        "url": "https://manifold.markets/Simon74fe/spains-population-end-of-2026-in-mm",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "ELcyy5p62S_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "ELcyy5p62S_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "ELcyy5p62S_YES",
+          "bid": 0.4948450246274334,
+          "ask": 0.5048450246274334,
+          "mid": 0.4998450246274334,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.247717Z"
+        },
+        {
+          "outcome_id": "ELcyy5p62S_NO",
+          "bid": 0.4951549753725666,
+          "ask": 0.5051549753725666,
+          "mid": 0.5001549753725666,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.247717Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "EAtIu6g66S",
+        "title": "Daily Coinflip",
+        "url": "https://manifold.markets/Traveel/daily-coinflip-dy6zQLgPz2",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "EAtIu6g66S_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "EAtIu6g66S_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "EAtIu6g66S_YES",
+          "bid": 0.505,
+          "ask": 0.515,
+          "mid": 0.51,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.332623Z"
+        },
+        {
+          "outcome_id": "EAtIu6g66S_NO",
+          "bid": 0.485,
+          "ask": 0.495,
+          "mid": 0.49,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.332623Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "66cWxhCKvNUZT0u3qx5V",
+        "title": "Will chess be solved by 2040?",
+        "url": "https://manifold.markets/IsaacKing/will-chess-be-solved-by-2040",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "66cWxhCKvNUZT0u3qx5V_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "66cWxhCKvNUZT0u3qx5V_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "66cWxhCKvNUZT0u3qx5V_YES",
+          "bid": 0.14500000000000005,
+          "ask": 0.15500000000000005,
+          "mid": 0.15000000000000005,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.413440Z"
+        },
+        {
+          "outcome_id": "66cWxhCKvNUZT0u3qx5V_NO",
+          "bid": 0.845,
+          "ask": 0.855,
+          "mid": 0.85,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.413440Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "AEUSNQQUd0",
+        "title": "Resolves to 50% whenever Ziddletwix or I decide.",
+        "url": "https://manifold.markets/Eliza/resolves-to-50-whenever-ziddletwix",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "AEUSNQQUd0_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "AEUSNQQUd0_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "AEUSNQQUd0_YES",
+          "bid": 0.495,
+          "ask": 0.505,
+          "mid": 0.5,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.495969Z"
+        },
+        {
+          "outcome_id": "AEUSNQQUd0_NO",
+          "bid": 0.495,
+          "ask": 0.505,
+          "mid": 0.5,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.495969Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "WCsjjEUk1vxRy1wHNi63",
+        "title": "Will Eliezer Yudkowsky win his $150,000 - $1,000 bet about UFOs not having a worldview-shattering origin?",
+        "url": "https://manifold.markets/Joshua/will-eliezer-yudkowsky-win-his-1500",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "WCsjjEUk1vxRy1wHNi63_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "WCsjjEUk1vxRy1wHNi63_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "WCsjjEUk1vxRy1wHNi63_YES",
+          "bid": 0.925,
+          "ask": 0.935,
+          "mid": 0.93,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.578621Z"
+        },
+        {
+          "outcome_id": "WCsjjEUk1vxRy1wHNi63_NO",
+          "bid": 0.06499999999999995,
+          "ask": 0.07499999999999996,
+          "mid": 0.06999999999999995,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.578621Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "tt0Uy260hp",
+        "title": "Will Iran's regime fall in 2026?",
+        "url": "https://manifold.markets/SaviorofPlant/will-irans-regime-fall-in-2026",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "tt0Uy260hp_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "tt0Uy260hp_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "tt0Uy260hp_YES",
+          "bid": 0.3774095941445698,
+          "ask": 0.3874095941445698,
+          "mid": 0.3824095941445698,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.660597Z"
+        },
+        {
+          "outcome_id": "tt0Uy260hp_NO",
+          "bid": 0.6125904058554302,
+          "ask": 0.6225904058554302,
+          "mid": 0.6175904058554302,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.660597Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "sADm1xW1khKRjghUtzvH",
+        "title": "Will at least 4 of the 7 Millennium Problems be solved by 2040?",
+        "url": "https://manifold.markets/_deleted_/will-at-least-4-of-the-7-millennium",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "sADm1xW1khKRjghUtzvH_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "sADm1xW1khKRjghUtzvH_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "sADm1xW1khKRjghUtzvH_YES",
+          "bid": 0.4549999999999999,
+          "ask": 0.4649999999999999,
+          "mid": 0.4599999999999999,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.743636Z"
+        },
+        {
+          "outcome_id": "sADm1xW1khKRjghUtzvH_NO",
+          "bid": 0.535,
+          "ask": 0.545,
+          "mid": 0.54,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.743636Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "ZZLRuEZpZl",
+        "title": "Will Venezuelans be better off at the end of 2026?",
+        "url": "https://manifold.markets/Gabrielle/will-venezuelans-be-better-off-at-t",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "ZZLRuEZpZl_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "ZZLRuEZpZl_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "ZZLRuEZpZl_YES",
+          "bid": 0.6250000000000001,
+          "ask": 0.6350000000000001,
+          "mid": 0.6300000000000001,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.826701Z"
+        },
+        {
+          "outcome_id": "ZZLRuEZpZl_NO",
+          "bid": 0.3649999999999999,
+          "ask": 0.3749999999999999,
+          "mid": 0.3699999999999999,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.826701Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "I6gU82zcus",
+        "title": "Tesla has more fully autonomous rides than Waymo in 2026?",
+        "url": "https://manifold.markets/JamesGrugett/tesla-serves-more-fully-autonomous",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "I6gU82zcus_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "I6gU82zcus_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "I6gU82zcus_YES",
+          "bid": 0.3250000000000002,
+          "ask": 0.3350000000000002,
+          "mid": 0.3300000000000002,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.911551Z"
+        },
+        {
+          "outcome_id": "I6gU82zcus_NO",
+          "bid": 0.6649999999999998,
+          "ask": 0.6749999999999998,
+          "mid": 0.6699999999999998,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.911551Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "pth6uLtIyg",
+        "title": "Will Donald Trump die or become seriously ill before the end of his term?",
+        "url": "https://manifold.markets/Soli/will-donald-trump-die-or-become-ser",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "pth6uLtIyg_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "pth6uLtIyg_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "pth6uLtIyg_YES",
+          "bid": 0.21499999999999994,
+          "ask": 0.22499999999999995,
+          "mid": 0.21999999999999995,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.995796Z"
+        },
+        {
+          "outcome_id": "pth6uLtIyg_NO",
+          "bid": 0.775,
+          "ask": 0.785,
+          "mid": 0.78,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:09.995796Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "dq71tp00zu",
+        "title": "Will AGI come from a company whose primary product involves selling a model over an API?",
+        "url": "https://manifold.markets/iamgingertrash/will-agi-come-from-a-company-whos-p",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "dq71tp00zu_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "dq71tp00zu_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "dq71tp00zu_YES",
+          "bid": 0.6225563219729779,
+          "ask": 0.632556321972978,
+          "mid": 0.627556321972978,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:10.087142Z"
+        },
+        {
+          "outcome_id": "dq71tp00zu_NO",
+          "bid": 0.36744367802702205,
+          "ask": 0.37744367802702206,
+          "mid": 0.37244367802702205,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:10.088165Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "wENpa5mETtrCnBYJKl5t",
+        "title": "Will China launch a full-scale invasion of Taiwan before 2030?",
+        "url": "https://manifold.markets/MetaculusBot/will-china-launch-a-fullscale-invas",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "wENpa5mETtrCnBYJKl5t_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "wENpa5mETtrCnBYJKl5t_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "wENpa5mETtrCnBYJKl5t_YES",
+          "bid": 0.3372901633134277,
+          "ask": 0.3472901633134277,
+          "mid": 0.3422901633134277,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:10.375531Z"
+        },
+        {
+          "outcome_id": "wENpa5mETtrCnBYJKl5t_NO",
+          "bid": 0.6527098366865723,
+          "ask": 0.6627098366865724,
+          "mid": 0.6577098366865723,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:10.375531Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "LPxYV8cUXZOwTUe5ufrj",
+        "title": "Will a large language model beat a super grandmaster playing chess by EOY 2028?",
+        "url": "https://manifold.markets/MP/will-a-large-language-models-beat-a",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "LPxYV8cUXZOwTUe5ufrj_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "LPxYV8cUXZOwTUe5ufrj_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "LPxYV8cUXZOwTUe5ufrj_YES",
+          "bid": 0.4750000000000004,
+          "ask": 0.48500000000000043,
+          "mid": 0.4800000000000004,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:10.879933Z"
+        },
+        {
+          "outcome_id": "LPxYV8cUXZOwTUe5ufrj_NO",
+          "bid": 0.5149999999999996,
+          "ask": 0.5249999999999996,
+          "mid": 0.5199999999999996,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:10.879933Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "wpdomi6nif",
+        "title": "Will JD Vance win the 2028 US Presidential Election?",
+        "url": "https://manifold.markets/LarsDoucet/will-jd-vance-win-the-2028-us-presi",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "wpdomi6nif_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "wpdomi6nif_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "wpdomi6nif_YES",
+          "bid": 0.22872643388547584,
+          "ask": 0.23872643388547585,
+          "mid": 0.23372643388547584,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:11.381961Z"
+        },
+        {
+          "outcome_id": "wpdomi6nif_NO",
+          "bid": 0.7612735661145241,
+          "ask": 0.7712735661145241,
+          "mid": 0.7662735661145241,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:11.381961Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "tIylsIZu95",
+        "title": "Will Elon Musk be worth more than $1 Trillion by Jan 1st, 2029?",
+        "url": "https://manifold.markets/pixel__/will-elon-musk-be-worth-more-than-1-SuEQdq5zlI",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "tIylsIZu95_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "tIylsIZu95_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "tIylsIZu95_YES",
+          "bid": 0.7505702143552573,
+          "ask": 0.7605702143552573,
+          "mid": 0.7555702143552573,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:11.877569Z"
+        },
+        {
+          "outcome_id": "tIylsIZu95_NO",
+          "bid": 0.2394297856447427,
+          "ask": 0.24942978564474272,
+          "mid": 0.24442978564474271,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:11.877569Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "yfyPBZNkCMZiffCyICSj",
+        "title": "👍👎 Manifold Leadership Approval Rating [Market Index]",
+        "url": "https://manifold.markets/strutheo/manifold-leadership-approval-rating",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "yfyPBZNkCMZiffCyICSj_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "yfyPBZNkCMZiffCyICSj_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yfyPBZNkCMZiffCyICSj_YES",
+          "bid": 0.4747803266104605,
+          "ask": 0.4847803266104605,
+          "mid": 0.4797803266104605,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:12.373894Z"
+        },
+        {
+          "outcome_id": "yfyPBZNkCMZiffCyICSj_NO",
+          "bid": 0.5152196733895394,
+          "ask": 0.5252196733895395,
+          "mid": 0.5202196733895394,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:12.375344Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "nChh5Pzzsy",
+        "title": "Will Trump finish his second term?",
+        "url": "https://manifold.markets/PuckMinder/will-trump-finish-his-second-term",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "nChh5Pzzsy_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "nChh5Pzzsy_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "nChh5Pzzsy_YES",
+          "bid": 0.8249999999999998,
+          "ask": 0.8349999999999999,
+          "mid": 0.8299999999999998,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:12.876770Z"
+        },
+        {
+          "outcome_id": "nChh5Pzzsy_NO",
+          "bid": 0.16500000000000015,
+          "ask": 0.17500000000000016,
+          "mid": 0.17000000000000015,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:12.876770Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "zg7xJ5ZkJJ4wJPJDPjWO",
+        "title": "By 2028, will there be a visible break in trend line on US GDP, GDP per capita, unemployment, or productivity, which most economists attribute directly to the effects of AI?",
+        "url": "https://manifold.markets/ScottAlexander/by-2028-will-there-be-a-visible-bre",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "zg7xJ5ZkJJ4wJPJDPjWO_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "zg7xJ5ZkJJ4wJPJDPjWO_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "zg7xJ5ZkJJ4wJPJDPjWO_YES",
+          "bid": 0.44500000000000023,
+          "ask": 0.45500000000000024,
+          "mid": 0.45000000000000023,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:13.374508Z"
+        },
+        {
+          "outcome_id": "zg7xJ5ZkJJ4wJPJDPjWO_NO",
+          "bid": 0.5449999999999998,
+          "ask": 0.5549999999999998,
+          "mid": 0.5499999999999998,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:13.374508Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "Q64BBTJSHWQfhovq5bnA",
+        "title": "Will a reliable and general household robot be developed before January 1st, 2030?",
+        "url": "https://manifold.markets/MatthewBarnett/will-a-reliable-and-general-househo",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "Q64BBTJSHWQfhovq5bnA_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "Q64BBTJSHWQfhovq5bnA_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "Q64BBTJSHWQfhovq5bnA_YES",
+          "bid": 0.4750000000000002,
+          "ask": 0.4850000000000002,
+          "mid": 0.4800000000000002,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:13.876904Z"
+        },
+        {
+          "outcome_id": "Q64BBTJSHWQfhovq5bnA_NO",
+          "bid": 0.5149999999999998,
+          "ask": 0.5249999999999998,
+          "mid": 0.5199999999999998,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:13.876904Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "hERQAyOtAZ",
+        "title": "Will Trump wins the Nobel Peace Prize in 2026? [High Liquidity]",
+        "url": "https://manifold.markets/AmmonLam/will-trump-wins-the-nobel-peace-pri",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "hERQAyOtAZ_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "hERQAyOtAZ_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "hERQAyOtAZ_YES",
+          "bid": 0.058465808356217154,
+          "ask": 0.06846580835621716,
+          "mid": 0.06346580835621715,
+          "spread": 0.010000000000000002,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:14.375254Z"
+        },
+        {
+          "outcome_id": "hERQAyOtAZ_NO",
+          "bid": 0.9315341916437828,
+          "ask": 0.9415341916437828,
+          "mid": 0.9365341916437828,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:14.375254Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "A319ydGB1B7f4PMOROL3",
+        "title": "In early 2028, will an AI be able to generate a full high-quality movie to a prompt?",
+        "url": "https://manifold.markets/ScottAlexander/in-2028-will-an-ai-be-able-to-gener",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "A319ydGB1B7f4PMOROL3_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "A319ydGB1B7f4PMOROL3_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "A319ydGB1B7f4PMOROL3_YES",
+          "bid": 0.2427741370910054,
+          "ask": 0.2527741370910054,
+          "mid": 0.24777413709100538,
+          "spread": 0.009999999999999981,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:14.876139Z"
+        },
+        {
+          "outcome_id": "A319ydGB1B7f4PMOROL3_NO",
+          "bid": 0.7472258629089946,
+          "ask": 0.7572258629089946,
+          "mid": 0.7522258629089946,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:14.876139Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "9nsyLEANnz",
+        "title": "Will the California billionaire wealth tax pass?",
+        "url": "https://manifold.markets/JohnDavidPressman/will-california-billionaires-have-t",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "9nsyLEANnz_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "9nsyLEANnz_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "9nsyLEANnz_YES",
+          "bid": 0.3749999999999998,
+          "ask": 0.3849999999999998,
+          "mid": 0.3799999999999998,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:15.371795Z"
+        },
+        {
+          "outcome_id": "9nsyLEANnz_NO",
+          "bid": 0.6150000000000002,
+          "ask": 0.6250000000000002,
+          "mid": 0.6200000000000002,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:15.371795Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "0q0RRPtScc",
+        "title": "China's rebar failure rate below 20% in 2025 national quality check?",
+        "url": "https://manifold.markets/MikhailTal/chinas-rebar-failure-rate-below-20",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "0q0RRPtScc_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "0q0RRPtScc_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "0q0RRPtScc_YES",
+          "bid": 0.927507572853032,
+          "ask": 0.937507572853032,
+          "mid": 0.932507572853032,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:15.875761Z"
+        },
+        {
+          "outcome_id": "0q0RRPtScc_NO",
+          "bid": 0.06249242714696802,
+          "ask": 0.07249242714696802,
+          "mid": 0.06749242714696801,
+          "spread": 0.010000000000000002,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:15.875761Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "mZoOercJWPMFPM6XxKfI",
+        "title": "Will AI wipe out humanity before the year 2100",
+        "url": "https://manifold.markets/jdilla/will-ai-wipe-out-humanity-before-th",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "mZoOercJWPMFPM6XxKfI_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "mZoOercJWPMFPM6XxKfI_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "mZoOercJWPMFPM6XxKfI_YES",
+          "bid": 0.13173553076996372,
+          "ask": 0.14173553076996373,
+          "mid": 0.13673553076996373,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:16.383577Z"
+        },
+        {
+          "outcome_id": "mZoOercJWPMFPM6XxKfI_NO",
+          "bid": 0.8582644692300363,
+          "ask": 0.8682644692300363,
+          "mid": 0.8632644692300363,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:16.383577Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "manifold",
+        "market_id": "zIjFL4cxLmRUbeRKdgCh",
+        "title": "🇧🇷 President in Jan 2027 is Lula, or whoever he endorses / Lula ou seu indicado é presidente em janeiro de 2027",
+        "url": "https://manifold.markets/BrunoParga/-2026-winner-is-lula-or-whoever-he",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "zIjFL4cxLmRUbeRKdgCh_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "zIjFL4cxLmRUbeRKdgCh_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "zIjFL4cxLmRUbeRKdgCh_YES",
+          "bid": 0.4386564587484773,
+          "ask": 0.4486564587484773,
+          "mid": 0.4436564587484773,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:16.879379Z"
+        },
+        {
+          "outcome_id": "zIjFL4cxLmRUbeRKdgCh_NO",
+          "bid": 0.5513435412515227,
+          "ask": 0.5613435412515227,
+          "mid": 0.5563435412515227,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T15:21:16.879379Z"
+        }
+      ]
+    }
+  ]
+}

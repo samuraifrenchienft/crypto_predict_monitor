@@ -17,7 +17,7 @@ from bot.adapters.polymarket import PolymarketAdapter
 from bot.adapters.limitless import LimitlessAdapter
 from bot.adapters.kalshi import KalshiAdapter
 from bot.adapters.manifold import ManifoldAdapter
-from bot.adapters.metaculus import MetaculusAdapter
+# from bot.adapters.metaculus import MetaculusAdapter  # TODO: Implement
 from bot.rate_limit import RateLimitConfig
 
 console = Console()
@@ -105,17 +105,18 @@ async def main() -> None:
             ),
         ))
 
-    if cfg.metaculus.enabled:
-        console.print("[cyan]boot:[/cyan] enabling Metaculus adapter")
-        adapters.append(MetaculusAdapter(
-            base_url=cfg.metaculus.base_url,
-            questions_limit=cfg.metaculus.questions_limit,
-            rate_limit_config=RateLimitConfig(
-                requests_per_second=cfg.metaculus.requests_per_second,
-                requests_per_minute=cfg.metaculus.requests_per_minute,
-                burst_size=cfg.metaculus.burst_size,
-            ),
-        ))
+    # TODO: Add Metaculus adapter when implemented
+    # if cfg.metaculus.enabled:
+    #     console.print("[cyan]boot:[/cyan] enabling Metaculus adapter")
+    #     adapters.append(MetaculusAdapter(
+    #         base_url=cfg.metaculus.base_url,
+    #         questions_limit=cfg.metaculus.markets_limit,
+    #         rate_limit_config=RateLimitConfig(
+    #             requests_per_second=cfg.metaculus.requests_per_second,
+    #             requests_per_minute=cfg.metaculus.requests_per_minute,
+    #             burst_size=cfg.metaculus.burst_size,
+    #         ),
+    #     ))
 
     if cfg.discord.online_message:
         console.print("[cyan]boot:[/cyan] sending ONLINE (may silently fail if webhook invalid)")

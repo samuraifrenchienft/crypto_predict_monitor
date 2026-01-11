@@ -76,8 +76,10 @@ class LimitlessAdapter(Adapter):
         yes_token = tokens.get("yes")
         no_token = tokens.get("no")
 
+        # Some markets might not have tokens (expired, special types, etc.)
         if not yes_token or not no_token:
-            raise RuntimeError(f"Limitless market missing yes/no tokens for {market.market_id}")
+            # Return empty outcomes list for markets without tokens
+            return []
 
         return [
             Outcome(outcome_id=str(yes_token), name="YES"),
