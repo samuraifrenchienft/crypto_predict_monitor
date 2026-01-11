@@ -52,6 +52,7 @@ class KalshiAdapter(Adapter):
         """
         Fetch active markets from Kalshi.
         Uses /markets endpoint with status=open filter.
+        Note: The elections API includes sports markets (NFL) but not NBA/economics.
         """
         url = f"{self.base_url}/markets"
         params = {
@@ -81,7 +82,18 @@ class KalshiAdapter(Adapter):
 
             title = str(m.get("title") or m.get("subtitle") or ticker).strip()
             
-            # Cache market data for later use
+            # Determine category from title
+            title_lower = title.lower()
+            category = "sports"  # Default - most are sports
+            if any(word in title_lower for word in ["senate", "governor", "house", "election", "vote", "president", "congress"]):
+                category = "elections"
+            elif any(word in title_lower for word in ["earnings", "revenue", "stock", "price", "gdp", "inflation"]):
+                category = "economics"
+            elif any(word in title_lower for word in ["temperature", "weather", "snow", "rain", "degrees"]):
+                category = "weather"
+            
+            # Cache market data with category
+            m["category"] = category
             self._market_cache[ticker] = m
 
             markets.append(
