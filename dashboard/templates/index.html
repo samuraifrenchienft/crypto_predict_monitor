@@ -280,11 +280,13 @@
             content: 'Prediction Monitor';
             position: absolute;
             left: 54px;
-            top: 0;
+            top: 50%;
+            transform: translateY(-50%);
             color: #ffffff;
             font-size: 24px;
             line-height: 1.2;
             font-weight: 800;
+            white-space: nowrap;
             text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75), 0 0 18px rgba(0, 217, 255, 0.18);
         }
     </style>
@@ -610,7 +612,7 @@
                         <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
                             <div class="flex items-center justify-between">
                                 <div class="text-sm text-gray-400">Total Earnings</div>
-                                <div id="refTotalEarnings" class="text-lg font-semibold" style="color: var(--pm-cyan);">0.0000 SOL</div>
+                                <div id="refTotalEarnings" class="text-lg font-semibold" style="color: var(--pm-cyan);">$0.00</div>
                             </div>
                         </div>
                     </div>
@@ -620,24 +622,9 @@
                             <div class="text-base font-semibold text-white mb-3">Referral Stats</div>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between"><span class="text-gray-400">Total Referrals</span><span id="refStatsReferrals" class="text-white">0</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">Total Earnings</span><span id="refStatsEarnings" style="color: var(--pm-cyan);">0.0000 SOL</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">Total Volume</span><span id="refStatsVolume" class="text-white">0.00 SOL</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Total Earnings</span><span id="refStatsEarnings" style="color: var(--pm-cyan);">$0.00</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Total Volume</span><span id="refStatsVolume" class="text-white">$0.00</span></div>
                                 <div class="flex justify-between"><span class="text-gray-400">Loading</span><span id="refStatsLoading" class="text-white">No</span></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
-                            <div class="text-base font-semibold text-white mb-3">Bet History</div>
-                            <div id="refBetHistory" class="text-sm text-gray-400 space-y-2" style="max-height: 180px; overflow: auto;">
-                                <div>No activity yet.</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
-                            <div class="text-base font-semibold text-white mb-3">Live Activity</div>
-                            <div id="refLiveActivity" class="text-sm text-gray-400 space-y-2" style="max-height: 200px; overflow: auto;">
-                                <div>No recent activity.</div>
                             </div>
                         </div>
                         <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
