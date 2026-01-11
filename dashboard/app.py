@@ -105,6 +105,31 @@ _cache_lock = threading.Lock()
 _background_started = False
 
 
+def _run_async(coro):
+    try:
+        running = asyncio.get_running_loop()
+    except RuntimeError:
+        running = None
+
+    if running and running.is_running():
+        loop = asyncio.new_event_loop()
+        try:
+            asyncio.set_event_loop(loop)
+            return loop.run_until_complete(coro)
+        finally:
+            try:
+                loop.close()
+            finally:
+                asyncio.set_event_loop(running)
+
+    loop = asyncio.new_event_loop()
+    try:
+        asyncio.set_event_loop(loop)
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+
+
 def serialize_market(market: Market, outcomes: List[Any], quotes: List[Quote]) -> Dict[str, Any]:
     """Serialize market and quotes for JSON response."""
     outcome_name_by_id: Dict[str, str] = {}
@@ -155,14 +180,6 @@ async def fetch_market_data(adapter_name: str, adapter) -> List[Dict[str, Any]]:
                 print(f"{adapter_name}: Market {market.market_id} has {len(quotes)} quotes")
                 
                 # Only filter out markets with absolutely no price data (no bid, ask, or mid)
-                has_any_price = any(
-                    q.bid is not None or q.ask is not None or q.mid is not None 
-                    for q in quotes
-                )
-                if not has_any_price and quotes:
-                    print(f"{adapter_name}: Skipping {market.market_id} - no price or probability data")
-                    continue
-                
                 market_data.append(serialize_market(market, outcomes, quotes))
             except Exception as e:
                 print(f"Error fetching quotes for {market.market_id}: {e}")
@@ -178,8 +195,10 @@ async def fetch_market_data(adapter_name: str, adapter) -> List[Dict[str, Any]]:
 
 async def update_all_markets():
     """Update market data from all enabled adapters."""
+    print("DEBUG: update_all_markets starting")
     try:
         cfg = load_config()
+        print(f"DEBUG: Config loaded. Kalshi enabled: {cfg.kalshi.enabled}")
         adapters = []
         
         # Create adapters based on config
@@ -202,6 +221,7 @@ async def update_all_markets():
                 print(f"limitless disabled at runtime (missing dependency): {e}")
 
         if cfg.kalshi.enabled:
+            print("DEBUG: Adding Kalshi adapter")
             from bot.rate_limit import RateLimitConfig
             adapters.append(("kalshi", KalshiAdapter(
                 base_url=cfg.kalshi.base_url,
@@ -212,6 +232,8 @@ async def update_all_markets():
                     burst_size=cfg.kalshi.burst_size,
                 ),
             )))
+        else:
+            print("DEBUG: Kalshi not enabled in config")
         
         if cfg.manifold.enabled:
             from bot.rate_limit import RateLimitConfig
@@ -225,17 +247,21 @@ async def update_all_markets():
                 ),
             )))
         
+        print(f"DEBUG: Adapters configured: {[name for name, _ in adapters]}")
         # Fetch data from all adapters
         for adapter_name, adapter in adapters:
             print(f"Fetching data from {adapter_name}...")
             try:
                 data = await fetch_market_data(adapter_name, adapter)
+                print(f"DEBUG: Fetched {len(data)} markets from {adapter_name}")
                 with _cache_lock:
                     market_cache[adapter_name] = data
                     last_update[adapter_name] = datetime.now(timezone.utc)
                 print(f"Fetched {len(data)} markets from {adapter_name}")
             except Exception as e:
                 print(f"Error fetching from {adapter_name}: {e}")
+                import traceback
+                traceback.print_exc()
                 # Add empty data to show the adapter is configured
                 with _cache_lock:
                     market_cache[adapter_name] = []
@@ -976,36 +1002,43 @@ def test():
 @app.route("/api/markets")
 def get_markets():
     """Get all market data."""
-    # Trigger update if cache is empty or old
-    if not market_cache or any(
-        datetime.now(timezone.utc) - last_update.get(source, datetime.min) > timedelta(minutes=5)
-        for source in market_cache
-    ):
-        # Run async update in sync context
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(update_all_markets())
-        finally:
-            loop.close()
-    
-    total_events = sum(len(markets) for markets in market_cache.values())
-    sources = list(market_cache.keys())
-    active_sources = sum(1 for _, markets in market_cache.items() if markets)
+    now = datetime.now(timezone.utc)
+    with _cache_lock:
+        latest = max(last_update.values()) if last_update else None
 
-    return jsonify({
-        "markets": market_cache,
-        "sources": sources,
-        "active_sources": active_sources,
-        "last_update": {
-            source: time.isoformat() if time else None
-            for source, time in last_update.items()
-        },
-        # Backwards compatible field name used by the frontend
-        "total_markets": total_events,
-        # Prefer this naming going forward (each card is an event/market)
-        "total_events": total_events,
-    })
+    should_refresh = False
+    if not market_cache:
+        should_refresh = True
+    elif latest is None:
+        should_refresh = True
+    else:
+        should_refresh = (now - latest) > timedelta(seconds=30)
+
+    if should_refresh:
+        try:
+            _run_async(update_all_markets())
+        except Exception as e:
+            print(f"Error updating markets in /api/markets: {type(e).__name__}")
+
+    with _cache_lock:
+        snapshot = json.loads(json.dumps(market_cache))
+        latest2 = max(last_update.values()) if last_update else None
+
+    sources = sorted(snapshot.keys())
+    active_sources = [k for k in sources if snapshot.get(k)]
+    total_markets = sum(len(v) if isinstance(v, list) else 0 for v in snapshot.values())
+    total_events = total_markets
+
+    return jsonify(
+        {
+            "markets": snapshot,
+            "sources": sources,
+            "active_sources": active_sources,
+            "last_update": latest2.isoformat() if latest2 else None,
+            "total_markets": total_markets,
+            "total_events": total_events,
+        }
+    )
 
 
 @app.route("/api/alerts/queued")

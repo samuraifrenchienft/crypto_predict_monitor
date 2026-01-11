@@ -46,46 +46,34 @@ class RateLimiter:
         Acquire a token for the given adapter.
         Blocks if rate limit would be exceeded.
         """
-        async with self._lock:
-            now = time.time()
-            
-            # Update tokens based on time elapsed
-            self._update_tokens(adapter_name, now)
-            
-            # Check per-minute limit
-            if len(self._request_times[adapter_name]) >= self.config.requests_per_minute:
+        while True:
+            sleep_time: float | None = None
+            async with self._lock:
+                now = time.time()
+
+                # Update tokens based on time elapsed
+                self._update_tokens(adapter_name, now)
+
                 # Remove old requests (older than 1 minute)
                 minute_ago = now - 60
-                while (self._request_times[adapter_name] and 
-                       self._request_times[adapter_name][0] < minute_ago):
+                while self._request_times[adapter_name] and self._request_times[adapter_name][0] < minute_ago:
                     self._request_times[adapter_name].popleft()
-                
-                # Still over limit?
+
+                # Per-minute limit
                 if len(self._request_times[adapter_name]) >= self.config.requests_per_minute:
-                    sleep_time = 60.0 - (now - self._request_times[adapter_name][0])
-                    raise AdapterError(
-                        f"Rate limit exceeded for {adapter_name}. "
-                        f"Sleep {sleep_time:.1f}s or reduce request frequency.",
-                        ErrorType.RATE_LIMIT,
-                        adapter_name=adapter_name
-                    )
-            
-            # Check token bucket
-            if self._tokens[adapter_name] < 1.0:
-                # Calculate wait time for next token
-                tokens_needed = 1.0 - self._tokens[adapter_name]
-                wait_time = tokens_needed / self.config.requests_per_second
-                
-                raise AdapterError(
-                    f"Rate limit exceeded for {adapter_name}. "
-                    f"Wait {wait_time:.1f}s for next token.",
-                    ErrorType.RATE_LIMIT,
-                    adapter_name=adapter_name
-                )
-            
-            # Consume token
-            self._tokens[adapter_name] -= 1.0
-            self._request_times[adapter_name].append(now)
+                    sleep_time = max(0.0, 60.0 - (now - self._request_times[adapter_name][0]))
+                # Token bucket
+                elif self._tokens[adapter_name] < 1.0:
+                    tokens_needed = 1.0 - self._tokens[adapter_name]
+                    sleep_time = max(0.0, tokens_needed / max(self.config.requests_per_second, 0.001))
+                else:
+                    # Consume token
+                    self._tokens[adapter_name] -= 1.0
+                    self._request_times[adapter_name].append(now)
+                    return
+
+            if sleep_time is not None and sleep_time > 0:
+                await asyncio.sleep(sleep_time)
     
     def _update_tokens(self, adapter_name: str, now: float) -> None:
         """Update token count based on elapsed time."""

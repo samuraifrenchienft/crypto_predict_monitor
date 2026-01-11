@@ -8,6 +8,119 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <style>
+        :root {
+            --pm-cyan: #00D9FF;
+            --pm-purple: #9D4EDD;
+            --pm-panel: rgba(10, 14, 39, 0.95);
+            --pm-glow-cyan: rgba(0, 217, 255, 0.30);
+            --pm-glow-purple: rgba(157, 78, 221, 0.20);
+            --pm-border: rgba(0, 217, 255, 0.55);
+        }
+
+        body {
+            background: #000000 !important;
+            color: #ffffff;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(900px circle at 20% 25%, rgba(157, 78, 221, 0.10), transparent 55%),
+                radial-gradient(900px circle at 80% 35%, rgba(0, 217, 255, 0.08), transparent 55%),
+                radial-gradient(1200px circle at 55% 85%, rgba(157, 78, 221, 0.06), transparent 60%);
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .startup-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(700px circle at 35% 55%, rgba(139, 92, 246, 0.18), transparent 55%),
+                        radial-gradient(800px circle at 65% 45%, rgba(34, 211, 238, 0.14), transparent 60%),
+                        linear-gradient(135deg, #020617 0%, #042f2e 45%, #0b1020 100%);
+            opacity: 1;
+            visibility: visible;
+            transform: translateZ(0);
+            transition: opacity 400ms ease, visibility 400ms ease;
+        }
+        .startup-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .startup-shell {
+            width: min(1040px, 92vw);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 36px;
+            padding: 36px;
+        }
+        .startup-logo {
+            width: 210px;
+            height: 210px;
+            flex: 0 0 auto;
+            filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.18)) drop-shadow(0 0 26px rgba(139, 92, 246, 0.16));
+        }
+        .startup-text h1 {
+            font-size: 48px;
+            line-height: 1.05;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+        .startup-text p {
+            margin-top: 10px;
+            font-size: 18px;
+            line-height: 1.5;
+            color: rgba(148, 163, 184, 0.92);
+        }
+        .startup-spinner {
+            margin-top: 20px;
+            width: 54px;
+            height: 54px;
+            transform-origin: 50% 50%;
+            animation: startupSpin 1.1s linear infinite;
+        }
+        @keyframes startupSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 1024px) {
+            .startup-shell { gap: 28px; padding: 28px; }
+            .startup-logo { width: 190px; height: 190px; }
+            .startup-text h1 { font-size: 40px; }
+            .startup-text p { font-size: 16px; }
+        }
+        @media (max-width: 768px) {
+            .startup-shell {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 18px;
+                padding: 22px;
+            }
+            .startup-logo { width: 170px; height: 170px; }
+            .startup-text h1 { font-size: 34px; }
+            .startup-text p { font-size: 15px; }
+            .startup-spinner {
+                margin-top: 0;
+                position: fixed;
+                left: 50%;
+                bottom: 42px;
+                transform: translateX(-50%);
+            }
+        }
         .market-card {
             transition: all 0.3s ease;
         }
@@ -43,17 +156,173 @@
             background: rgba(0, 0, 0, 0.85);
         }
         .neon-glow {
-            box-shadow: 0 0 10px rgba(0, 1, 255, 0.5), 0 0 20px rgba(0, 1, 255, 0.3);
+            box-shadow: 0 0 20px var(--pm-glow-cyan), 0 0 30px var(--pm-glow-purple);
         }
         .neon-glow:hover {
-            box-shadow: 0 0 15px rgba(0, 1, 255, 0.7), 0 0 30px rgba(0, 1, 255, 0.5);
+            box-shadow: 0 0 24px rgba(0, 217, 255, 0.42), 0 0 34px rgba(157, 78, 221, 0.28);
         }
         .stat-icon {
-            background: #0001ff;
+            background: linear-gradient(135deg, var(--pm-cyan), var(--pm-purple));
+        }
+
+        header {
+            border-bottom: 1px solid var(--pm-cyan) !important;
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.10);
+        }
+
+        h1, h2, h3 {
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75), 0 0 16px rgba(0, 217, 255, 0.10);
+        }
+
+        .bg-gray-900,
+        .bg-gray-800,
+        .bg-gray-950 {
+            background: var(--pm-panel) !important;
+            border-color: var(--pm-border) !important;
+            box-shadow: 0 0 20px var(--pm-glow-cyan), 0 0 30px var(--pm-glow-purple) !important;
+        }
+
+        .border-gray-800,
+        .border-gray-700 {
+            border-color: var(--pm-border) !important;
+        }
+
+        .market-card {
+            background: var(--pm-panel) !important;
+            border: 1px solid var(--pm-border) !important;
+            box-shadow: 0 0 20px var(--pm-glow-cyan), 0 0 30px var(--pm-glow-purple) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+        }
+
+        .market-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 26px rgba(0, 217, 255, 0.42), 0 0 38px rgba(157, 78, 221, 0.28) !important;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--pm-cyan), var(--pm-purple)) !important;
+            border: 1px solid rgba(0, 217, 255, 0.65) !important;
+            box-shadow: 0 0 18px rgba(0, 217, 255, 0.24), 0 0 26px rgba(157, 78, 221, 0.18);
+            transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            filter: brightness(1.07);
+            transform: translateY(-1px);
+            box-shadow: 0 0 22px rgba(0, 217, 255, 0.34), 0 0 32px rgba(157, 78, 221, 0.24);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            filter: saturate(0.85);
+            cursor: not-allowed;
+        }
+
+        .filter-tab {
+            background: transparent !important;
+            box-shadow: none !important;
+            border-left: 0 !important;
+            border-right: 0 !important;
+            border-top: 0 !important;
+            transition: color 0.3s ease, border-color 0.3s ease, filter 0.3s ease;
+        }
+
+        .filter-tab:hover {
+            filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.25));
+        }
+
+        .filter-tab.active {
+            border-bottom-color: var(--pm-cyan) !important;
+            color: var(--pm-cyan) !important;
+            filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.28));
+        }
+
+        .text-blue-400,
+        .text-blue-300 {
+            color: var(--pm-cyan) !important;
+        }
+
+        .border-blue-500 {
+            border-color: var(--pm-cyan) !important;
+        }
+
+        .bg-\[\#0001ff\] {
+            background: linear-gradient(135deg, var(--pm-cyan), var(--pm-purple)) !important;
+        }
+
+        header h1.text-2xl {
+            position: relative;
+            padding-left: 54px;
+            color: transparent !important;
+            text-shadow: none !important;
+        }
+
+        header h1.text-2xl::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 46px;
+            height: 46px;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='40' y1='24' x2='216' y2='232' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%239D4EDD'/%3E%3Cstop offset='0.55' stop-color='%2300D9FF'/%3E%3Cstop offset='1' stop-color='%2300D9FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M74 78C50 78 34 60 34 44C34 28 46 22 58 22C76 22 90 38 96 54' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M182 78C206 78 222 60 222 44C222 28 210 22 198 22C180 22 166 38 160 54' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M64 104L92 84H164L192 104L176 188H80L64 104Z' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linejoin='round'/%3E%3Ccircle cx='128' cy='86' r='14' fill='none' stroke='url(%23g)' stroke-width='10'/%3E%3Cpath d='M94 150C104 138 116 132 128 132C140 132 152 138 162 150' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            filter: drop-shadow(0 0 14px rgba(0, 217, 255, 0.25)) drop-shadow(0 0 18px rgba(157, 78, 221, 0.22));
+        }
+
+        header h1.text-2xl::after {
+            content: 'Prediction Monitor';
+            position: absolute;
+            left: 54px;
+            top: 0;
+            color: #ffffff;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75), 0 0 18px rgba(0, 217, 255, 0.18);
         }
     </style>
 </head>
 <body class="bg-black text-white">
+    <div id="startupOverlay" class="startup-overlay" aria-live="polite" aria-busy="true">
+        <div class="startup-shell">
+            <svg class="startup-logo" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Samurai logo">
+                <defs>
+                    <linearGradient id="pmG" x1="40" y1="24" x2="216" y2="232" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#C084FC"/>
+                        <stop offset="0.55" stop-color="#38BDF8"/>
+                        <stop offset="1" stop-color="#22D3EE"/>
+                    </linearGradient>
+                    <linearGradient id="pmG2" x1="60" y1="44" x2="196" y2="220" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#A78BFA"/>
+                        <stop offset="1" stop-color="#22D3EE"/>
+                    </linearGradient>
+                </defs>
+                <path d="M74 78C50 78 34 60 34 44C34 28 46 22 58 22C76 22 90 38 96 54" stroke="url(#pmG)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M182 78C206 78 222 60 222 44C222 28 210 22 198 22C180 22 166 38 160 54" stroke="url(#pmG)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M92 70C104 56 116 50 128 50C140 50 152 56 164 70" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M64 104L92 84H164L192 104L176 188H80L64 104Z" stroke="url(#pmG)" stroke-width="10" stroke-linejoin="round"/>
+                <path d="M108 120C108 108 117 98 128 98C139 98 148 108 148 120" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round"/>
+                <path d="M94 150C104 138 116 132 128 132C140 132 152 138 162 150" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M112 160C120 154 136 154 144 160" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round"/>
+                <circle cx="128" cy="86" r="14" stroke="url(#pmG)" stroke-width="10"/>
+            </svg>
+            <div class="startup-text">
+                <h1>Prediction Monitor</h1>
+                <p>Real-time market data</p>
+                <svg class="startup-spinner" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="pmSpin" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#C084FC"/>
+                            <stop offset="0.55" stop-color="#38BDF8"/>
+                            <stop offset="1" stop-color="#22D3EE"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="32" cy="32" r="24" stroke="rgba(148,163,184,0.22)" stroke-width="6" />
+                    <path d="M56 32C56 18.745 45.255 8 32 8" stroke="url(#pmSpin)" stroke-width="6" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+    </div>
     <!-- Header -->
     <header class="bg-gray-950 shadow-lg border-b border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -731,6 +1000,10 @@
                 showError('Failed to load market data');
             } finally {
                 showLoading(false);
+                if (!window.__startupOverlayDone) {
+                    window.__startupOverlayDone = true;
+                    hideStartupOverlay();
+                }
             }
         }
 
@@ -925,6 +1198,23 @@
             document.body.appendChild(successDiv);
             setTimeout(() => successDiv.remove(), 3000);
         }
+
+        function hideStartupOverlay() {
+            const el = document.getElementById('startupOverlay');
+            if (!el) return;
+            el.classList.add('hidden');
+        }
+
+        window.addEventListener('load', function() {
+            if (!window.__startupOverlayDone) {
+                setTimeout(() => {
+                    if (!window.__startupOverlayDone) {
+                        window.__startupOverlayDone = true;
+                        hideStartupOverlay();
+                    }
+                }, 30000);
+            }
+        });
     </script>
 </body>
 </html>
