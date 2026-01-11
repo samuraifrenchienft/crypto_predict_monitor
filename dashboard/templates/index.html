@@ -70,7 +70,7 @@
             width: 210px;
             height: 210px;
             flex: 0 0 auto;
-            filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.18)) drop-shadow(0 0 26px rgba(139, 92, 246, 0.16));
+            filter: drop-shadow(0 0 22px rgba(0, 217, 255, 0.18)) drop-shadow(0 0 26px rgba(157, 78, 221, 0.16));
         }
         .startup-text h1 {
             font-size: 48px;
@@ -188,9 +188,11 @@
         }
 
         .market-card {
-            background: var(--pm-panel) !important;
+            background: rgba(10, 14, 39, 0.72) !important;
             border: 1px solid var(--pm-border) !important;
             box-shadow: 0 0 20px var(--pm-glow-cyan), 0 0 30px var(--pm-glow-purple) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
         }
 
@@ -253,6 +255,8 @@
         header h1.text-2xl {
             position: relative;
             padding-left: 54px;
+            font-size: 0 !important;
+            line-height: 1 !important;
             color: transparent !important;
             text-shadow: none !important;
         }
@@ -268,7 +272,7 @@
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='40' y1='24' x2='216' y2='232' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%239D4EDD'/%3E%3Cstop offset='0.55' stop-color='%2300D9FF'/%3E%3Cstop offset='1' stop-color='%2300D9FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M74 78C50 78 34 60 34 44C34 28 46 22 58 22C76 22 90 38 96 54' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M182 78C206 78 222 60 222 44C222 28 210 22 198 22C180 22 166 38 160 54' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M64 104L92 84H164L192 104L176 188H80L64 104Z' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linejoin='round'/%3E%3Ccircle cx='128' cy='86' r='14' fill='none' stroke='url(%23g)' stroke-width='10'/%3E%3Cpath d='M94 150C104 138 116 132 128 132C140 132 152 138 162 150' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cdefs%3E%3ClinearGradient id='pmG' x1='40' y1='24' x2='216' y2='232' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%239D4EDD'/%3E%3Cstop offset='0.55' stop-color='%2300D9FF'/%3E%3Cstop offset='1' stop-color='%2300D9FF'/%3E%3C/linearGradient%3E%3ClinearGradient id='pmG2' x1='60' y1='44' x2='196' y2='220' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%239D4EDD'/%3E%3Cstop offset='1' stop-color='%2300D9FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M74 78C50 78 34 60 34 44C34 28 46 22 58 22C76 22 90 38 96 54' fill='none' stroke='url(%23pmG)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M182 78C206 78 222 60 222 44C222 28 210 22 198 22C180 22 166 38 160 54' fill='none' stroke='url(%23pmG)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M92 70C104 56 116 50 128 50C140 50 152 56 164 70' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M64 104L92 84H164L192 104L176 188H80L64 104Z' fill='none' stroke='url(%23pmG)' stroke-width='10' stroke-linejoin='round'/%3E%3Cpath d='M108 120C108 108 117 98 128 98C139 98 148 108 148 120' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round'/%3E%3Cpath d='M94 150C104 138 116 132 128 132C140 132 152 138 162 150' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M112 160C120 154 136 154 144 160' fill='none' stroke='url(%23pmG2)' stroke-width='10' stroke-linecap='round'/%3E%3Ccircle cx='128' cy='86' r='14' fill='none' stroke='url(%23pmG)' stroke-width='10'/%3E%3C/svg%3E");
             filter: drop-shadow(0 0 14px rgba(0, 217, 255, 0.25)) drop-shadow(0 0 18px rgba(157, 78, 221, 0.22));
         }
 
@@ -278,6 +282,9 @@
             left: 54px;
             top: 0;
             color: #ffffff;
+            font-size: 24px;
+            line-height: 1.2;
+            font-weight: 800;
             text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75), 0 0 18px rgba(0, 217, 255, 0.18);
         }
     </style>
@@ -288,13 +295,13 @@
             <svg class="startup-logo" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Samurai logo">
                 <defs>
                     <linearGradient id="pmG" x1="40" y1="24" x2="216" y2="232" gradientUnits="userSpaceOnUse">
-                        <stop offset="0" stop-color="#C084FC"/>
-                        <stop offset="0.55" stop-color="#38BDF8"/>
-                        <stop offset="1" stop-color="#22D3EE"/>
+                        <stop offset="0" stop-color="#9D4EDD"/>
+                        <stop offset="0.55" stop-color="#00D9FF"/>
+                        <stop offset="1" stop-color="#00D9FF"/>
                     </linearGradient>
                     <linearGradient id="pmG2" x1="60" y1="44" x2="196" y2="220" gradientUnits="userSpaceOnUse">
-                        <stop offset="0" stop-color="#A78BFA"/>
-                        <stop offset="1" stop-color="#22D3EE"/>
+                        <stop offset="0" stop-color="#9D4EDD"/>
+                        <stop offset="1" stop-color="#00D9FF"/>
                     </linearGradient>
                 </defs>
                 <path d="M74 78C50 78 34 60 34 44C34 28 46 22 58 22C76 22 90 38 96 54" stroke="url(#pmG)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -312,9 +319,9 @@
                 <svg class="startup-spinner" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <defs>
                         <linearGradient id="pmSpin" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
-                            <stop offset="0" stop-color="#C084FC"/>
-                            <stop offset="0.55" stop-color="#38BDF8"/>
-                            <stop offset="1" stop-color="#22D3EE"/>
+                            <stop offset="0" stop-color="#9D4EDD"/>
+                            <stop offset="0.55" stop-color="#00D9FF"/>
+                            <stop offset="1" stop-color="#00D9FF"/>
                         </linearGradient>
                     </defs>
                     <circle cx="32" cy="32" r="24" stroke="rgba(148,163,184,0.22)" stroke-width="6" />
@@ -400,17 +407,17 @@
                 </div>
             </div>
 
-            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-blue-700/60" style="box-shadow: 0 0 14px rgba(0, 1, 255, 0.22), 0 0 26px rgba(0, 1, 255, 0.14);">
+            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-blue-700/60 cursor-pointer" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);" onclick="openReferralModal()">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-4 neon-glow">
+                    <div class="flex-shrink-0 stat-icon rounded-md p-4 neon-glow">
                         <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9l-6-6-6 6m12 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V9m12 0l-6 6-6-6"></path>
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Sources With Data</dt>
-                            <dd class="text-2xl font-bold text-white" id="activeSources">0</dd>
+                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Referrals</dt>
+                            <dd class="text-2xl font-bold text-white" id="referralEntry">Open</dd>
                         </dl>
                     </div>
                 </div>
@@ -418,8 +425,10 @@
 
             <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3" style="box-shadow: 0 0 10px rgba(234, 179, 8, 0.5), 0 0 20px rgba(234, 179, 8, 0.3);">
-                        <span class="text-white text-lg">💰</span>
+                    <div class="flex-shrink-0 stat-icon rounded-md p-3 neon-glow">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10V6m0 12v-2m9-4a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
@@ -562,6 +571,85 @@
         </div>
     </div>
 
+    <div id="referralModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0" onclick="closeReferralModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-950 rounded-lg shadow-xl max-w-5xl w-full relative z-10 border border-gray-800">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-white">🎟️ Referrals</h2>
+                        <button onclick="closeReferralModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800 mb-5">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <div class="text-base font-semibold text-white">Your Referral Link</div>
+                                <div class="text-sm text-gray-400 mt-1">Share this link to earn rewards from your referrals.</div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <input id="referralLinkInput" readonly class="w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200" value="Loading..." />
+                                    <button onclick="copyReferralLink()" class="px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-400">Total Referrals</div>
+                                <div id="refTotalReferrals" class="text-lg font-semibold text-white">0</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-400">Total Earnings</div>
+                                <div id="refTotalEarnings" class="text-lg font-semibold" style="color: var(--pm-cyan);">0.0000 SOL</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="text-base font-semibold text-white mb-3">Referral Stats</div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-400">Total Referrals</span><span id="refStatsReferrals" class="text-white">0</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Total Earnings</span><span id="refStatsEarnings" style="color: var(--pm-cyan);">0.0000 SOL</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Total Volume</span><span id="refStatsVolume" class="text-white">0.00 SOL</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Loading</span><span id="refStatsLoading" class="text-white">No</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="text-base font-semibold text-white mb-3">Bet History</div>
+                            <div id="refBetHistory" class="text-sm text-gray-400 space-y-2" style="max-height: 180px; overflow: auto;">
+                                <div>No activity yet.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="text-base font-semibold text-white mb-3">Live Activity</div>
+                            <div id="refLiveActivity" class="text-sm text-gray-400 space-y-2" style="max-height: 200px; overflow: auto;">
+                                <div>No recent activity.</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="text-base font-semibold text-white mb-3">Referral Leaders</div>
+                            <div id="refLeaders" class="text-sm" style="max-height: 200px; overflow: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let allMarkets = {};
         let currentFilter = 'all';
@@ -672,6 +760,70 @@
 
         function closeWhaleModal() {
             document.getElementById('whaleModal').classList.add('hidden');
+        }
+
+        function openReferralModal() {
+            document.getElementById('referralModal').classList.remove('hidden');
+            loadReferralModal();
+        }
+
+        function closeReferralModal() {
+            document.getElementById('referralModal').classList.add('hidden');
+        }
+
+        async function loadReferralModal() {
+            const linkInput = document.getElementById('referralLinkInput');
+            if (linkInput) linkInput.value = 'Loading...';
+
+            try {
+                const res = await axios.get('/api/referral/code');
+                const link = res.data?.referral_link || '';
+                if (linkInput) linkInput.value = link || 'Unavailable';
+            } catch (e) {
+                if (linkInput) linkInput.value = 'Login required';
+            }
+
+            const leadersEl = document.getElementById('refLeaders');
+            if (leadersEl) leadersEl.innerHTML = '<div class="text-gray-400">Loading...</div>';
+            try {
+                const res = await axios.get('/api/leaderboard/community');
+                const leaders = (res.data?.leaders || []).slice(0, 8);
+                if (leadersEl) {
+                    leadersEl.innerHTML = leaders.map((r, i) => {
+                        const label = (r.wallet || r.user_id || '').toString();
+                        const short = label.length > 12 ? (label.slice(0, 6) + '...' + label.slice(-4)) : label;
+                        const pts = (r.points_earned != null) ? String(r.points_earned) : '0';
+                        const conv = (r.referrals_converted != null) ? String(r.referrals_converted) : '0';
+                        return `
+                            <div class="flex items-center justify-between py-1 border-b border-gray-800">
+                                <div class="text-gray-300">#${i + 1} ${short}</div>
+                                <div class="text-gray-400">${conv} conv</div>
+                                <div style="color: var(--pm-cyan);" class="font-semibold">${pts} pts</div>
+                            </div>
+                        `;
+                    }).join('') || '<div class="text-gray-400">No leaders yet.</div>';
+                }
+            } catch (e) {
+                if (leadersEl) leadersEl.innerHTML = '<div class="text-gray-400">Unable to load leaders.</div>';
+            }
+        }
+
+        function copyReferralLink() {
+            const el = document.getElementById('referralLinkInput');
+            const text = el ? String(el.value || '') : '';
+            if (!text || text === 'Loading...' || text === 'Login required' || text === 'Unavailable') {
+                return;
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showSuccess('Copied referral link!')).catch(() => {});
+            } else {
+                try {
+                    el.select();
+                    document.execCommand('copy');
+                    showSuccess('Copied referral link!');
+                } catch (e) {
+                }
+            }
         }
 
         function renderWalletInputs() {
@@ -1146,7 +1298,10 @@
 
         function updateStats(data) {
             document.getElementById('totalMarkets').textContent = (data.total_events ?? data.total_markets ?? 0);
-            document.getElementById('activeSources').textContent = (data.active_sources ?? (data.sources ? data.sources.length : 0));
+            const sourcesEl = document.getElementById('activeSources');
+            if (sourcesEl) {
+                sourcesEl.textContent = (data.active_sources ?? (data.sources ? data.sources.length : 0));
+            }
             
             // Calculate total outcomes
             let totalOutcomes = 0;
