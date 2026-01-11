@@ -84,7 +84,6 @@
                         </svg>
                         <span>Refresh</span>
                     </button>
-                    <div id="lastUpdate" class="text-sm text-gray-400"></div>
                 </div>
             </div>
         </div>
@@ -93,7 +92,7 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-3 neon-glow">
@@ -126,17 +125,17 @@
                 </div>
             </div>
 
-            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-blue-700/60" style="box-shadow: 0 0 14px rgba(0, 1, 255, 0.22), 0 0 26px rgba(0, 1, 255, 0.14);">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-3 neon-glow">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-4 neon-glow">
+                        <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-400 truncate">Sources With Data</dt>
-                            <dd class="text-lg font-semibold text-white" id="activeSources">0</dd>
+                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Sources With Data</dt>
+                            <dd class="text-2xl font-bold text-white" id="activeSources">0</dd>
                         </dl>
                     </div>
                 </div>
@@ -151,22 +150,6 @@
                         <dl>
                             <dt class="text-sm font-medium text-gray-400 truncate">Arbitrage Opps</dt>
                             <dd class="text-lg font-semibold text-white" id="arbitrageCount">0</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-3 neon-glow">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-400 truncate">Last Update</dt>
-                            <dd class="text-lg font-semibold text-white" id="lastUpdateTime">Never</dd>
                         </dl>
                     </div>
                 </div>
@@ -676,8 +659,14 @@
 
         function updateLastRefresh() {
             const now = new Date();
-            document.getElementById('lastUpdateTime').textContent = now.toLocaleTimeString();
-            document.getElementById('lastUpdate').textContent = 'Last updated: ' + now.toLocaleTimeString();
+            const el = document.getElementById('lastUpdateTime');
+            if (el) {
+                el.textContent = now.toLocaleTimeString();
+            }
+            const el2 = document.getElementById('lastUpdate');
+            if (el2) {
+                el2.textContent = 'Last updated: ' + now.toLocaleTimeString();
+            }
         }
 
         function showLoading(show) {

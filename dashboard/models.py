@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -174,3 +174,34 @@ class ReferralConversion(Base):
     commission_awarded: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
     converted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True, default=lambda: datetime.now(timezone.utc))
+
+
+class PointsEvent(Base):
+    __tablename__ = "points_events"
+    __table_args__ = (UniqueConstraint("event_key", name="uq_points_events_event_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    event_key: Mapped[str] = mapped_column(String(128), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+
+    points: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    related_user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    related_referral_conversion_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("referral_conversions.id"), nullable=True, index=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True, default=lambda: datetime.now(timezone.utc))
+
+
+class ReferralVisit(Base):
+    __tablename__ = "referral_visits"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    referral_code: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    referrer_user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+
+    ip_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    visited_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True, default=lambda: datetime.now(timezone.utc))

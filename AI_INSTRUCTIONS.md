@@ -764,7 +764,7 @@ httpx.ReadTimeout: timed out
 
 ```powershell
 # Test API manually
-curl https://api.example.com/health
+Invoke-WebRequest -UseBasicParsing https://api.example.com/health
 ```
 
 ---

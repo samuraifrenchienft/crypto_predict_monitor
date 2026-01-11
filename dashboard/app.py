@@ -6,7 +6,9 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import io
 import json
+import math
 import os
 import sys
 import threading
@@ -15,7 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import httpx
-from flask import Flask, g, render_template, jsonify, request
+from flask import Flask, g, render_template, jsonify, request, redirect, send_file, session
 from flask_cors import CORS
 from sqlalchemy import func
 from typing import Optional
@@ -38,7 +40,9 @@ from dashboard.models import (
     AlertStatus,
     Base,
     MonitorStatus,
+    PointsEvent,
     ReferralConversion,
+    ReferralVisit,
     TradeExecution,
     TradeMonitor,
     User,
@@ -77,7 +81,8 @@ def _open_db_session():
         user = get_current_user(g.db)
         if user is not None:
             apply_tier_rules(user)
-            _ensure_user_growth(g.db, user)
+            g.user_growth = _ensure_user_growth(g.db, user)
+            _maybe_apply_pending_referral(g.db, user)
             g.db.commit()
     except Exception:
         # Fail-safe: never block request due to auth/db issues
@@ -310,6 +315,16 @@ async def _arbitrage_alert_loop() -> None:
             except Exception as e:
                 print(f"[trade_monitor] error: {e}")
 
+            try:
+                db = get_session()
+                try:
+                    _award_active_referral_points_due(db)
+                    db.commit()
+                finally:
+                    db.close()
+            except Exception as e:
+                print(f"[referrals] error: {e}")
+
             if cfg.arbitrage.mode == "cross_market":
                 markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
                 opportunities = detect_cross_market_arbitrage(
@@ -412,11 +427,33 @@ def _classic_arb_opportunities_from_cache() -> List[Dict[str, Any]]:
 
 
 def _tier_status_label(user: User) -> str:
-    if user.user_tier == UserTier.pro and user.subscription_active:
+    g_row = getattr(g, "user_growth", None)
+    points = None
+    if g_row is not None:
+        try:
+            points = int(getattr(g_row, "points_earned", 0) or 0)
+        except Exception:
+            points = None
+    if points is None:
+        try:
+            gr = g.db.get(UserGrowth, user.id)
+            points = int(gr.points_earned or 0) if gr is not None else 0
+        except Exception:
+            points = 0
+    return _points_tier_label(int(points or 0))
+
+
+def _points_tier_label(points: int) -> str:
+    p = int(points or 0)
+    if p >= 25:
+        return "partner"
+    if p >= 15:
         return "oni"
-    if user.user_tier == UserTier.premium and user.subscription_active:
+    if p >= 10:
         return "samurai"
-    return "ronin"
+    if p >= 5:
+        return "ronin"
+    return "recruit"
 
 
 def _obfuscate_wallet(addr: Optional[str]) -> Optional[str]:
@@ -435,6 +472,115 @@ def _ensure_user_growth(db, user: User) -> UserGrowth:
         db.add(g_row)
         db.flush()
     return g_row
+
+
+def _award_points(
+    db,
+    user_id: int,
+    *,
+    event_key: str,
+    event_type: str,
+    points: int,
+    related_user_id: Optional[int] = None,
+    related_referral_conversion_id: Optional[int] = None,
+) -> bool:
+    if not event_key:
+        return False
+
+    existing = db.query(PointsEvent).filter(PointsEvent.event_key == event_key).first()
+    if existing is not None:
+        return False
+
+    pe = PointsEvent(
+        user_id=int(user_id),
+        event_key=str(event_key),
+        event_type=str(event_type),
+        points=int(points),
+        related_user_id=int(related_user_id) if related_user_id is not None else None,
+        related_referral_conversion_id=int(related_referral_conversion_id) if related_referral_conversion_id is not None else None,
+    )
+    db.add(pe)
+
+    u_growth = db.get(UserGrowth, int(user_id))
+    if u_growth is None:
+        u_growth = UserGrowth(user_id=int(user_id))
+        db.add(u_growth)
+        db.flush()
+
+    u_growth.points_earned = int(u_growth.points_earned or 0) + int(points)
+    return True
+
+
+def _hash_ip(ip: Optional[str]) -> Optional[str]:
+    if not ip:
+        return None
+    raw = f"{ip}|{app.secret_key}".encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _maybe_apply_pending_referral(db, user: User) -> None:
+    code = session.get("pending_referral_code")
+    if not isinstance(code, str) or not code.strip():
+        return
+
+    g_row = _ensure_user_growth(db, user)
+    if g_row.referred_by_user_id is not None:
+        session.pop("pending_referral_code", None)
+        return
+
+    ref = db.query(UserGrowth).filter(UserGrowth.referral_code == code.strip()).first()
+    if ref is None:
+        session.pop("pending_referral_code", None)
+        return
+    if int(ref.user_id) == int(user.id):
+        session.pop("pending_referral_code", None)
+        return
+
+    g_row.referred_by_user_id = int(ref.user_id)
+    g_row.referred_at = datetime.now(timezone.utc)
+
+    event_key = f"ref_signup:{int(ref.user_id)}:{int(user.id)}"
+    _award_points(db, int(ref.user_id), event_key=event_key, event_type="referral_signup", points=5, related_user_id=int(user.id))
+
+    session.pop("pending_referral_code", None)
+
+
+def _award_active_referral_points_due(db) -> int:
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=30)
+    due = (
+        db.query(ReferralConversion)
+        .filter(ReferralConversion.converted_at <= cutoff)
+        .order_by(ReferralConversion.converted_at.asc())
+        .limit(200)
+        .all()
+    )
+
+    awarded = 0
+    for conv in due:
+        referred = db.get(User, int(conv.referred_user_id))
+        if referred is None:
+            continue
+        apply_tier_rules(referred, now=now)
+        if not referred.subscription_active:
+            continue
+        if referred.user_tier not in {UserTier.premium, UserTier.pro}:
+            continue
+
+        event_key = f"ref_active_30d:{int(conv.id)}"
+        ok = _award_points(
+            db,
+            int(conv.referrer_user_id),
+            event_key=event_key,
+            event_type="referral_active_30d",
+            points=5,
+            related_user_id=int(conv.referred_user_id),
+            related_referral_conversion_id=int(conv.id),
+        )
+        if ok:
+            awarded += 1
+
+    return awarded
 
 
 def _env_admin_key() -> Optional[str]:
@@ -466,19 +612,19 @@ def _record_referral_conversion_if_applicable(db, referred_user: User, old_tier:
     if existing is not None:
         return
 
-    points = 250 if new_tier == UserTier.pro else 100
+    points = 25 if new_tier == UserTier.pro else 15
     commission = 0.0
 
-    db.add(
-        ReferralConversion(
-            referrer_user_id=referrer_id,
-            referred_user_id=int(referred_user.id),
-            from_tier=old_tier.value,
-            to_tier=new_tier.value,
-            points_awarded=int(points),
-            commission_awarded=float(commission),
-        )
+    conv = ReferralConversion(
+        referrer_user_id=referrer_id,
+        referred_user_id=int(referred_user.id),
+        from_tier=old_tier.value,
+        to_tier=new_tier.value,
+        points_awarded=int(points),
+        commission_awarded=float(commission),
     )
+    db.add(conv)
+    db.flush()
 
     referrer_growth = db.get(UserGrowth, referrer_id)
     if referrer_growth is None:
@@ -486,7 +632,16 @@ def _record_referral_conversion_if_applicable(db, referred_user: User, old_tier:
         db.add(referrer_growth)
         db.flush()
 
-    referrer_growth.points_earned = int(referrer_growth.points_earned or 0) + int(points)
+    event_key = f"ref_convert:{referrer_id}:{int(referred_user.id)}:{new_tier.value}"
+    _award_points(
+        db,
+        referrer_id,
+        event_key=event_key,
+        event_type="referral_conversion",
+        points=int(points),
+        related_user_id=int(referred_user.id),
+        related_referral_conversion_id=int(conv.id) if getattr(conv, "id", None) is not None else None,
+    )
     referrer_growth.commission_earned = float(referrer_growth.commission_earned or 0.0) + float(commission)
 
 
@@ -670,6 +825,33 @@ def index():
         return f"<h1>Template Error</h1><p>Error: {str(e)}</p><p>Check that templates/index.html exists</p>", 500
 
 
+@app.route("/r/<code>")
+def referral_landing(code: str):
+    c = str(code or "").strip()
+    if not c:
+        return redirect("/")
+
+    try:
+        ref = g.db.query(UserGrowth).filter(UserGrowth.referral_code == c).first()
+        referrer_user_id = int(ref.user_id) if ref is not None else None
+        rv = ReferralVisit(
+            referral_code=c,
+            referrer_user_id=referrer_user_id,
+            ip_hash=_hash_ip(request.remote_addr),
+            user_agent=request.headers.get("User-Agent"),
+        )
+        g.db.add(rv)
+        g.db.commit()
+    except Exception:
+        try:
+            g.db.rollback()
+        except Exception:
+            pass
+
+    session["pending_referral_code"] = c
+    return redirect("/")
+
+
 @app.route("/auth/discord/login")
 def auth_discord_login():
     return discord_login()
@@ -719,7 +901,13 @@ def me():
         return jsonify({"authenticated": False}), 200
 
     apply_tier_rules(user)
+
+    g_row = _ensure_user_growth(g.db, user)
+    g.user_growth = g_row
     g.db.commit()
+
+    points = int(g_row.points_earned or 0)
+    tier_status = _points_tier_label(points)
 
     return jsonify(
         {
@@ -736,6 +924,10 @@ def me():
             "subscription_expires_at": user.subscription_expires_at.isoformat() if user.subscription_expires_at else None,
             "wallet_connected": user.wallet_connected,
             "wallet_address": user.wallet_address,
+            "referral_code": g_row.referral_code,
+            "referred_by_user_id": g_row.referred_by_user_id,
+            "points_earned": points,
+            "points_tier": tier_status,
         }
     )
 
@@ -1020,6 +1212,14 @@ def community_leaderboard():
         _ensure_user_growth(g.db, u)
     g.db.commit()
 
+    referrals_signed_up = (
+        g.db.query(UserGrowth.referred_by_user_id, func.count(UserGrowth.user_id))
+        .filter(UserGrowth.referred_by_user_id.isnot(None))
+        .group_by(UserGrowth.referred_by_user_id)
+        .all()
+    )
+    signups_by_user = {int(uid): int(cnt) for uid, cnt in referrals_signed_up}
+
     conversions_all = (
         g.db.query(ReferralConversion.referrer_user_id, func.count(ReferralConversion.id))
         .group_by(ReferralConversion.referrer_user_id)
@@ -1043,6 +1243,7 @@ def community_leaderboard():
             {
                 "user_id": u.id,
                 "tier_status": _tier_status_label(u),
+                "referrals_signed_up": signups_by_user.get(int(u.id), 0),
                 "referrals_converted": conv_by_user.get(int(u.id), 0),
                 "referrals_converted_breakdown": conv_tier_map.get(int(u.id), {}),
                 "points_earned": int(g_row.points_earned or 0),
@@ -1060,7 +1261,8 @@ def my_referral_code():
     user = g.current_user
     g_row = _ensure_user_growth(g.db, user)
     g.db.commit()
-    return jsonify({"referral_code": g_row.referral_code})
+    base_url = request.host_url.rstrip("/")
+    return jsonify({"referral_code": g_row.referral_code, "referral_link": f"{base_url}/r/{g_row.referral_code}"})
 
 
 @app.route("/api/referral/claim", methods=["POST"])
@@ -1084,8 +1286,84 @@ def claim_referral_code():
 
     g_row.referred_by_user_id = int(ref.user_id)
     g_row.referred_at = datetime.now(timezone.utc)
+
+    event_key = f"ref_signup:{int(ref.user_id)}:{int(user.id)}"
+    _award_points(g.db, int(ref.user_id), event_key=event_key, event_type="referral_signup", points=5, related_user_id=int(user.id))
     g.db.commit()
     return jsonify({"claimed": True, "referred_by_user_id": g_row.referred_by_user_id})
+
+
+@app.route("/api/pnl/graphic")
+@require_tier(UserTier.free)
+def pnl_graphic():
+    user = g.current_user
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except Exception:
+        return jsonify({"error": "pillow_not_installed"}), 500
+
+    timeframe = request.args.get("timeframe")
+    tf = str(timeframe or "all").strip().lower()
+    now = datetime.now(timezone.utc)
+    start = None
+    if tf in {"30d", "30", "month"}:
+        start = now - timedelta(days=30)
+        tf_label = "30D"
+    elif tf in {"7d", "7", "week"}:
+        start = now - timedelta(days=7)
+        tf_label = "7D"
+    else:
+        tf_label = "ALL"
+
+    q = g.db.query(TradeExecution).filter(TradeExecution.user_id == int(user.id))
+    if start is not None:
+        q = q.filter(TradeExecution.executed_at >= start)
+    rows = q.order_by(TradeExecution.executed_at.desc()).limit(5000).all()
+
+    total_pnl = 0.0
+    trade_count = 0
+    win_count = 0
+    for r in rows:
+        pnl = float(r.pnl or 0.0)
+        total_pnl += pnl
+        trade_count += 1
+        if pnl > 0:
+            win_count += 1
+    win_rate = (float(win_count) / float(trade_count) * 100.0) if trade_count else 0.0
+
+    g_row = _ensure_user_growth(g.db, user)
+    points = int(g_row.points_earned or 0)
+    tier_status = _points_tier_label(points)
+
+    w = 900
+    h = 450
+    img = Image.new("RGB", (w, h), color=(12, 16, 22))
+    draw = ImageDraw.Draw(img)
+
+    try:
+        font_title = ImageFont.truetype("arial.ttf", 36)
+        font_big = ImageFont.truetype("arial.ttf", 64)
+        font_body = ImageFont.truetype("arial.ttf", 24)
+    except Exception:
+        font_title = ImageFont.load_default()
+        font_big = ImageFont.load_default()
+        font_body = ImageFont.load_default()
+
+    pnl_color = (34, 197, 94) if total_pnl >= 0 else (239, 68, 68)
+    pnl_str = f"{total_pnl:+.4f}"
+    wallet = _obfuscate_wallet(user.wallet_address) or ""
+
+    draw.text((40, 30), f"P&L SUMMARY ({tf_label})", fill=(226, 232, 240), font=font_title)
+    draw.text((40, 95), pnl_str, fill=pnl_color, font=font_big)
+    draw.text((40, 190), f"Trades: {trade_count}   Win Rate: {win_rate:.1f}%", fill=(148, 163, 184), font=font_body)
+    draw.text((40, 230), f"Points: {points}   Tier: {tier_status}", fill=(148, 163, 184), font=font_body)
+    draw.text((40, 270), f"Wallet: {wallet}", fill=(100, 116, 139), font=font_body)
+    draw.text((40, 390), "crypto_predict_monitor", fill=(71, 85, 105), font=font_body)
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return send_file(buf, mimetype="image/png", as_attachment=False, download_name="pnl.png")
 
 
 @app.route("/api/admin/set_tier", methods=["POST"])

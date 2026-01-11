@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
+from dotenv import load_dotenv
 
 from src.logging_setup import redact_dict
 
@@ -17,7 +18,7 @@ _ALLOWED_LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
 _ALLOWED_UPSTREAMS = {"dev", "polymarket", "price", "multi"}
 _ALLOWED_PRICE_PROVIDERS = {"coinbase"}
 _PRICE_SYMBOL_PATTERN = re.compile(r"^[A-Z0-9]+-[A-Z0-9]+$")
-_SENSITIVE_FIELDS = {"api_key", "webhook_url", "rules_json", "polymarket_markets_json"}
+_SENSITIVE_FIELDS = {"api_key", "webhook_url", "health_webhook_url", "rules_json", "polymarket_markets_json"}
 
 
 def _none_if_blank(value: str | None) -> str | None:
@@ -37,6 +38,7 @@ class Settings(BaseModel):
     websocket_url: str | None = None
     api_key: str | None = None
     webhook_url: str | None = None
+    health_webhook_url: str | None = None
     rules_json: str | None = None
     rules: list[dict] = Field(default_factory=list)
     polymarket_base_url: str | None = None
@@ -81,7 +83,18 @@ class Settings(BaseModel):
             raise ValueError("must be > 0")
         return f
 
-    @field_validator("base_url", "websocket_url", "api_key", "webhook_url", "rules_json", "polymarket_base_url", "polymarket_markets_json", "price_provider", "price_symbol")
+    @field_validator(
+        "base_url",
+        "websocket_url",
+        "api_key",
+        "webhook_url",
+        "health_webhook_url",
+        "rules_json",
+        "polymarket_base_url",
+        "polymarket_markets_json",
+        "price_provider",
+        "price_symbol",
+    )
     @classmethod
     def _normalize_optional_str(cls, v: str | None) -> str | None:
         return _none_if_blank(v)
@@ -137,6 +150,7 @@ def _safe_validation_message(err: ValidationError) -> str:
 
 
 def load_settings() -> Settings:
+    load_dotenv()
     data: dict[str, Any] = {}
 
     mapping = {
@@ -149,6 +163,7 @@ def load_settings() -> Settings:
         "websocket_url": "CPM_WEBSOCKET_URL",
         "api_key": "CPM_API_KEY",
         "webhook_url": "CPM_WEBHOOK_URL",
+        "health_webhook_url": "CPM_HEALTH_WEBHOOK_URL",
         "rules_json": "CPM_RULES_JSON",
         "polymarket_base_url": "CPM_POLYMARKET_BASE_URL",
         "polymarket_markets_json": "CPM_POLYMARKET_MARKETS_JSON",
@@ -160,6 +175,11 @@ def load_settings() -> Settings:
     for field, env_key in mapping.items():
         if env_key in os.environ:
             data[field] = os.environ.get(env_key)
+
+    health_val = data.get("health_webhook_url")
+    if health_val is None or not str(health_val).strip():
+        if "DISCORD_HEALTH_WEBHOOK_URL" in os.environ:
+            data["health_webhook_url"] = os.environ.get("DISCORD_HEALTH_WEBHOOK_URL")
 
     if "polymarket_base_url" not in data or not data.get("polymarket_base_url"):
         data["polymarket_base_url"] = "https://clob.polymarket.com"

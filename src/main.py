@@ -8,12 +8,29 @@ from src.config import load_settings, safe_settings_summary
 from src.http_client import HttpClient, HttpClientError
 from src.logging_setup import setup_logging
 from src.monitor import run_monitor
+from src.schemas import WebhookPayload
+from src.webhook import send_webhook
 
 
 def main() -> int:
     settings = load_settings()
     setup_logging(settings.log_level)
     logger = logging.getLogger("crypto_predict_monitor")
+
+    def _notify_failure(message: str) -> None:
+        webhook = (settings.health_webhook_url or "").strip() if settings.health_webhook_url else ""
+        if not webhook:
+            return
+
+        msg = str(message).strip()
+        if len(msg) > 1800:
+            msg = msg[:1800] + "..."
+
+        try:
+            payload = WebhookPayload(content=msg)
+            send_webhook(webhook, payload, timeout_seconds=settings.request_timeout_seconds)
+        except Exception as e:
+            logger.warning("failure webhook send failed error=%s", type(e).__name__)
 
     logger.info("Startup settings: %s", safe_settings_summary(settings))
 
@@ -24,6 +41,7 @@ def main() -> int:
     base_url = (settings.base_url or "").strip()
     if settings.upstream == "dev" and not base_url:
         logger.error("Missing required setting: base_url")
+        _notify_failure("CPM startup FAILED: missing base_url")
         return 2
 
     # For polymarket mode, base_url may be None; client will be created with polymarket_base_url in monitor
@@ -35,13 +53,21 @@ def main() -> int:
         client = HttpClient(base_url=polymarket_url, timeout_seconds=settings.request_timeout_seconds)
     try:
         if mode == "health":
-            health = client.get_json("/health")
-            if not isinstance(health, dict):
-                logger.error("Health check returned unexpected JSON type: %s", type(health).__name__)
-                return 1
+            try:
+                health = client.get_json("/health")
+                if not isinstance(health, dict):
+                    logger.error("Health check returned unexpected JSON type: %s", type(health).__name__)
+                    _notify_failure(
+                        f"CPM health FAILED: unexpected JSON type={type(health).__name__} upstream={settings.upstream}"
+                    )
+                    return 1
 
-            logger.info("Health check OK. Keys: %s", sorted(list(health.keys())))
-            return 0
+                logger.info("Health check OK. Keys: %s", sorted(list(health.keys())))
+                return 0
+            except Exception as e:
+                logger.error("Health check failed error=%s", type(e).__name__)
+                _notify_failure(f"CPM health FAILED: {type(e).__name__} upstream={settings.upstream}")
+                return 1
 
         if mode == "monitor":
             rules: list[AlertRule] = []
@@ -82,14 +108,30 @@ def main() -> int:
                 return 0
             except HttpClientError as e:
                 logger.error("monitor failed: %s", str(e))
+                _notify_failure(
+                    f"CPM monitor FAILED: {str(e)[:200]} upstream={settings.upstream}"
+                )
+                return 1
+            except Exception as e:
+                logger.error("monitor crashed error=%s", type(e).__name__)
+                _notify_failure(
+                    f"CPM monitor CRASHED: {type(e).__name__} upstream={settings.upstream}"
+                )
                 return 1
 
         logger.error("Invalid CPM_MODE: %s", mode)
+        _notify_failure(f"CPM startup FAILED: invalid CPM_MODE={mode}")
         return 2
 
     except HttpClientError as e:
         logger.error("Health check failed: %s", str(e))
+        _notify_failure(f"CPM health FAILED: {str(e)[:200]} upstream={settings.upstream}")
         return 1
+    except Exception as e:
+        logger.error("startup failed error=%s", type(e).__name__)
+        _notify_failure(f"CPM startup FAILED: {type(e).__name__} upstream={settings.upstream}")
+        return 1
+
     finally:
         try:
             client.close()
