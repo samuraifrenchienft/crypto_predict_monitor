@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from typing import Iterable, Optional, Dict, Tuple, Awaitable
+from typing import Iterable, Optional, Dict, Tuple, Awaitable, List
 from urllib.parse import quote
+import json
+import asyncio
+import logging
 
 import httpx
+import websockets
 
 from bot.adapters.base import Adapter
 from bot.errors import retry_with_backoff, safe_http_get, log_error_metrics, ErrorInfo, ErrorType
@@ -31,12 +35,19 @@ class KalshiAdapter(Adapter):
         base_url: str = "https://api.elections.kalshi.com/trade-api/v2",
         markets_limit: int = 50,
         rate_limit_config = None,
+        ws_url: str = "wss://api.elections.kalshi.com/trade-api/v2/ws",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.markets_limit = markets_limit
         self._market_cache: Dict[str, dict] = {}
         self._rate_limit_config = rate_limit_config or get_adapter_rate_limit(self.name)
         self._client: Optional[RateLimitedClient] = None
+        
+        # WebSocket attributes
+        self.ws_url = ws_url
+        self.ws: Optional[websockets.WebSocketServerProtocol] = None
+        self.message_id = 1
+        self._ws_logger = logging.getLogger(f"{self.name}.websocket")
 
     def _get_client(self) -> RateLimitedClient:
         """Get or create a rate-limited HTTP client."""
@@ -199,8 +210,59 @@ class KalshiAdapter(Adapter):
     async def close(self) -> None:
         """Clean up resources."""
         self._market_cache.clear()
+        if self.ws:
+            await self.ws.close()
+            self.ws = None
         if self._client and hasattr(self._client, 'close'):
             await self._client.close()
+
+    async def connect_websocket(self) -> None:
+        """Connect to Kalshi WebSocket for real-time data."""
+        if self.ws:
+            return  # Already connected
+        
+        try:
+            self.ws = await websockets.connect(self.ws_url)
+            self._ws_logger.info("Connected to Kalshi WebSocket")
+        except Exception as e:
+            self._ws_logger.error(f"Failed to connect to WebSocket: {e}")
+            raise
+
+    async def subscribe_to_markets(self, channels: List[str], market_tickers: List[str]) -> None:
+        """Subscribe to specific channels and markets"""
+        if not self.ws:
+            await self.connect_websocket()
+        
+        subscription_message = {
+            "id": self.message_id,
+            "cmd": "subscribe",
+            "params": {
+                "channels": channels,
+                "market_tickers": market_tickers
+            }
+        }
+        
+        await self.ws.send(json.dumps(subscription_message))
+        self.message_id += 1
+        self._ws_logger.info(f"Subscribed to {channels} for markets: {market_tickers}")
+
+    async def listen_to_updates(self, callback) -> None:
+        """Listen for WebSocket updates and call callback with data."""
+        if not self.ws:
+            await self.connect_websocket()
+        
+        try:
+            async for message in self.ws:
+                try:
+                    data = json.loads(message)
+                    await callback(data)
+                except json.JSONDecodeError as e:
+                    self._ws_logger.error(f"Failed to parse WebSocket message: {e}")
+        except websockets.exceptions.ConnectionClosed:
+            self._ws_logger.warning("WebSocket connection closed")
+        except Exception as e:
+            self._ws_logger.error(f"WebSocket error: {e}")
+            raise
 
 
 def _best_level(levels: list) -> Tuple[Optional[float], Optional[float]]:
