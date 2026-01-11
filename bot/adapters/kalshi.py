@@ -5,6 +5,9 @@ from urllib.parse import quote
 import json
 import asyncio
 import logging
+import time
+import hmac
+import hashlib
 
 import httpx
 import websockets
@@ -35,7 +38,9 @@ class KalshiAdapter(Adapter):
         base_url: str = "https://api.elections.kalshi.com/trade-api/v2",
         markets_limit: int = 50,
         rate_limit_config = None,
-        ws_url: str = "wss://api.elections.kalshi.com/trade-api/v2/ws",
+        ws_url: str = "wss://api.elections.kalshi.com",
+        kalshi_access_key: Optional[str] = None,
+        kalshi_private_key: Optional[str] = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.markets_limit = markets_limit
@@ -48,9 +53,43 @@ class KalshiAdapter(Adapter):
         self.ws: Optional[websockets.WebSocketServerProtocol] = None
         self.message_id = 1
         self._ws_logger = logging.getLogger(f"{self.name}.websocket")
+        
+        # Authentication credentials
+        self.kalshi_access_key = kalshi_access_key
+        self.kalshi_private_key = kalshi_private_key
+
+    def _generate_signature(self, timestamp: str, method: str, path: str) -> str:
+        """Generate Kalshi API signature."""
+        if not self.kalshi_private_key:
+            raise ValueError("Private key required for signature generation")
+        
+        # Create message to sign
+        message = timestamp + method + path
+        
+        # Generate signature using HMAC-SHA256
+        signature = hmac.new(
+            self.kalshi_private_key.encode('utf-8'),
+            message.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        return signature
+
+    def _get_auth_headers(self) -> Dict[str, str]:
+        """Get authentication headers for WebSocket connection."""
+        if not self.kalshi_access_key or not self.kalshi_private_key:
+            raise ValueError("Kalshi access key and private key required for WebSocket authentication")
+        
+        timestamp = str(int(time.time() * 1000))  # Unix timestamp in milliseconds
+        signature = self._generate_signature(timestamp, "GET", "/trade-api/ws/v2")
+        
+        return {
+            "KALSHI-ACCESS-KEY": self.kalshi_access_key,
+            "KALSHI-ACCESS-SIGNATURE": signature,
+            "KALSHI-ACCESS-TIMESTAMP": timestamp
+        }
 
     def _get_client(self) -> RateLimitedClient:
-        """Get or create a rate-limited HTTP client."""
         if self._client is None:
             self._client = create_rate_limited_client(
                 self.name,
@@ -222,16 +261,36 @@ class KalshiAdapter(Adapter):
             return  # Already connected
         
         try:
-            self.ws = await websockets.connect(self.ws_url)
-            self._ws_logger.info("Connected to Kalshi WebSocket")
+            # Get authentication headers
+            auth_headers = self._get_auth_headers()
+            
+            # Connect with authentication
+            self.ws = await websockets.connect(
+                self.ws_url,
+                additional_headers=auth_headers
+            )
+            self._ws_logger.info("Connected to Kalshi WebSocket with authentication")
+        except ValueError as e:
+            self._ws_logger.error(f"Authentication error: {e}")
+            raise
         except Exception as e:
             self._ws_logger.error(f"Failed to connect to WebSocket: {e}")
             raise
 
-    async def subscribe_to_markets(self, channels: List[str], market_tickers: List[str]) -> None:
-        """Subscribe to specific channels and markets"""
+    async def subscribe_to_markets(self, channels: List[str], market_tickers: List[str], endpoint: str = "/orderbook_delta") -> None:
+        """Subscribe to specific channels and markets on a WebSocket endpoint"""
         if not self.ws:
             await self.connect_websocket()
+        
+        # Build full WebSocket URL with endpoint
+        ws_endpoint = f"{self.ws_url}{endpoint}"
+        
+        # Reconnect with the specific endpoint
+        if self.ws:
+            await self.ws.close()
+        
+        auth_headers = self._get_auth_headers()
+        self.ws = await websockets.connect(ws_endpoint, additional_headers=auth_headers)
         
         subscription_message = {
             "id": self.message_id,
@@ -244,7 +303,7 @@ class KalshiAdapter(Adapter):
         
         await self.ws.send(json.dumps(subscription_message))
         self.message_id += 1
-        self._ws_logger.info(f"Subscribed to {channels} for markets: {market_tickers}")
+        self._ws_logger.info(f"Subscribed to {channels} on {endpoint} for markets: {market_tickers}")
 
     async def listen_to_updates(self, callback) -> None:
         """Listen for WebSocket updates and call callback with data."""
@@ -263,6 +322,14 @@ class KalshiAdapter(Adapter):
         except Exception as e:
             self._ws_logger.error(f"WebSocket error: {e}")
             raise
+
+    async def subscribe_to_orderbook_deltas(self, market_tickers: List[str]) -> None:
+        """Subscribe to real-time orderbook updates for arbitrage monitoring"""
+        await self.subscribe_to_markets(["orderbook"], market_tickers, "/orderbook_delta")
+
+    async def subscribe_to_market_lifecycle(self, market_tickers: List[str]) -> None:
+        """Subscribe to market lifecycle events (open/close/settle)"""
+        await self.subscribe_to_markets(["lifecycle"], market_tickers, "/market_lifecycle_v2")
 
 
 def _best_level(levels: list) -> Tuple[Optional[float], Optional[float]]:
