@@ -109,15 +109,9 @@ class KalshiAdapter(Adapter):
         """
         Fetch orderbook from /markets/{ticker}/orderbook endpoint.
         
-        Orderbook format:
-        {
-            "orderbook": {
-                "yes": [[price_cents, quantity], ...],
-                "no": [[price_cents, quantity], ...]
-            }
-        }
-        
-        Prices are in cents (0-100).
+        Note: Kalshi requires authentication for real-time orderbook data.
+        Without auth, the API returns None for orderbook levels.
+        For now, we'll return None quotes to indicate no liquidity data available.
         """
         url = f"{self.base_url}/markets/{quote(market.market_id, safe='')}/orderbook"
 
@@ -133,6 +127,25 @@ class KalshiAdapter(Adapter):
         orderbook = data.get("orderbook", {})
         yes_levels = orderbook.get("yes", [])
         no_levels = orderbook.get("no", [])
+        
+        # Handle None values (no liquidity or no auth)
+        if yes_levels is None:
+            yes_levels = []
+        if no_levels is None:
+            no_levels = []
+        
+        # If both are empty, likely need authentication or no liquidity
+        if not yes_levels and not no_levels:
+            # Return quotes with None values to indicate no data available
+            return [Quote(
+                outcome_id=o.outcome_id,
+                bid=None,
+                ask=None,
+                mid=None,
+                spread=None,
+                bid_size=None,
+                ask_size=None,
+            ) for o in outcomes]
 
         # Extract best bid/ask for YES side
         # YES bids are people wanting to buy YES
