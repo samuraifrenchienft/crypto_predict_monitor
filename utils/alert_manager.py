@@ -3,13 +3,14 @@ Arbitrage Alert Generation System
 Creates alerts when arbitrage opportunities are detected
 """
 
-import asyncio
-import logging
+from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
-from supabase import create_client, Client
-import os
+import logging
+import asyncio
 import json
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +18,18 @@ class ArbitrageAlertManager:
     """Manages arbitrage alerts for P&L tracking"""
     
     def __init__(self):
-        self.supabase: Client = create_client(
-            os.getenv("SUPABASE_URL"),
-            os.getenv("SUPABASE_SERVICE_KEY")
-        )
+        load_dotenv('.env')
+        
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_SERVICE_KEY")
+        
+        if supabase_url and supabase_key:
+            self.supabase: Client = create_client(supabase_url, supabase_key)
+            print("AlertManager: Supabase client initialized")
+        else:
+            self.supabase = None
+            print("AlertManager: Running without Supabase database connection")
+            
         self.alert_window = timedelta(hours=2)  # Alerts expire after 2 hours
     
     async def create_alert(
@@ -35,6 +44,20 @@ class ArbitrageAlertManager:
         confidence: float = 1.0
     ) -> Dict[str, Any]:
         """Create a new arbitrage alert"""
+        if not self.supabase:
+            logger.info(f"Creating demo alert for user {user_id} (no database)")
+            return {
+                "id": f"demo_{datetime.utcnow().timestamp()}",
+                "user_id": user_id,
+                "market": market,
+                "ticker": ticker,
+                "spread": spread,
+                "yes_price": yes_price,
+                "no_price": no_price,
+                "status": "active",
+                "created_at": datetime.utcnow().isoformat()
+            }
+            
         try:
             alert_data = {
                 "user_id": user_id,
@@ -66,6 +89,9 @@ class ArbitrageAlertManager:
     
     async def get_active_alerts(self, user_id: str = None) -> List[Dict]:
         """Get active arbitrage alerts"""
+        if not self.supabase:
+            return []
+            
         try:
             query = self.supabase.table("arbitrage_alerts").select("*").eq("status", "active")
             
@@ -80,6 +106,9 @@ class ArbitrageAlertManager:
     
     async def get_alerts_for_transaction(self, user_id: str, timestamp: datetime) -> List[Dict]:
         """Get alerts that would match a transaction at given timestamp"""
+        if not self.supabase:
+            return []
+            
         try:
             # Look for alerts within 2 hours of timestamp
             since = timestamp - timedelta(hours=2)

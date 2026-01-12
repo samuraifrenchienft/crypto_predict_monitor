@@ -11,7 +11,6 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 # Import all components
-from api.webhooks.enhanced_handler import app as webhook_app
 from utils.fallback_poller import start_fallback_polling
 from utils.alert_manager import start_alert_system, create_alert_from_opportunity
 from bot.arbitrage import detect_cross_market_arbitrage
@@ -63,7 +62,11 @@ app = FastAPI(
 )
 
 # Include webhook routes
-app.include_router(webhook_app, prefix="/api", tags=["webhooks"])
+from api.webhooks.enhanced_handler import app as webhook_app
+
+# Add webhook routes directly to main app
+for route in webhook_app.routes:
+    app.routes.append(route)
 
 @app.get("/")
 async def root():

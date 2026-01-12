@@ -6,7 +6,7 @@ uvicorn[standard]==0.24.0
 python-dotenv==1.0.0
 supabase==2.3.0
 httpx==0.25.2
-ethers==6.8.0
+ethers==0.1.1
 
 # Web3 dependencies
 web3==6.11.0
@@ -22,14 +22,12 @@ plotly==5.17.0
 
 # Webhook security
 cryptography==41.0.7
-hmac
 
 # Database
 psycopg2-binary==2.9.9
 sqlalchemy==2.0.23
 
 # Async support
-asyncio
 aiofiles==23.2.1
 
 # Logging
@@ -38,13 +36,8 @@ structlog==23.2.0
 # Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1
-httpx==0.25.2
 
 # Development
 black==23.11.0
 isort==5.12.0
 flake8==6.1.0
-
-# Security
-secrets
-hashlib

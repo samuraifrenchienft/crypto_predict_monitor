@@ -3,13 +3,15 @@ Fallback Polling System for Missed Transactions
 Polls Alchemy Transfers API every 5 minutes as backup to webhooks
 """
 
-import asyncio
-import logging
+from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
-import httpx
-from supabase import create_client, Client
+import logging
+import asyncio
+import json
 import os
+import httpx
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
 logger = logging.getLogger(__name__)
 
@@ -17,11 +19,19 @@ class FallbackPoller:
     """Fallback polling system for missed transactions"""
     
     def __init__(self):
+        load_dotenv('.env')
         self.alchemy_api_key = os.getenv("ALCHEMY_API_KEY")
-        self.supabase: Client = create_client(
-            os.getenv("SUPABASE_URL"),
-            os.getenv("SUPABASE_SERVICE_KEY")
-        )
+        
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_SERVICE_KEY")
+        
+        if supabase_url and supabase_key:
+            self.supabase: Client = create_client(supabase_url, supabase_key)
+            print("FallbackPoller: Supabase client initialized")
+        else:
+            self.supabase = None
+            print("FallbackPoller: Running without Supabase database connection")
+            
         self.polling_interval = timedelta(minutes=5)
         self.lookback_window = timedelta(hours=2)
         self.base_url = "https://eth-mainnet.g.alchemy.com/v2"
@@ -69,6 +79,9 @@ class FallbackPoller:
     
     async def get_users_with_recent_alerts(self, since: datetime) -> List[str]:
         """Get users who have received alerts in the time window"""
+        if not self.supabase:
+            return []
+            
         try:
             result = self.supabase.table("arbitrage_alerts").select("user_id").gte("created_at", since.isoformat()).execute()
             
@@ -204,31 +217,11 @@ class FallbackPoller:
                     timestamp
                 )
                 
-                # Mark as processed
-                await self.mark_transaction_processed(tx_hash, user_id)
-    
-    async def is_transaction_processed(self, tx_hash: str) -> bool:
-        """Check if transaction was already processed"""
-        try:
-            result = self.supabase.table("executions").select("id").eq("entry_tx_hash", tx_hash).execute()
-            return len(result.data) > 0
-        except:
-            return False
-    
-    async def mark_transaction_processed(self, tx_hash: str, user_id: str):
-        """Mark transaction as processed in webhook queue"""
-        try:
-            self.supabase.table("webhook_queue").insert({
-                "user_id": user_id,
-                "transaction_hash": tx_hash,
-                "status": "processed",
-                "processed_at": datetime.utcnow().isoformat()
-            }).execute()
-        except Exception as e:
-            logger.error(f"Error marking transaction as processed: {e}")
-    
     async def match_transaction_to_alert(self, user_id: str, transfer: Dict, timestamp: datetime) -> Optional[Dict]:
         """Match transaction to recent alert"""
+        if not self.supabase:
+            return None
+            
         try:
             # Get alerts within 2 hours of transaction
             since = timestamp - timedelta(hours=2)
