@@ -152,6 +152,43 @@ class KalshiAdapter(Adapter):
 
     def _get_auth_headers(self, path: str = "/trade-api/ws/v2") -> Dict[str, str]:
         """Get authentication headers for WebSocket connection."""
+        import os
+        import re
+        
+        # Load private key if not already loaded
+        if not self.kalshi_private_key or (isinstance(self.kalshi_private_key, str) and not self.kalshi_private_key.startswith('-----BEGIN')):
+            # Get project root (go up from bot/adapters to project root)
+            current_dir = os.path.dirname(os.path.abspath(__file__))  # bot/adapters
+            project_root = os.path.dirname(os.path.dirname(current_dir))  # project root
+            
+            # Try loading from file in project root
+            pem_file = os.path.join(project_root, 'kalshi_private.pem')
+            if os.path.exists(pem_file):
+                with open(pem_file, 'r') as f:
+                    content = f.read()
+                # Remove any BOM and clean up
+                if content.startswith('\ufeff'):
+                    content = content[1:]
+                # Ensure proper line endings
+                content = content.replace('\r\n', '\n').replace('\r', '\n')
+                self.kalshi_private_key = content
+            else:
+                # Try to extract from .env.txt
+                env_file = os.path.join(project_root, '.env.txt')
+                if os.path.exists(env_file):
+                    with open(env_file, 'r') as f:
+                        content = f.read()
+                    match = re.search(r'-----BEGIN RSA PRIVATE KEY-----([^"]+)-----END RSA PRIVATE KEY-----', content, re.DOTALL)
+                    if match:
+                        # Clean up the key - remove \n and extra spaces
+                        key = match.group(1).replace('\\n', '').replace(' ', '')
+                        # Add proper line breaks every 64 characters
+                        formatted_key = "-----BEGIN RSA PRIVATE KEY-----\n"
+                        for i in range(0, len(key), 64):
+                            formatted_key += key[i:i+64] + "\n"
+                        formatted_key += "-----END RSA PRIVATE KEY-----"
+                        self.kalshi_private_key = formatted_key
+        
         if not self.kalshi_access_key or not self.kalshi_private_key:
             raise ValueError("Kalshi access key and private key required for WebSocket authentication")
         
@@ -381,9 +418,10 @@ class KalshiAdapter(Adapter):
             # Get authentication headers for base WebSocket path
             auth_headers = self._get_auth_headers("/trade-api/ws/v2")
             
-            # Connect with authentication
+            # Connect with authentication to full WebSocket URL
+            ws_url = f"{self.ws_url}/trade-api/ws/v2"
             self.ws = await websockets.connect(
-                self.ws_url,
+                ws_url,
                 additional_headers=auth_headers
             )
             self._ws_logger.info("Connected to Kalshi WebSocket with authentication")
