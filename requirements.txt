@@ -8,6 +8,7 @@ SQLAlchemy==2.0.25
 psycopg2-binary==2.9.9
 eth-account==0.12.4
 cryptography>=41.0.0
+python-dotenv>=1.0.0
 annotated-types==0.7.0
 anyio==4.12.1
 certifi==2026.1.4
