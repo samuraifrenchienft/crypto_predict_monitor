@@ -12,6 +12,14 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
+# Import Discord alert system
+try:
+    from .discord_alerts import DiscordAlerter, AlertData, create_alert_from_opportunity
+    DISCORD_AVAILABLE = True
+except ImportError:
+    DISCORD_AVAILABLE = False
+    print("Discord alerts not available - install required dependencies")
+
 logger = logging.getLogger(__name__)
 
 class ArbitrageAlertManager:
@@ -31,6 +39,14 @@ class ArbitrageAlertManager:
             print("AlertManager: Running without Supabase database connection")
             
         self.alert_window = timedelta(hours=2)  # Alerts expire after 2 hours
+        
+        # Initialize Discord alerter if available
+        self.discord_alerter = None
+        if DISCORD_AVAILABLE and os.getenv("DISCORD_WEBHOOK_URL"):
+            self.discord_alerter = DiscordAlerter()
+            print("AlertManager: Discord alerter initialized")
+        else:
+            print("AlertManager: Discord alerts not configured")
     
     async def create_alert(
         self,
@@ -258,6 +274,56 @@ async def create_alert_from_opportunity(
     )
     
     return alert
+
+    async def send_discord_alert(self, opportunity: Dict[str, Any], detailed: bool = True) -> bool:
+        """Send Discord alert for arbitrage opportunity"""
+        if not self.discord_alerter:
+            logger.info("Discord alerter not available")
+            return False
+            
+        try:
+            # Convert opportunity to AlertData
+            alert_data = create_alert_from_opportunity(opportunity)
+            
+            # Send to Discord
+            success = await self.discord_alerter.send_alert(alert_data, detailed)
+            
+            if success:
+                logger.info(f"Discord alert sent for {opportunity.get('source', 'unknown')} opportunity")
+            else:
+                logger.error(f"Failed to send Discord alert for {opportunity.get('source', 'unknown')} opportunity")
+                
+            return success
+        except Exception as e:
+            logger.error(f"Error sending Discord alert: {e}")
+            return False
+    
+    async def send_discord_alerts_batch(self, opportunities: List[Dict[str, Any]], detailed: bool = True) -> int:
+        """Send multiple Discord alerts in batch"""
+        if not self.discord_alerter:
+            logger.info("Discord alerter not available for batch alerts")
+            return 0
+            
+        try:
+            # Convert opportunities to AlertData objects
+            alerts = []
+            for opp in opportunities:
+                try:
+                    alert_data = create_alert_from_opportunity(opp)
+                    alerts.append(alert_data)
+                except Exception as e:
+                    logger.error(f"Error converting opportunity to alert data: {e}")
+                    continue
+            
+            # Send batch alerts
+            success_count = await self.discord_alerter.send_multiple_alerts(alerts, detailed)
+            
+            logger.info(f"Sent {success_count}/{len(opportunities)} Discord alerts in batch")
+            return success_count
+            
+        except Exception as e:
+            logger.error(f"Error sending Discord alerts batch: {e}")
+            return 0
 
 # Background task for alert cleanup
 async def alert_cleanup_task():
