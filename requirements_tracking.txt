@@ -8,6 +8,10 @@ supabase==2.3.0
 httpx==0.25.2
 ethers==6.8.0
 
+# Web3 dependencies
+web3==6.11.0
+eth-account==0.8.0
+
 # Data processing
 pandas==2.1.3
 numpy==1.25.2
@@ -40,3 +44,7 @@ httpx==0.25.2
 black==23.11.0
 isort==5.12.0
 flake8==6.1.0
+
+# Security
+secrets
+hashlib

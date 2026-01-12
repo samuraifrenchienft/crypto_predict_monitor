@@ -34,6 +34,10 @@ from bot.arbitrage import detect_cross_market_arbitrage
 from bot.alerts.discord import DiscordAlerter
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 from utils.alert_manager import ArbitrageAlertManager, create_alert_from_opportunity
+import secrets
+import hashlib
+from datetime import datetime, timezone
+from web3 import Web3
 
 from dashboard.db import close_session, get_session, engine
 from dashboard.models import (
@@ -1701,6 +1705,185 @@ def create_alert():
             return jsonify({"status": "error", "message": "Failed to create alert"})
     except Exception as e:
         logger.error(f"Error creating alert: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/wallet/challenge", methods=["POST"])
+def create_wallet_challenge():
+    """Create a challenge message for wallet signature verification"""
+    try:
+        data = request.get_json()
+        wallet_address = data.get("wallet_address")
+        
+        if not wallet_address:
+            return jsonify({"error": "Wallet address is required"}), 400
+        
+        # Validate address format
+        if not wallet_address.startswith("0x") or len(wallet_address) != 42:
+            return jsonify({"error": "Invalid wallet address format"}), 400
+        
+        # Generate nonce
+        nonce = secrets.token_hex(16)
+        timestamp = int(datetime.now(timezone.utc).timestamp())
+        
+        # Create challenge message
+        message = f"Sign this message to verify your wallet ownership.\n\nNonce: {nonce}\nTimestamp: {timestamp}\nAddress: {wallet_address}"
+        
+        # Store challenge in session (in production, use Redis)
+        session[f"challenge_{wallet_address}"] = {
+            "nonce": nonce,
+            "timestamp": timestamp,
+            "message": message
+        }
+        
+        return jsonify({
+            "message": message,
+            "nonce": nonce,
+            "timestamp": timestamp
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating wallet challenge: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/wallet/verify", methods=["POST"])
+def verify_wallet_signature():
+    """Verify wallet signature"""
+    try:
+        data = request.get_json()
+        address = data.get("address")
+        message = data.get("message")
+        signature = data.get("signature")
+        
+        if not all([address, message, signature]):
+            return jsonify({"error": "Missing required fields"}), 400
+        
+        # Get stored challenge
+        challenge = session.get(f"challenge_{address}")
+        if not challenge:
+            return jsonify({"error": "Challenge not found or expired"}), 400
+        
+        # Verify timestamp (5 minute window)
+        timestamp = challenge.get("timestamp")
+        if timestamp and (int(datetime.now(timezone.utc).timestamp()) - timestamp) > 300:
+            return jsonify({"error": "Challenge expired"}), 400
+        
+        # Verify message matches
+        if message != challenge.get("message"):
+            return jsonify({"error": "Message mismatch"}), 400
+        
+        # Recover address from signature
+        try:
+            # Hash the message
+            message_hash = Web3.keccak(text=message)
+            
+            # Recover address
+            recovered_address = Web3.eth.account.recover_message(
+                sign_hash=message_hash,
+                signature=signature
+            )
+            
+            # Normalize addresses
+            recovered_address = recovered_address.lower()
+            provided_address = address.lower()
+            
+            # Check if addresses match
+            is_valid = recovered_address == provided_address
+            
+            # Clean up challenge
+            session.pop(f"challenge_{address}", None)
+            
+            return jsonify({"valid": is_valid})
+            
+        except Exception as e:
+            logger.error(f"Signature verification error: {e}")
+            return jsonify({"error": "Signature verification failed"}), 400
+            
+    except Exception as e:
+        logger.error(f"Error verifying wallet signature: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/wallet/connect", methods=["POST"])
+def connect_wallet():
+    """Connect and store wallet"""
+    try:
+        data = request.get_json()
+        wallet_address = data.get("wallet_address")
+        signature = data.get("signature")
+        
+        if not wallet_address or not signature:
+            return jsonify({"error": "Wallet address and signature required"}), 400
+        
+        # Validate address
+        if not wallet_address.startswith("0x") or len(wallet_address) != 42:
+            return jsonify({"error": "Invalid wallet address format"}), 400
+        
+        # Store wallet in database (for demo, just return success)
+        # In production, you would store this in Supabase or your database
+        
+        logger.info(f"Wallet connected: {wallet_address}")
+        
+        return jsonify({
+            "status": "success",
+            "wallet_address": wallet_address,
+            "connected_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error connecting wallet: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/wallet/disconnect", methods=["POST"])
+def disconnect_wallet():
+    """Disconnect wallet"""
+    try:
+        data = request.get_json()
+        wallet_address = data.get("wallet_address")
+        
+        if not wallet_address:
+            return jsonify({"error": "Wallet address required"}), 400
+        
+        # Remove wallet from database (for demo, just return success)
+        # In production, you would remove this from Supabase or your database
+        
+        logger.info(f"Wallet disconnected: {wallet_address}")
+        
+        return jsonify({
+            "status": "success",
+            "disconnected_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error disconnecting wallet: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/webhooks/create", methods=["POST"])
+def create_webhook():
+    """Create Alchemy webhook for wallet"""
+    try:
+        data = request.get_json()
+        user_id = data.get("user_id")
+        wallet_address = data.get("wallet_address")
+        
+        if not user_id or not wallet_address:
+            return jsonify({"error": "User ID and wallet address required"}), 400
+        
+        # For demo, return success
+        # In production, you would call the Alchemy API to create the webhook
+        logger.info(f"Creating webhook for user {user_id}, wallet {wallet_address}")
+        
+        return jsonify({
+            "status": "success",
+            "webhook_id": f"webhook_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating webhook: {e}")
         return jsonify({"error": str(e)}), 500
 
 

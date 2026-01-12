@@ -6,7 +6,8 @@
     <title>Crypto Prediction Monitor Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
             --pm-cyan: #00D9FF;
@@ -319,27 +320,40 @@
         </div>
     </div>
     <!-- Header -->
-    <header class="bg-gray-950 shadow-lg border-b border-gray-800">
+    <header class="bg-gray-900 border-b border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
-                <div class="flex items-center space-x-3">
-                    <h1 class="text-2xl font-bold text-white">Prediction Monitor</h1>
-                    <span class="text-sm text-gray-400">Real-time market data</span>
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-white"> Crypto Predict Monitor</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-2">
-                        <button id="loginBtn" onclick="window.location.href='/auth/discord/login'" class="hidden bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition">
-                            Login
+                    <!-- Wallet Connection -->
+                    <div id="walletSection" class="flex items-center space-x-3">
+                        <button id="connectWalletBtn" onclick="connectWallet()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            <span>Connect Wallet</span>
                         </button>
-                        <button id="logoutBtn" onclick="window.location.href='/auth/logout'" class="hidden bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition">
-                            Logout
-                        </button>
-                        <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-yellow-600 hover:bg-yellow-500 text-black px-3 py-2 rounded-lg font-semibold transition">
-                            Release Alerts (<span id="queuedAlertsCount">0</span>)
-                        </button>
+                        
+                        <div id="connectedWallet" class="hidden flex items-center space-x-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-700">
+                            <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span id="walletAddress" class="text-sm font-medium text-gray-300">0x0000...0000</span>
+                            <button onclick="disconnectWallet()" class="text-red-400 hover:text-red-300 ml-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-3">
-                        <button onclick="releaseAlerts()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition">
+                    
+                    <!-- Existing buttons -->
+                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
+                    <button id="logoutBtn" onclick="logout()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
+                    <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
+                    <span id="queuedAlertsCount" class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
                             <span>🚀</span>
                             <span>Release Alerts (<span id="queuedAlertsCount">0</span>)</span>
                         </button>
@@ -690,6 +704,7 @@
             loadMarkets();
             loadPnLData();
             loadWhaleAlerts();
+            checkWalletConnection();
             // Auto-refresh every 30 seconds
             setInterval(() => {
                 if (document.visibilityState === 'visible') {
@@ -702,6 +717,219 @@
                 loadWhaleAlerts();
             }, 30000);
         });
+        
+        // Wallet Connection Functions
+        let currentWallet = null;
+        
+        async function connectWallet() {
+            const connectBtn = document.getElementById('connectWalletBtn');
+            const originalText = connectBtn.innerHTML;
+            
+            try {
+                // Check if MetaMask is installed
+                if (!window.ethereum) {
+                    showError('MetaMask is not installed. Please install MetaMask to connect your wallet.');
+                    return;
+                }
+                
+                // Update button state
+                connectBtn.innerHTML = '<div class="loading-spinner w-4 h-4 inline-block mr-2"></div> Connecting...';
+                connectBtn.disabled = true;
+                
+                // Request wallet connection
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No accounts found');
+                }
+                
+                const walletAddress = accounts[0];
+                
+                // Create challenge message
+                const challenge = await createChallenge(walletAddress);
+                
+                // Request signature
+                const signature = await signMessage(challenge.message);
+                
+                // Verify signature
+                const isValid = await verifySignature(walletAddress, challenge.message, signature);
+                
+                if (!isValid) {
+                    throw new Error('Signature verification failed');
+                }
+                
+                // Store wallet in database
+                await storeWallet(walletAddress, signature);
+                
+                // Create Alchemy webhook
+                await createAlchemyWebhook(walletAddress);
+                
+                // Update UI
+                currentWallet = walletAddress;
+                updateWalletUI(walletAddress);
+                
+                showSuccess('Wallet connected successfully!');
+                
+            } catch (error) {
+                console.error('Wallet connection error:', error);
+                
+                if (error.code === 4001) {
+                    showError('Connection rejected by user.');
+                } else if (error.code === -32002) {
+                    showError('MetaMask is already processing a request. Please check MetaMask.');
+                } else if (error.message && error.message.includes('Signature verification failed')) {
+                    showError('Signature verification failed. Please try again.');
+                } else {
+                    showError(`Connection failed: ${error.message || 'Unknown error'}`);
+                }
+            } finally {
+                // Reset button state
+                connectBtn.innerHTML = originalText;
+                connectBtn.disabled = false;
+            }
+        }
+        
+        async function disconnectWallet() {
+            try {
+                if (!currentWallet) return;
+                
+                // Remove from database
+                await removeWallet(currentWallet);
+                
+                // Reset state
+                currentWallet = null;
+                updateWalletUI(null);
+                
+                showSuccess('Wallet disconnected successfully!');
+                
+            } catch (error) {
+                console.error('Wallet disconnection error:', error);
+                showError('Failed to disconnect wallet');
+            }
+        }
+        
+        async function createChallenge(walletAddress) {
+            const response = await axios.post('/api/wallet/challenge', {
+                wallet_address: walletAddress
+            });
+            return response.data;
+        }
+        
+        async function signMessage(message) {
+            try {
+                const signature = await window.ethereum.request({
+                    method: 'personal_sign',
+                    params: [message, currentWallet]
+                });
+                return signature;
+            } catch (error) {
+                throw new Error(`Failed to sign message: ${error.message}`);
+            }
+        }
+        
+        async function verifySignature(address, message, signature) {
+            try {
+                const response = await axios.post('/api/wallet/verify', {
+                    address: address,
+                    message: message,
+                    signature: signature
+                });
+                return response.data.valid;
+            } catch (error) {
+                console.error('Signature verification error:', error);
+                return false;
+            }
+        }
+        
+        async function storeWallet(walletAddress, signature) {
+            try {
+                const response = await axios.post('/api/wallet/connect', {
+                    wallet_address: walletAddress,
+                    signature: signature
+                });
+                return response.data;
+            } catch (error) {
+                throw new Error(`Failed to store wallet: ${error.response?.data?.error || error.message}`);
+            }
+        }
+        
+        async function removeWallet(walletAddress) {
+            try {
+                await axios.post('/api/wallet/disconnect', {
+                    wallet_address: walletAddress
+                });
+            } catch (error) {
+                throw new Error(`Failed to remove wallet: ${error.response?.data?.error || error.message}`);
+            }
+        }
+        
+        async function createAlchemyWebhook(walletAddress) {
+            try {
+                const response = await axios.post('/api/webhooks/create', {
+                    user_id: walletAddress,
+                    wallet_address: walletAddress
+                });
+                return response.data;
+            } catch (error) {
+                // Don't throw error for webhook creation, just log it
+                console.warn('Failed to create Alchemy webhook:', error);
+            }
+        }
+        
+        function updateWalletUI(walletAddress) {
+            const connectBtn = document.getElementById('connectWalletBtn');
+            const connectedWallet = document.getElementById('connectedWallet');
+            const walletAddressSpan = document.getElementById('walletAddress');
+            
+            if (walletAddress) {
+                // Show connected wallet
+                const obfuscated = obfuscateAddress(walletAddress);
+                walletAddressSpan.textContent = obfuscated;
+                connectBtn.classList.add('hidden');
+                connectedWallet.classList.remove('hidden');
+                
+                // Store in localStorage
+                localStorage.setItem('connectedWallet', walletAddress);
+            } else {
+                // Show connect button
+                connectBtn.classList.remove('hidden');
+                connectedWallet.classList.add('hidden');
+                
+                // Remove from localStorage
+                localStorage.removeItem('connectedWallet');
+            }
+        }
+        
+        function obfuscateAddress(address) {
+            if (!address || address.length < 10) return address;
+            return `${address.slice(0, 6)}...${address.slice(-4)}`;
+        }
+        
+        async function checkWalletConnection() {
+            try {
+                const storedWallet = localStorage.getItem('connectedWallet');
+                if (storedWallet) {
+                    // Verify wallet is still connected
+                    if (window.ethereum) {
+                        const accounts = await window.ethereum.request({
+                            method: 'eth_accounts'
+                        });
+                        
+                        if (accounts && accounts.includes(storedWallet)) {
+                            currentWallet = storedWallet;
+                            updateWalletUI(storedWallet);
+                        } else {
+                            localStorage.removeItem('connectedWallet');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking wallet connection:', error);
+                localStorage.removeItem('connectedWallet');
+            }
+        }
 
         async function loadMe() {
             try {
