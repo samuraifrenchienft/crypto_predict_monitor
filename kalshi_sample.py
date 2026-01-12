@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.backends import default_backend
 
 # Load environment variables
 load_dotenv('.env')
@@ -12,17 +13,35 @@ load_dotenv('.env')
 ACCESS_KEY = os.getenv('KALSHI_ACCESS_KEY')
 PRIVATE_KEY_FILE = os.getenv('KALSHI_PRIVATE_KEY_FILE')
 
+# Check if credentials are available
+if not ACCESS_KEY or not PRIVATE_KEY_FILE:
+    print("⚠️  Kalshi credentials not configured. Set KALSHI_ACCESS_KEY and KALSHI_PRIVATE_KEY_FILE in .env")
+    print("   Once configured, this script will connect to Kalshi API for market data and trading.")
+    exit(0)
+
 # Load private key from file
-with open(PRIVATE_KEY_FILE, 'r') as f:
-    PRIVATE_KEY_PEM = f.read()
+try:
+    with open(PRIVATE_KEY_FILE, 'r') as f:
+        PRIVATE_KEY_PEM = f.read()
+except FileNotFoundError:
+    print(f"❌ Kalshi private key file not found: {PRIVATE_KEY_FILE}")
+    print("   Please ensure the file exists and contains your Kalshi private key.")
+    exit(0)
 
 BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"
 
 # Load private key
-private_key = serialization.load_pem_private_key(
-    PRIVATE_KEY_PEM.encode(),
-    password=None
-)
+try:
+    # Try loading as PKCS#8 first
+    private_key = serialization.load_pem_private_key(
+        PRIVATE_KEY_PEM.encode(),
+        password=None
+    )
+    print("✅ Kalshi private key loaded successfully")
+except ValueError as e:
+    print(f"❌ Kalshi private key error: {e}")
+    print("   Please ensure your private key is in the correct PEM format.")
+    exit(0)
 
 def sign_request(method, path):
     """Generate RSA signature for Kalshi API request"""
