@@ -247,10 +247,10 @@ class KalshiAdapter(Adapter):
         yes_levels = orderbook.get("yes", [])
         no_levels = orderbook.get("no", [])
         
-        # Handle None values (no liquidity or no auth)
-        if yes_levels is None:
+        # Handle None or empty string values (no liquidity or no auth)
+        if yes_levels is None or yes_levels == "":
             yes_levels = []
-        if no_levels is None:
+        if no_levels is None or no_levels == "":
             no_levels = []
         
         # If both are empty, likely need authentication or no liquidity

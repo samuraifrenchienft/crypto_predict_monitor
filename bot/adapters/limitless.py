@@ -60,6 +60,12 @@ class LimitlessAdapter(Adapter):
 
             # Cache the full market data including prices
             self._market_cache[slug] = m
+            
+            # Check if market has tokens (skip if not)
+            tokens = m.get("tokens", {})
+            if not tokens.get("yes") or not tokens.get("no"):
+                continue  # Skip markets without tradable tokens
+            
             markets.append(Market(source=self.name, market_id=slug, title=title, url=url_val, outcomes=[]))
 
         return markets

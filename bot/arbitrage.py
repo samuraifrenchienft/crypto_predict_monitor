@@ -90,7 +90,7 @@ def score_arbitrage_opportunity(
         for j in range(i + 1, len(sources)):
             s1, s2 = sources[i], sources[j]
             mid1, mid2 = mids_by_source[s1], mids_by_source[s2]
-            if mid1 is None or mid2 is None:
+            if mid1 is None or mid2 is None or mid1 == "" or mid2 == "":
                 continue
             spread = abs(mid1 - mid2)
             if spread >= min_spread:
