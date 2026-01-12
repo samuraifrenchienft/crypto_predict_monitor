@@ -57,12 +57,39 @@ class KalshiAdapter(Adapter):
         self.message_id = 1
         self._ws_logger = logging.getLogger(f"{self.name}.websocket")
         
-        # Authentication credentials
+        # API credentials
         self.kalshi_access_key = kalshi_access_key
         self.kalshi_private_key = kalshi_private_key
 
     def _generate_signature(self, timestamp: str, method: str, path: str) -> str:
         """Generate Kalshi API signature using RSA-PSS."""
+        import os
+        import re
+        
+        # Try to load from PEM file if string key doesn't work
+        if isinstance(self.kalshi_private_key, str) and not self.kalshi_private_key.startswith('-----BEGIN'):
+            # Try loading from file in project root
+            pem_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'kalshi_private.pem')
+            if os.path.exists(pem_file):
+                with open(pem_file, 'r') as f:
+                    self.kalshi_private_key = f.read()
+            else:
+                # Try to extract from .env.txt
+                env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env.txt')
+                if os.path.exists(env_file):
+                    with open(env_file, 'r') as f:
+                        content = f.read()
+                    match = re.search(r'-----BEGIN RSA PRIVATE KEY-----([^"]+)-----END RSA PRIVATE KEY-----', content, re.DOTALL)
+                    if match:
+                        # Clean up the key - remove \n and extra spaces
+                        key = match.group(1).replace('\\n', '').replace(' ', '')
+                        # Add proper line breaks every 64 characters
+                        formatted_key = "-----BEGIN RSA PRIVATE KEY-----\n"
+                        for i in range(0, len(key), 64):
+                            formatted_key += key[i:i+64] + "\n"
+                        formatted_key += "-----END RSA PRIVATE KEY-----"
+                        self.kalshi_private_key = formatted_key
+        
         if not self.kalshi_private_key:
             raise ValueError("Private key required for signature generation")
         
