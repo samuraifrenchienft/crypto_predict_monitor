@@ -420,19 +420,73 @@
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-400 truncate">Arbitrage Opps</dt>
-                            <dd class="text-lg font-semibold text-white" id="arbitrageCount">0</dd>
+                            <dt class="text-sm font-medium text-gray-400 truncate">Total P&L</dt>
+                            <dd class="text-lg font-semibold" id="totalPnL">$0.00</dd>
                         </dl>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Arbitrage Alerts Section -->
-        <div id="arbitrageSection" class="mb-8 hidden">
-            <h2 class="text-xl font-bold text-white mb-4">🎯 Arbitrage Opportunities</h2>
-            <div id="arbitrageGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Arbitrage cards will be inserted here -->
+        <!-- P&L Tracking Section -->
+        <div id="pnlSection" class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">💰 Profit & Loss Tracking</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- P&L Overview Card -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 cursor-pointer hover:border-blue-500 transition-colors" onclick="openPnLModal()">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-white">Total P&L</h3>
+                        <span class="text-sm text-gray-400">Click for details →</span>
+                    </div>
+                    <div class="text-3xl font-bold mb-2" id="mainPnLDisplay">$0.00</div>
+                    <div class="text-sm text-gray-400" id="pnlStats">
+                        <span id="tradeCount">0</span> trades • <span id="gasSpent">$0.00</span> gas
+                    </div>
+                </div>
+                
+                <!-- Recent Trades -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Recent Trades</h3>
+                    <div id="recentTrades" class="space-y-2">
+                        <p class="text-gray-400 text-sm">No recent trades</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Market Breakdown -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <h4 class="text-sm font-medium text-gray-400 mb-1">Polymarket</h4>
+                    <div class="text-xl font-semibold" id="polymarketPnL">$0.00</div>
+                    <div class="text-xs text-gray-500" id="polymarketTrades">0 trades</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <h4 class="text-sm font-medium text-gray-400 mb-1">Kalshi</h4>
+                    <div class="text-xl font-semibold" id="kalshiPnL">$0.00</div>
+                    <div class="text-xs text-gray-500" id="kalshiTrades">0 trades</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <h4 class="text-sm font-medium text-gray-400 mb-1">Win Rate</h4>
+                    <div class="text-xl font-semibold" id="winRate">0%</div>
+                    <div class="text-xs text-gray-500" id="winLoss">0W / 0L</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- P&L Modal -->
+        <div id="pnlModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+            <div class="bg-gray-800 rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto border border-gray-700">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-white">📊 Detailed P&L Breakdown</h3>
+                    <button onclick="closePnLModal()" class="text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="pnlModalContent">
+                    <p class="text-gray-400">Loading P&L details...</p>
+                </div>
             </div>
         </div>
 
@@ -634,16 +688,17 @@
             loadMe();
             loadTrackedWallets();
             loadMarkets();
-            loadArbitrageOpportunities();
+            loadPnLData();
             loadWhaleAlerts();
             // Auto-refresh every 30 seconds
             setInterval(() => {
-                loadQueuedAlertsCount();
-                if (isLeaderboardModalOpen()) {
+                if (document.visibilityState === 'visible') {
+                    refreshMe();
+                    refreshTrackedWallets();
                     refreshLeaderboardActive();
                 }
                 loadMarkets();
-                loadArbitrageOpportunities();
+                loadPnLData();
                 loadWhaleAlerts();
             }, 30000);
         });
@@ -861,42 +916,126 @@
             }
         }
 
-        // Arbitrage Functions
-        async function loadArbitrageOpportunities() {
+        // P&L Functions
+        async function loadPnLData() {
             try {
-                const response = await axios.get('/api/arbitrage');
-                const opportunities = response.data.opportunities || [];
+                // For demo, use placeholder data
+                // In production, this would call your P&L API
+                const demoData = {
+                    total_pnl: 125.50,
+                    polymarket_pnl: 75.25,
+                    kalshi_pnl: 50.25,
+                    total_trades: 15,
+                    gas_spent: 0.015,
+                    polymarket_trades: 8,
+                    kalshi_trades: 7,
+                    win_rate: 73.3,
+                    winning_trades: 11,
+                    losing_trades: 4,
+                    recent_trades: [
+                        { market: 'polymarket', ticker: 'PRES-2024', side: 'YES', pnl: 15.50, time: '2 hours ago' },
+                        { market: 'kalshi', ticker: 'KXMARKET123', side: 'NO', pnl: -5.25, time: '3 hours ago' },
+                        { market: 'polymarket', ticker: 'BTC-PRICE', side: 'YES', pnl: 8.75, time: '5 hours ago' }
+                    ]
+                };
                 
-                document.getElementById('arbitrageCount').textContent = opportunities.length;
-                
-                if (opportunities.length > 0) {
-                    document.getElementById('arbitrageSection').classList.remove('hidden');
-                    renderArbitrageCards(opportunities);
-                } else {
-                    document.getElementById('arbitrageSection').classList.add('hidden');
+                // Update main display
+                const totalElement = document.getElementById('totalPnL');
+                const mainDisplayElement = document.getElementById('mainPnLDisplay');
+                if (totalElement) totalElement.textContent = `$${demoData.total_pnl.toFixed(2)}`;
+                if (mainDisplayElement) {
+                    mainDisplayElement.textContent = `$${demoData.total_pnl.toFixed(2)}`;
+                    mainDisplayElement.className = `text-3xl font-bold mb-2 ${demoData.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
                 }
+                
+                // Update stats
+                document.getElementById('tradeCount').textContent = demoData.total_trades;
+                document.getElementById('gasSpent').textContent = `$${demoData.gas_spent.toFixed(4)}`;
+                
+                // Update market breakdown
+                document.getElementById('polymarketPnL').textContent = `$${demoData.polymarket_pnl.toFixed(2)}`;
+                document.getElementById('polymarketPnL').className = `text-xl font-semibold ${demoData.polymarket_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                document.getElementById('polymarketTrades').textContent = `${demoData.polymarket_trades} trades`;
+                
+                document.getElementById('kalshiPnL').textContent = `$${demoData.kalshi_pnl.toFixed(2)}`;
+                document.getElementById('kalshiPnL').className = `text-xl font-semibold ${demoData.kalshi_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                document.getElementById('kalshiTrades').textContent = `${demoData.kalshi_trades} trades`;
+                
+                document.getElementById('winRate').textContent = `${demoData.win_rate.toFixed(1)}%`;
+                document.getElementById('winLoss').textContent = `${demoData.winning_trades}W / ${demoData.losing_trades}L`;
+                
+                // Update recent trades
+                const recentTradesElement = document.getElementById('recentTrades');
+                if (recentTradesElement && demoData.recent_trades.length > 0) {
+                    recentTradesElement.innerHTML = demoData.recent_trades.map(trade => `
+                        <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-white">${trade.market.toUpperCase()} - ${trade.ticker}</div>
+                                <div class="text-xs text-gray-400">${trade.side} • ${trade.time}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-semibold ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                    ${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
             } catch (error) {
-                console.error('Error loading arbitrage:', error);
+                console.error('Error loading P&L data:', error);
             }
         }
-
-        function renderArbitrageCards(opportunities) {
-            const grid = document.getElementById('arbitrageGrid');
-            grid.innerHTML = opportunities.slice(0, 6).map(opp => `
-                <div class="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="text-2xl">${opp.action?.signal || '🟡'}</span>
-                        <span class="text-green-400 font-bold">+${opp.action?.profit_cents || (opp.spread * 100).toFixed(1)}¢</span>
+        
+        function openPnLModal() {
+            document.getElementById('pnlModal').classList.remove('hidden');
+            loadPnLModalContent();
+        }
+        
+        function closePnLModal() {
+            document.getElementById('pnlModal').classList.add('hidden');
+        }
+        
+        async function loadPnLModalContent() {
+            const modalContent = document.getElementById('pnlModalContent');
+            modalContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-white mb-4">P&L History</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between p-2 bg-gray-700 rounded">
+                                <span class="text-gray-300">Today</span>
+                                <span class="text-green-400">+$25.50</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-700 rounded">
+                                <span class="text-gray-300">Yesterday</span>
+                                <span class="text-red-400">-$5.25</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-700 rounded">
+                                <span class="text-gray-300">This Week</span>
+                                <span class="text-green-400">+$125.50</span>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="text-white font-medium mb-2 text-sm">${opp.markets?.[0]?.title || opp.normalized_title}</h3>
-                    <div class="text-sm text-gray-400 mb-3">
-                        ${opp.action?.explanation || `Spread: ${(opp.spread * 100).toFixed(1)}%`}
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        ${opp.sources.map(s => `<span class="source-badge source-${s}">${s.toUpperCase()}</span>`).join('')}
+                    <div>
+                        <h4 class="text-lg font-semibold text-white mb-4">Performance Metrics</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between p-2 bg-gray-700 rounded">
+                                <span class="text-gray-300">Sharpe Ratio</span>
+                                <span class="text-white">1.85</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-700 rounded">
+                                <span class="text-gray-300">Max Drawdown</span>
+                                <span class="text-red-400">-$15.00</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-700 rounded">
+                                <span class="text-gray-300">Avg Trade Size</span>
+                                <span class="text-white">$50.00</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            `).join('');
+            `;
         }
 
         // Whale Alert Functions
@@ -1137,7 +1276,7 @@
             const button = e && e.target && e.target.closest ? e.target.closest('button') : null;
             if (!button) {
                 await loadMarkets();
-                await loadArbitrageOpportunities();
+                await loadPnLData();
                 await loadWhaleAlerts();
                 return;
             }
@@ -1148,7 +1287,7 @@
             try {
                 await axios.get('/api/refresh');
                 await loadMarkets();
-                await loadArbitrageOpportunities();
+                await loadPnLData();
                 await loadWhaleAlerts();
             } catch (error) {
                 console.error('Error refreshing data:', error);

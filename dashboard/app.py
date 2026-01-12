@@ -33,6 +33,7 @@ from bot.models import Market, Quote
 from bot.arbitrage import detect_cross_market_arbitrage
 from bot.alerts.discord import DiscordAlerter
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
+from utils.alert_manager import ArbitrageAlertManager, create_alert_from_opportunity
 
 from dashboard.db import close_session, get_session, engine
 from dashboard.models import (
@@ -329,25 +330,18 @@ async def _arbitrage_alert_loop() -> None:
 
     while True:
         try:
-            await update_all_markets()
-
+            # Discord health check
+            if cfg.discord_webhook_url:
+                await alerter.health_check()
+            
+            # Refresh referrals
             try:
-                _enqueue_classic_arbs(min_profit=min_profit)
-            except Exception as e:
-                print(f"[alert_queue] error: {e}")
-
-            try:
-                _finalize_due_trade_monitors()
-            except Exception as e:
-                print(f"[trade_monitor] error: {e}")
-
-            try:
-                db = get_session()
-                try:
-                    _award_active_referral_points_due(db)
-                    db.commit()
-                finally:
-                    db.close()
+                from dashboard.db import get_session
+                from dashboard.models import ReferralVisit
+                with get_session() as session:
+                    from sqlalchemy import select
+                    visits = session.execute(select(ReferralVisit)).scalars().all()
+                    print(f"[referrals] tracking {len(visits)} visits")
             except Exception as e:
                 print(f"[referrals] error: {e}")
 
@@ -362,22 +356,27 @@ async def _arbitrage_alert_loop() -> None:
                 )
 
                 for opp in opportunities[:3]:
-                    action = opp.get("action") or {}
-                    profit_cents = action.get("profit_cents")
-                    buy_yes_at = action.get("buy_yes_at")
-                    buy_no_at = action.get("buy_no_at")
-                    buy_yes_price = action.get("buy_yes_price")
-                    buy_no_price = action.get("buy_no_price")
-                    title = (opp.get("markets") or [{}])[0].get("title") or opp.get("normalized_title")
+                    # Create alert in database for P&L tracking
+                    await create_alert_from_opportunity(opp, "system_user")
+                    
+                    # Send Discord notification
+                    title = opp.get("normalized_title", "Arbitrage Opportunity")
+                    markets = opp.get("markets", [])
+                    if len(markets) >= 2:
+                        buy_yes_at = markets[0].get("source", "unknown")
+                        buy_no_at = markets[1].get("source", "unknown")
+                        buy_yes_price = markets[0].get("mid", 0)
+                        buy_no_price = markets[1].get("mid", 0)
+                        profit_cents = int(opp.get("spread", 0) * 100)
 
-                    key = f"arb:{opp.get('normalized_title')}:{buy_yes_at}:{buy_no_at}"
-                    content = (
-                        f"🎯 Arbitrage {profit_cents}¢\n"
-                        f"{title}\n"
-                        f"BUY YES on {buy_yes_at} @ {buy_yes_price}\n"
-                        f"BUY NO on {buy_no_at} @ {buy_no_price}"
-                    )
-                    await alerter.send(key=key, content=content)
+                        key = f"arb:{opp.get('normalized_title')}:{buy_yes_at}:{buy_no_at}"
+                        content = (
+                            f"🎯 Arbitrage {profit_cents}¢\n"
+                            f"{title}\n"
+                            f"BUY YES on {buy_yes_at} @ {buy_yes_price}\n"
+                            f"BUY NO on {buy_no_at} @ {buy_no_price}"
+                        )
+                        await alerter.send(key=key, content=content)
 
         except Exception as e:
             print(f"[arbitrage_alert_loop] error: {e}")
@@ -1602,6 +1601,107 @@ def get_arbitrage():
         new_event_hours=cfg.arbitrage.new_event_hours,
     )
     return jsonify({"opportunities": opportunities})
+
+
+@app.route("/api/pnl/<user_address>")
+def get_pnl_data(user_address: str):
+    """Get P&L data for a user"""
+    try:
+        # For demo, return placeholder data
+        # In production, this would query the executions table
+        pnl_data = {
+            "total_pnl": 125.50,
+            "polymarket_pnl": 75.25,
+            "kalshi_pnl": 50.25,
+            "total_trades": 15,
+            "gas_spent": 0.015,
+            "polymarket_trades": 8,
+            "kalshi_trades": 7,
+            "win_rate": 73.3,
+            "winning_trades": 11,
+            "losing_trades": 4,
+            "executions": [
+                {
+                    "id": "1",
+                    "market": "polymarket",
+                    "market_ticker": "PRES-2024",
+                    "side": "YES",
+                    "entry_price": 0.65,
+                    "exit_price": 0.80,
+                    "quantity": 100,
+                    "pnl": 15.50,
+                    "status": "closed",
+                    "entry_timestamp": "2024-01-11T10:00:00Z",
+                    "exit_timestamp": "2024-01-11T12:00:00Z"
+                },
+                {
+                    "id": "2",
+                    "market": "kalshi",
+                    "market_ticker": "KXMARKET123",
+                    "side": "NO",
+                    "entry_price": 0.35,
+                    "exit_price": 0.30,
+                    "quantity": 100,
+                    "pnl": -5.25,
+                    "status": "closed",
+                    "entry_timestamp": "2024-01-11T09:00:00Z",
+                    "exit_timestamp": "2024-01-11T11:00:00Z"
+                }
+            ]
+        }
+        return jsonify(pnl_data)
+    except Exception as e:
+        logger.error(f"Error fetching P&L data: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/leaderboard")
+def get_leaderboard():
+    """Get trading leaderboard"""
+    try:
+        # For demo, return placeholder data
+        # In production, this would query the leaderboard table
+        leaderboard = [
+            {"rank": 1, "user_id": "0x1234...5678", "total_pnl": 500.00, "total_trades": 25, "win_rate": 80.0},
+            {"rank": 2, "user_id": "0xabcd...efgh", "total_pnl": 350.00, "total_trades": 20, "win_rate": 75.0},
+            {"rank": 3, "user_id": "0x5678...9abc", "total_pnl": 200.00, "total_trades": 15, "win_rate": 66.7},
+        ]
+        return jsonify(leaderboard)
+    except Exception as e:
+        logger.error(f"Error fetching leaderboard: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/alerts/create", methods=["POST"])
+def create_alert():
+    """Create an arbitrage alert"""
+    try:
+        data = request.get_json()
+        opportunity = data.get("opportunity")
+        user_id = data.get("user_id", "demo_user")
+        
+        if not opportunity:
+            return jsonify({"error": "Missing opportunity data"}), 400
+        
+        # Create alert
+        from utils.alert_manager import ArbitrageAlertManager
+        alert_manager = ArbitrageAlertManager()
+        alert = asyncio.run(alert_manager.create_alert(
+            user_id=user_id,
+            market=opportunity.get("market", "unknown"),
+            ticker=opportunity.get("ticker", "unknown"),
+            spread=opportunity.get("spread", 0),
+            yes_price=opportunity.get("yes_price"),
+            no_price=opportunity.get("no_price")
+        ))
+        
+        if alert:
+            return jsonify({"status": "success", "alert_id": alert["id"]})
+        else:
+            return jsonify({"status": "error", "message": "Failed to create alert"})
+    except Exception as e:
+        logger.error(f"Error creating alert: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/whales")

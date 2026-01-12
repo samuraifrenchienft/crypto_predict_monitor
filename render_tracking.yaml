@@ -1,0 +1,56 @@
+# Render Deployment Configuration for Trade Tracking API
+# Save as render.yaml in your project root
+
+services:
+  # Webhook API Service
+  - type: web
+    name: trade-tracking-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements_tracking.txt
+    startCommand: uvicorn api.webhooks.alchemy_handler:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: SUPABASE_URL
+        value: https://your-project.supabase.co
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: ALCHEMY_API_KEY
+        sync: false
+      - key: ALCHEMY_WEBHOOK_SECRET
+        sync: false
+      - key: WEBHOOK_URL
+        value: https://trade-tracking-api.onrender.com/api/webhooks/wallet-activity
+    domains:
+      - trade-tracking-api.onrender.com
+
+  # Dashboard Service
+  - type: web
+    name: trading-dashboard
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements_tracking.txt
+    startCommand: streamlit run dashboard/trading_dashboard.py --server.port $PORT --server.address 0.0.0.0
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: API_BASE_URL
+        value: https://trade-tracking-api.onrender.com
+    domains:
+      - trading-dashboard.onrender.com
+
+  # PostgreSQL Database (if not using Supabase)
+  - type: pserv
+    name: trade-tracking-db
+    plan: free
+    env: postgres
+    healthCheckPath: /
+    databases:
+      - name: trade_tracking
+        databaseName: trade_tracking
+        user: admin
