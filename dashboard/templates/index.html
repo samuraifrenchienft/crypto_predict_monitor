@@ -327,9 +327,15 @@
                     <h1 class="text-2xl font-bold text-white"> Crypto Predict Monitor</h1>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <!-- Existing buttons -->
+                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
+                    <button id="logoutBtn" onclick="logout()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
+                    <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
+                    <span id="queuedAlertsCount" class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
+                    
                     <!-- Wallet Connection -->
                     <div id="walletSection" class="flex items-center space-x-3">
-                        <button id="connectWalletBtn" onclick="connectWallet()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2">
+                        <button id="connectWalletBtn" onclick="connectWallet()" class="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                             </svg>
@@ -347,26 +353,6 @@
                                 </svg>
                             </button>
                         </div>
-                    </div>
-                    
-                    <!-- Existing buttons -->
-                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
-                    <button id="logoutBtn" onclick="logout()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
-                    <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
-                    <span id="queuedAlertsCount" class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
-                            <span>🚀</span>
-                            <span>Release Alerts (<span id="queuedAlertsCount">0</span>)</span>
-                        </button>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <button onclick="openLeaderboardModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition border border-gray-700">
-                            <span>🏆</span>
-                            <span>Leaderboards</span>
-                        </button>
-                        <button onclick="openWhaleModal()" class="bg-[#0001ff] hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition neon-glow">
-                            <span>🐋</span>
-                            <span>Track Wallets</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -413,13 +399,13 @@
                 <div class="flex items-center">
                     <div class="flex-shrink-0 stat-icon rounded-md p-4 neon-glow">
                         <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9l-6-6-6 6m12 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V9m12 0l-6 6-6-6"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Referral</dt>
-                            <dd class="hidden" id="referralEntry"></dd>
+                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Points</dt>
+                            <dd class="text-2xl font-bold text-white" id="userPoints">0</dd>
                         </dl>
                     </div>
                 </div>
@@ -678,7 +664,6 @@
                                 <div class="flex justify-between"><span class="text-gray-400">Total Referrals</span><span id="refStatsReferrals" class="text-white">0</span></div>
                                 <div class="flex justify-between"><span class="text-gray-400">Total Earnings</span><span id="refStatsEarnings" style="color: var(--pm-cyan);">$0.00</span></div>
                                 <div class="flex justify-between"><span class="text-gray-400">Total Volume</span><span id="refStatsVolume" class="text-white">$0.00</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">Loading</span><span id="refStatsLoading" class="text-white">No</span></div>
                             </div>
                         </div>
                         <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
@@ -940,12 +925,13 @@
                 document.getElementById('logoutBtn').classList.toggle('hidden', !authed);
                 document.getElementById('releaseAlertsBtn').classList.toggle('hidden', !authed);
                 if (authed) {
-                    loadQueuedAlertsCount();
+                    // Update points based on referrals
+                    const totalReferrals = parseInt(me.total_referrals || 0);
+                    const points = totalReferrals * 25;
+                    document.getElementById('userPoints').textContent = points;
                 }
             } catch (e) {
-                document.getElementById('loginBtn').classList.remove('hidden');
-                document.getElementById('logoutBtn').classList.add('hidden');
-                document.getElementById('releaseAlertsBtn').classList.add('hidden');
+                console.error('Error loading user info:', e);
             }
         }
 
