@@ -315,22 +315,9 @@ class KalshiAdapter(Adapter):
                 adapter_name=self.name,
                 market_id=market.market_id
             )
-        
-        data = r.json()
 
-        orderbook = data.get("orderbook", {})
-        yes_levels = orderbook.get("yes", [])
-        no_levels = orderbook.get("no", [])
-        
-        # Handle None or empty string values (no liquidity or no auth)
-        if yes_levels is None or yes_levels == "":
-            yes_levels = []
-        if no_levels is None or no_levels == "":
-            no_levels = []
-        
-        # If both are empty, likely need authentication or no liquidity
-        if not yes_levels and not no_levels:
-            # Return quotes with None values to indicate no data available
+        if r.status_code != 200:
+            self._logger.error(f"Failed to fetch orderbook for {market.market_id}: {r.status_code}")
             return [Quote(
                 outcome_id=o.outcome_id,
                 bid=None,
@@ -341,41 +328,64 @@ class KalshiAdapter(Adapter):
                 ask_size=None,
             ) for o in outcomes]
 
-        # Extract best bid/ask for YES side
-        # YES bids are people wanting to buy YES
-        # NO bids at price X means YES ask at (100-X)
-        yes_bid, yes_bid_size = _best_level(yes_levels)
-        no_bid, no_bid_size = _best_level(no_levels)
-
-        # Convert cents to probability (0-1)
-        # YES bid price in cents / 100 = YES bid probability
-        # NO bid at X cents means YES ask at (100-X) cents
-        yes_bid_prob = yes_bid / 100.0 if yes_bid is not None else None
-        yes_ask_prob = (100.0 - no_bid) / 100.0 if no_bid is not None else None
+        data = r.json()
+        orderbook = data.get("orderbook", {})
+        yes_levels = orderbook.get("yes", [])
+        no_levels = orderbook.get("no", [])
         
-        no_bid_prob = no_bid / 100.0 if no_bid is not None else None
-        no_ask_prob = (100.0 - yes_bid) / 100.0 if yes_bid is not None else None
-
-        quotes: list[Quote] = []
+        # Handle None or empty string values (no liquidity or no auth)
+        if yes_levels is None or yes_levels == "":
+            yes_levels = []
+        if no_levels is None or no_levels == "":
+            no_levels = []
         
+        # If no orderbook data, return empty quotes (demo account limitation)
+        if not yes_levels and not no_levels:
+            return [Quote(
+                outcome_id=o.outcome_id,
+                bid=None,
+                ask=None,
+                mid=None,
+                spread=None,
+                bid_size=None,
+                ask_size=None,
+            ) for o in outcomes]
+
+        # Process orderbook levels if available
+        quotes = []
         for o in outcomes:
-            if o.name == "YES":
-                quotes.append(Quote.from_bid_ask(
-                    outcome_id=o.outcome_id,
-                    bid=yes_bid_prob,
-                    ask=yes_ask_prob,
-                    bid_size=yes_bid_size,
-                    ask_size=no_bid_size,
-                ))
-            else:
-                quotes.append(Quote.from_bid_ask(
-                    outcome_id=o.outcome_id,
-                    bid=no_bid_prob,
-                    ask=no_ask_prob,
-                    bid_size=no_bid_size,
-                    ask_size=yes_bid_size,
-                ))
-
+            if o.outcome_id.endswith("_YES"):
+                # Best bid is highest price someone will buy at
+                best_bid = max([level[1] for level in yes_levels], default=None)
+                # Best ask is lowest price someone will sell at  
+                best_ask = min([level[0] for level in yes_levels], default=None)
+            else:  # NO
+                # For NO contracts
+                best_bid = max([level[1] for level in no_levels], default=None)
+                best_ask = min([level[0] for level in no_levels], default=None)
+            
+            # Convert to cents and calculate mid/spread
+            bid = int(best_bid * 100) if best_bid is not None else None
+            ask = int(best_ask * 100) if best_ask is not None else None
+            
+            mid = None
+            if bid is not None and ask is not None:
+                mid = (bid + ask) // 2
+            
+            spread = None
+            if bid is not None and ask is not None:
+                spread = ask - bid
+            
+            quotes.append(Quote(
+                outcome_id=o.outcome_id,
+                bid=bid,
+                ask=ask,
+                mid=mid,
+                spread=spread,
+                bid_size=None,
+                ask_size=None,
+            ))
+        
         return quotes
 
     async def check_exchange_status(self) -> bool:
