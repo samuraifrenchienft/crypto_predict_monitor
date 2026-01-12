@@ -353,6 +353,15 @@
                                 </svg>
                             </button>
                         </div>
+                        
+                        <!-- Leaderboard Link -->
+                        <a href="/leaderboard" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm-9-1h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7H8v10h5"></path>
+                            </svg>
+                            <span>🏆 Leaderboard</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -486,78 +495,6 @@
                 </div>
                 <div id="pnlModalContent">
                     <p class="text-gray-400">Loading P&L details...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Leaderboard Section -->
-        <div id="leaderboardSection" class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-white">🏆 Leaderboard</h2>
-                <div class="flex items-center space-x-2">
-                    <button id="leaderboardRefreshBtn" onclick="refreshLeaderboard()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition">
-                        Refresh
-                    </button>
-                    <button onclick="openLeaderboardModal()" class="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                        View Details →
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Leaderboard Tabs -->
-            <div class="flex items-center gap-2 mb-4">
-                <button id="leaderboardTabCommunityMain" onclick="setLeaderboardTab('community')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow">
-                    Community
-                </button>
-                <button id="leaderboardTabTradingMain" onclick="setLeaderboardTab('trading')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700">
-                    Trading
-                </button>
-            </div>
-
-            <!-- Top 3 Leaderboard Display -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <!-- 1st Place -->
-                <div class="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-lg p-4 border border-yellow-500 relative overflow-hidden">
-                    <div class="absolute top-2 right-2 text-2xl">🥇</div>
-                    <div class="text-sm text-yellow-200 mb-1">1st Place</div>
-                    <div class="text-lg font-bold text-white" id="leaderboard1stUser">Loading...</div>
-                    <div class="text-xl font-bold text-yellow-300" id="leaderboard1stPnL">$0.00</div>
-                    <div class="text-xs text-yellow-200 mt-1" id="leaderboard1stTrades">0 trades</div>
-                </div>
-                
-                <!-- 2nd Place -->
-                <div class="bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg p-4 border border-gray-400 relative overflow-hidden">
-                    <div class="absolute top-2 right-2 text-2xl">🥈</div>
-                    <div class="text-sm text-gray-200 mb-1">2nd Place</div>
-                    <div class="text-lg font-bold text-white" id="leaderboard2ndUser">Loading...</div>
-                    <div class="text-xl font-bold text-gray-300" id="leaderboard2ndPnL">$0.00</div>
-                    <div class="text-xs text-gray-200 mt-1" id="leaderboard2ndTrades">0 trades</div>
-                </div>
-                
-                <!-- 3rd Place -->
-                <div class="bg-gradient-to-br from-orange-700 to-orange-900 rounded-lg p-4 border border-orange-600 relative overflow-hidden">
-                    <div class="absolute top-2 right-2 text-2xl">🥉</div>
-                    <div class="text-sm text-orange-200 mb-1">3rd Place</div>
-                    <div class="text-lg font-bold text-white" id="leaderboard3rdUser">Loading...</div>
-                    <div class="text-xl font-bold text-orange-300" id="leaderboard3rdPnL">$0.00</div>
-                    <div class="text-xs text-orange-200 mt-1" id="leaderboard3rdTrades">0 trades</div>
-                </div>
-            </div>
-
-            <!-- Leaderboard Error -->
-            <div id="leaderboardMainError" class="hidden text-sm text-red-300 mb-4 bg-red-900/20 border border-red-800 rounded-lg p-3"></div>
-            
-            <!-- Your Position -->
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700" id="yourLeaderboardPosition">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <div class="text-sm text-gray-400 mb-1">Your Position</div>
-                        <div class="text-lg font-bold text-white" id="yourLeaderboardRank">Not ranked</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm text-gray-400 mb-1">Your P&L</div>
-                        <div class="text-xl font-bold text-green-400" id="yourLeaderboardPnL">$0.00</div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -759,7 +696,6 @@
             loadMe();
             loadTrackedWallets();
             loadMarkets();
-            updateMainLeaderboardSection(); // Load leaderboard on startup
             loadPnLData();
             loadWhaleAlerts();
             checkWalletConnection();
@@ -768,7 +704,6 @@
                 if (document.visibilityState === 'visible') {
                     refreshMe();
                     refreshTrackedWallets();
-                    refreshLeaderboardActive();
                 }
                 loadMarkets();
                 loadPnLData();
@@ -1362,279 +1297,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-
-        let activeLeaderboardTab = 'community';
-
-        function isLeaderboardModalOpen() {
-            const el = document.getElementById('leaderboardModal');
-            if (!el) return false;
-            return !el.classList.contains('hidden');
-        }
-
-        function openLeaderboardModal() {
-            const el = document.getElementById('leaderboardModal');
-            if (!el) return;
-            el.classList.remove('hidden');
-            setLeaderboardTab(activeLeaderboardTab);
-        }
-
-        function closeLeaderboardModal() {
-            const el = document.getElementById('leaderboardModal');
-            if (!el) return;
-            el.classList.add('hidden');
-        }
-
-        function setLeaderboardTab(tab) {
-            activeLeaderboardTab = (tab === 'trading') ? 'trading' : 'community';
-            
-            // Update modal tabs
-            const btnC = document.getElementById('leaderboardTabCommunity');
-            const btnT = document.getElementById('leaderboardTabTrading');
-            if (btnC && btnT) {
-                if (activeLeaderboardTab === 'community') {
-                    btnC.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow";
-                    btnT.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700";
-                } else {
-                    btnT.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow";
-                    btnC.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700";
-                }
-            }
-            
-            // Update main section tabs
-            const btnCMain = document.getElementById('leaderboardTabCommunityMain');
-            const btnTMain = document.getElementById('leaderboardTabTradingMain');
-            if (btnCMain && btnTMain) {
-                if (activeLeaderboardTab === 'community') {
-                    btnCMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow";
-                    btnTMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700";
-                } else {
-                    btnTMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow";
-                    btnCMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700";
-                }
-            }
-            
-            refreshLeaderboardActive();
-        }
-
-        async function refreshLeaderboardActive() {
-            // Always update main section
-            await updateMainLeaderboardSection();
-            
-            // Update modal if open
-            if (isLeaderboardModalOpen()) {
-                if (activeLeaderboardTab === 'trading') {
-                    await loadTradingLeaderboard();
-                } else {
-                    await loadCommunityLeaderboard();
-                }
-            }
-        }
-
-        async function updateMainLeaderboardSection() {
-            try {
-                clearLeaderboardMainError();
-                const endpoint = activeLeaderboardTab === 'trading' ? '/api/leaderboard/trading' : '/api/leaderboard/community';
-                const res = await axios.get(endpoint);
-                const leaders = res.data || [];
-                
-                // Update top 3 positions
-                updateTopPositions(leaders);
-                
-                // Update user position
-                updateUserPosition(leaders);
-                
-            } catch (error) {
-                console.error('Error updating main leaderboard:', error);
-                showLeaderboardMainError('Failed to load leaderboard data');
-            }
-        }
-
-        function updateTopPositions(leaders) {
-            const positions = [
-                { user: 'leaderboard1stUser', pnl: 'leaderboard1stPnL', trades: 'leaderboard1stTrades' },
-                { user: 'leaderboard2ndUser', pnl: 'leaderboard2ndPnL', trades: 'leaderboard2ndTrades' },
-                { user: 'leaderboard3rdUser', pnl: 'leaderboard3rdPnL', trades: 'leaderboard3rdTrades' }
-            ];
-            
-            positions.forEach((pos, index) => {
-                const leader = leaders[index];
-                if (leader) {
-                    document.getElementById(pos.user).textContent = leader.user_id || 'Anonymous';
-                    document.getElementById(pos.pnl).textContent = '$' + (leader.total_pnl || 0).toFixed(2);
-                    document.getElementById(pos.trades).textContent = (leader.total_trades || 0) + ' trades';
-                } else {
-                    document.getElementById(pos.user).textContent = 'No data';
-                    document.getElementById(pos.pnl).textContent = '$0.00';
-                    document.getElementById(pos.trades).textContent = '0 trades';
-                }
-            });
-        }
-
-        function updateUserPosition(leaders) {
-            const connectedWallet = document.getElementById('connectedWallet');
-            const isWalletConnected = connectedWallet && !connectedWallet.classList.contains('hidden');
-            
-            if (!isWalletConnected) {
-                document.getElementById('yourLeaderboardRank').textContent = 'Connect wallet';
-                document.getElementById('yourLeaderboardPnL').textContent = '$0.00';
-                return;
-            }
-            
-            const walletAddress = document.getElementById('walletAddress').textContent;
-            const userLeader = leaders.find(l => l.user_id === walletAddress);
-            
-            if (userLeader) {
-                const rank = leaders.findIndex(l => l.user_id === walletAddress) + 1;
-                document.getElementById('yourLeaderboardRank').textContent = `#${rank}`;
-                document.getElementById('yourLeaderboardPnL').textContent = '$' + (userLeader.total_pnl || 0).toFixed(2);
-            } else {
-                document.getElementById('yourLeaderboardRank').textContent = 'Not ranked';
-                document.getElementById('yourLeaderboardPnL').textContent = '$0.00';
-            }
-        }
-
-        function showLeaderboardMainError(msg) {
-            const el = document.getElementById('leaderboardMainError');
-            if (!el) return;
-            el.textContent = msg;
-            el.classList.remove('hidden');
-        }
-
-        function clearLeaderboardMainError() {
-            const el = document.getElementById('leaderboardMainError');
-            if (!el) return;
-            el.textContent = '';
-            el.classList.add('hidden');
-        }
-
-        async function refreshLeaderboard() {
-            await updateMainLeaderboardSection();
-        }
-
-        function showLeaderboardError(msg) {
-            const el = document.getElementById('leaderboardError');
-            if (!el) return;
-            el.textContent = msg;
-            el.classList.remove('hidden');
-        }
-
-        function clearLeaderboardError() {
-            const el = document.getElementById('leaderboardError');
-            if (!el) return;
-            el.textContent = '';
-            el.classList.add('hidden');
-        }
-
-        function fmtNum(v) {
-            if (v == null) return '0';
-            const n = Number(v);
-            if (Number.isNaN(n)) return '0';
-            return n.toLocaleString();
-        }
-
-        function fmtMoney(v) {
-            if (v == null) return '0.00';
-            const n = Number(v);
-            if (Number.isNaN(n)) return '0.00';
-            return n.toFixed(2);
-        }
-
-        function fmtPct(v) {
-            if (v == null) return '0.0%';
-            const n = Number(v);
-            if (Number.isNaN(n)) return '0.0%';
-            return n.toFixed(1) + '%';
-        }
-
-        async function loadCommunityLeaderboard() {
-            try {
-                clearLeaderboardError();
-                const res = await axios.get('/api/leaderboard/community');
-                const leaders = res.data.leaders || [];
-                renderCommunityLeaderboard(leaders);
-            } catch (e) {
-                showLeaderboardError('Failed to load community leaderboard');
-            }
-        }
-
-        function renderCommunityLeaderboard(leaders) {
-            const el = document.getElementById('leaderboardContent');
-            if (!el) return;
-            const rows = (leaders || []).slice(0, 50).map((r, i) => `
-                <tr class="border-b border-gray-800">
-                    <td class="py-2 pr-4 text-gray-300">${i + 1}</td>
-                    <td class="py-2 pr-4 text-gray-200">${r.tier_status || ''}</td>
-                    <td class="py-2 pr-4 text-gray-200">${fmtNum(r.points_earned)}</td>
-                    <td class="py-2 pr-4 text-gray-300">${fmtNum(r.referrals_signed_up)}</td>
-                    <td class="py-2 pr-4 text-gray-300">${fmtNum(r.referrals_converted)}</td>
-                    <td class="py-2 pr-4 text-gray-300">${fmtMoney(r.commission_earned)}</td>
-                </tr>
-            `).join('');
-
-            el.innerHTML = `
-                <table class="min-w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-gray-400 border-b border-gray-800">
-                            <th class="py-2 pr-4 font-semibold">Rank</th>
-                            <th class="py-2 pr-4 font-semibold">Tier</th>
-                            <th class="py-2 pr-4 font-semibold">Points</th>
-                            <th class="py-2 pr-4 font-semibold">Signups</th>
-                            <th class="py-2 pr-4 font-semibold">Conversions</th>
-                            <th class="py-2 pr-4 font-semibold">Commission</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows || ''}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        async function loadTradingLeaderboard() {
-            try {
-                clearLeaderboardError();
-                const res = await axios.get('/api/leaderboard/trading');
-                const leaders = res.data.leaders || [];
-                renderTradingLeaderboard(leaders);
-            } catch (e) {
-                showLeaderboardError('Failed to load trading leaderboard');
-            }
-        }
-
-        function renderTradingLeaderboard(leaders) {
-            const el = document.getElementById('leaderboardContent');
-            if (!el) return;
-            const rows = (leaders || []).slice(0, 50).map((r, i) => `
-                <tr class="border-b border-gray-800">
-                    <td class="py-2 pr-4 text-gray-300">${i + 1}</td>
-                    <td class="py-2 pr-4 text-gray-200">${r.wallet || ''}</td>
-                    <td class="py-2 pr-4 text-gray-200">${fmtNum(r.trade_count)}</td>
-                    <td class="py-2 pr-4 text-gray-300">${fmtPct(r.win_rate_pct)}</td>
-                    <td class="py-2 pr-4 text-gray-300">${fmtMoney(r.total_pnl_all_time)}</td>
-                    <td class="py-2 pr-4 text-gray-300">${fmtMoney(r.total_pnl_30d)}</td>
-                    <td class="py-2 pr-4 text-gray-300">${fmtMoney(r.total_pnl_7d)}</td>
-                </tr>
-            `).join('');
-
-            el.innerHTML = `
-                <table class="min-w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-gray-400 border-b border-gray-800">
-                            <th class="py-2 pr-4 font-semibold">Rank</th>
-                            <th class="py-2 pr-4 font-semibold">Wallet</th>
-                            <th class="py-2 pr-4 font-semibold">Trades</th>
-                            <th class="py-2 pr-4 font-semibold">Win Rate</th>
-                            <th class="py-2 pr-4 font-semibold">P&L (All)</th>
-                            <th class="py-2 pr-4 font-semibold">P&L (30D)</th>
-                            <th class="py-2 pr-4 font-semibold">P&L (7D)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows || ''}
-                    </tbody>
-                </table>
-            `;
         }
 
         // Market Functions

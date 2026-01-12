@@ -848,10 +848,18 @@ def _discord_dm(bot_token: str, recipient_id: str, content: str) -> bool:
 def index():
     """Main dashboard page."""
     try:
-        _start_background_tasks()
         return render_template("index.html")
     except Exception as e:
         return f"<h1>Template Error</h1><p>Error: {str(e)}</p><p>Check that templates/index.html exists</p>", 500
+
+
+@app.route("/leaderboard")
+def leaderboard():
+    """Dedicated leaderboard page."""
+    try:
+        return render_template("leaderboard.html")
+    except Exception as e:
+        return f"<h1>Template Error</h1><p>Error: {str(e)}</p><p>Check that templates/leaderboard.html exists</p>", 500
 
 
 @app.route("/r/<code>")
