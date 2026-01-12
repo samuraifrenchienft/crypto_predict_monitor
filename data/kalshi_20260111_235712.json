@@ -1,0 +1,1030 @@
+{
+  "source": "kalshi",
+  "markets": [
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F5B7BAC53FA-32BF6343288",
+        "title": "yes CJ McCollum: 2+,yes Kevin Durant: 1+,yes Stephen Curry: 4+,yes CJ McCollum: 10+,yes Jalen Johnson: 25+,yes Stephen Curry: 25+,yes Kevin Durant: 30+,yes Shai Gilgeous-Alexander: 25+,yes Giannis Antetokounmpo: 25+,yes Anthony Edwards: 20+,yes Julius Randle: 15+,yes De'Aaron Fox: 15+,yes Stephon Castle: 10+,yes Victor Wembanyama: 15+,yes Devin Booker: 25+,yes Jalen Johnson: 10+,yes Amen Thompson: 6+,yes Chet Holmgren: 10+,yes Julius Randle: 4+,yes Stephon Castle: 4+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s2025f5b7bac53fa-32bf6343288",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F5B7BAC53FA-32BF6343288_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F5B7BAC53FA-32BF6343288_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F5B7BAC53FA-32BF6343288_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.096764Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F5B7BAC53FA-32BF6343288_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.096764Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S20257AE79BD26A4-EA0122C6034",
+        "title": "yes New England,yes Justin Herbert: 175+,yes Drake Maye: 200+,yes Oronde Gadsden: 1+,yes Hunter Henry: 2+,yes Rhamondre Stevenson: 1+,yes Stefon Diggs: 3+,yes Drake Maye: 10+,yes Rhamondre Stevenson: 20+",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s20257ae79bd26a4-ea0122c6034",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20257AE79BD26A4-EA0122C6034_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20257AE79BD26A4-EA0122C6034_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20257AE79BD26A4-EA0122C6034_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.233665Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20257AE79BD26A4-EA0122C6034_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.233665Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S20253B90F4CF48A-2D23E657302",
+        "title": "yes Ladd McConkey,yes New England,yes Keenan Allen: 3+,yes Ladd McConkey: 3+,yes Rhamondre Stevenson: 1+,yes Stefon Diggs: 3+,yes TreVeyon Henderson: 1+,yes TreVeyon Henderson: 40+",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s20253b90f4cf48a-2d23e657302",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20253B90F4CF48A-2D23E657302_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20253B90F4CF48A-2D23E657302_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20253B90F4CF48A-2D23E657302_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.317157Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20253B90F4CF48A-2D23E657302_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.317157Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S202510532281EC1-88ABF8BD2D0",
+        "title": "yes Stefon Diggs,no Los Angeles C wins by over 10.5 points",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s202510532281ec1-88abf8bd2d0",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202510532281EC1-88ABF8BD2D0_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202510532281EC1-88ABF8BD2D0_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202510532281EC1-88ABF8BD2D0_YES",
+          "bid": null,
+          "ask": 0.11,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": 113.0,
+          "ts": "2026-01-11T23:56:52.403873Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202510532281EC1-88ABF8BD2D0_NO",
+          "bid": 0.89,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": 113.0,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.404906Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20258D9828887FD-8C21D7A5BA1",
+        "title": "yes Tyler Herro: 1+,yes Shai Gilgeous-Alexander: 1+,yes Anthony Edwards: 2+,yes De'Aaron Fox: 1+,yes Tyler Herro: 4+,yes Shai Gilgeous-Alexander: 6+,yes Anthony Edwards: 2+,yes Julius Randle: 2+,yes De'Aaron Fox: 4+,yes Stephon Castle: 4+,yes Bam Adebayo: 10+,yes Tyler Herro: 15+,yes Shai Gilgeous-Alexander: 25+,yes Anthony Edwards: 25+,yes Julius Randle: 15+,yes Stephon Castle: 10+,yes Victor Wembanyama: 15+,yes Tyler Herro: 4+,yes Jalen Williams: 2+,yes Shai Gilgeous-Alexander: 2+,yes Anthony Edwards: 2+,yes Julius Randle: 4+,yes De'Aaron Fox: 2+,yes Stephon Castle: 2+,yes Victor Wembanyama: 8+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s20258d9828887fd-8c21d7a5ba1",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20258D9828887FD-8C21D7A5BA1_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20258D9828887FD-8C21D7A5BA1_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20258D9828887FD-8C21D7A5BA1_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.959870Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20258D9828887FD-8C21D7A5BA1_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:52.959870Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S2025A6EE59F7EDB-DD5EEA1F2C2",
+        "title": "yes Drake Maye: 225+,yes Ladd McConkey: 50+,yes Drake Maye: 20+",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s2025a6ee59f7edb-dd5eea1f2c2",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025A6EE59F7EDB-DD5EEA1F2C2_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025A6EE59F7EDB-DD5EEA1F2C2_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025A6EE59F7EDB-DD5EEA1F2C2_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:53.951219Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025A6EE59F7EDB-DD5EEA1F2C2_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:53.951219Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F0D24F12A29-1EC89D7C645",
+        "title": "yes Miami,yes Denver,yes Portland,yes Philadelphia,yes San Antonio",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s2025f0d24f12a29-1ec89d7c645",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F0D24F12A29-1EC89D7C645_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F0D24F12A29-1EC89D7C645_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F0D24F12A29-1EC89D7C645_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:54.964484Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025F0D24F12A29-1EC89D7C645_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:54.964484Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENBASINGLEGAME-S2025B2FA093EA62-BA379139620",
+        "title": "yes OG Anunoby: 3+,yes Deni Avdija: 2+,yes Deni Avdija: 4+,yes New York,yes Mikal Bridges: 10+,yes Jalen Brunson: 4+",
+        "url": "https://kalshi.com/markets/kxmvenbasinglegame-s2025b2fa093ea62-ba379139620",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S2025B2FA093EA62-BA379139620_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S2025B2FA093EA62-BA379139620_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S2025B2FA093EA62-BA379139620_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:55.972980Z"
+        },
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S2025B2FA093EA62-BA379139620_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:55.972980Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025678D82A783D-FA018BC80FB",
+        "title": "yes Jimmy Butler III: 10+,yes Stephen Curry: 25+,yes Amen Thompson: 10+,yes Shai Gilgeous-Alexander: 25+,yes Anthony Edwards: 20+,yes Julius Randle: 15+,yes Victor Wembanyama: 15+,yes Chet Holmgren: 8+,yes Shai Gilgeous-Alexander: 2+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s2025678d82a783d-fa018bc80fb",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025678D82A783D-FA018BC80FB_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025678D82A783D-FA018BC80FB_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025678D82A783D-FA018BC80FB_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:56.974626Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025678D82A783D-FA018BC80FB_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:56.974626Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S20252AAB7DC70B3-A81A6391DFE",
+        "title": "yes Dallas Goedert: 20+,yes DeVonta Smith: 40+,yes Jalen Hurts: 10+,yes Saquon Barkley: 80+,yes Brock Purdy: 20+",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s20252aab7dc70b3-a81a6391dfe",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20252AAB7DC70B3-A81A6391DFE_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20252AAB7DC70B3-A81A6391DFE_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20252AAB7DC70B3-A81A6391DFE_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:57.960397Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S20252AAB7DC70B3-A81A6391DFE_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:57.960397Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S2025D1DDB22FD72-0400B8972EF",
+        "title": "yes Justin Herbert: 175+,yes Quentin Johnston: 2+,yes Ladd McConkey: 20+,no New England wins by over 3.5 points",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s2025d1ddb22fd72-0400b8972ef",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025D1DDB22FD72-0400B8972EF_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025D1DDB22FD72-0400B8972EF_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025D1DDB22FD72-0400B8972EF_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:58.963475Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025D1DDB22FD72-0400B8972EF_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:58.963475Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025051B944F417-3B5517AE41C",
+        "title": "yes CJ McCollum: 1+,yes Nickeil Alexander-Walker: 1+,yes Stephen Curry: 3+,yes Kevin Durant: 1+,yes Zach LaVine: 1+,yes Norman Powell: 1+,yes Anthony Edwards: 2+,yes De'Aaron Fox: 1+,yes Jalen Johnson: 6+,yes Stephen Curry: 4+,yes Amen Thompson: 4+,yes DeMar DeRozan: 2+,yes Julius Randle: 4+,yes De'Aaron Fox: 4+,yes Stephon Castle: 4+,yes Chet Holmgren: 8+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s2025051b944f417-3b5517ae41c",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025051B944F417-3B5517AE41C_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025051B944F417-3B5517AE41C_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025051B944F417-3B5517AE41C_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:59.944043Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025051B944F417-3B5517AE41C_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:56:59.944043Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENBASINGLEGAME-S20255B169C6FD59-DFF125AA385",
+        "title": "yes Anthony Edwards: 2+,yes Julius Randle: 4+,yes Anthony Edwards: 25+,yes Julius Randle: 15+,yes De'Aaron Fox: 15+,yes Victor Wembanyama: 15+,yes Julius Randle: 4+",
+        "url": "https://kalshi.com/markets/kxmvenbasinglegame-s20255b169c6fd59-dff125aa385",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S20255B169C6FD59-DFF125AA385_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S20255B169C6FD59-DFF125AA385_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S20255B169C6FD59-DFF125AA385_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:00.958257Z"
+        },
+        {
+          "outcome_id": "KXMVENBASINGLEGAME-S20255B169C6FD59-DFF125AA385_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:00.958257Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20252ED0997BC76-1DE4572FBF1",
+        "title": "yes Draymond Green: 2+,yes Stephen Curry: 2+,yes Aaron Gordon: 2+,yes Giannis Antetokounmpo: 2+,yes De'Aaron Fox: 2+,yes Stephon Castle: 2+,yes CJ McCollum: 10+,yes Jimmy Butler III: 10+,yes Stephen Curry: 25+,yes Amen Thompson: 10+,yes Kevin Durant: 25+,yes DeMar DeRozan: 15+,yes Zach LaVine: 15+,yes Tyler Herro: 10+,yes Shai Gilgeous-Alexander: 25+,yes Giannis Antetokounmpo: 25+,yes Anthony Edwards: 20+,yes Julius Randle: 15+,yes Victor Wembanyama: 15+,yes Devin Booker: 20+,yes Jimmy Butler III: 2+,yes Amen Thompson: 4+,yes Kevin Durant: 2+,yes DeMar DeRozan: 2+,yes Anthony Edwards: 2+,yes Julius Randle: 4+,yes Victor Wembanyama: 6+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s20252ed0997bc76-1de4572fbf1",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20252ED0997BC76-1DE4572FBF1_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20252ED0997BC76-1DE4572FBF1_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20252ED0997BC76-1DE4572FBF1_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:01.950392Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20252ED0997BC76-1DE4572FBF1_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:01.950392Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S202574264CDC64D-E235160E4FB",
+        "title": "yes Justin Herbert: 200+,yes Drake Maye: 200+,yes Keenan Allen: 20+,yes Ladd McConkey: 20+,yes Rhamondre Stevenson: 30+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s202574264cdc64d-e235160e4fb",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S202574264CDC64D-E235160E4FB_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S202574264CDC64D-E235160E4FB_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S202574264CDC64D-E235160E4FB_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:02.957220Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S202574264CDC64D-E235160E4FB_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:02.957220Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20255E71609A263-0FD29FE1B35",
+        "title": "yes Oklahoma City,yes New York,yes Toronto,yes San Antonio,yes New England,yes Houston",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s20255e71609a263-0fd29fe1b35",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20255E71609A263-0FD29FE1B35_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20255E71609A263-0FD29FE1B35_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20255E71609A263-0FD29FE1B35_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:03.959240Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20255E71609A263-0FD29FE1B35_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:03.960787Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S202580C6BDFA74B-D4A3868AE30",
+        "title": "yes Houston,yes C.J. Stroud: 175+,yes Dalton Schultz: 30+",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s202580c6bdfa74b-d4a3868ae30",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202580C6BDFA74B-D4A3868AE30_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202580C6BDFA74B-D4A3868AE30_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202580C6BDFA74B-D4A3868AE30_YES",
+          "bid": null,
+          "ask": 0.41,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": 30.0,
+          "ts": "2026-01-11T23:57:04.966691Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202580C6BDFA74B-D4A3868AE30_NO",
+          "bid": 0.59,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": 30.0,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:04.966691Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S2025983BBB0A6F7-5BC7B977478",
+        "title": "yes New England,yes Keenan Allen: 3+,yes Hunter Henry: 2+,yes Ladd McConkey: 30+,yes TreVeyon Henderson: 40+",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s2025983bbb0a6f7-5bc7b977478",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025983BBB0A6F7-5BC7B977478_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025983BBB0A6F7-5BC7B977478_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025983BBB0A6F7-5BC7B977478_YES",
+          "bid": null,
+          "ask": 0.25,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": 48.0,
+          "ts": "2026-01-11T23:57:05.958490Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025983BBB0A6F7-5BC7B977478_NO",
+          "bid": 0.75,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": 48.0,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:05.958490Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025993567A82D5-0E796565B99",
+        "title": "yes Houston,yes Oklahoma City,yes Phoenix,yes Over 217.5 points scored,no Over 226.5 points scored,yes Over 220.5 points scored",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s2025993567a82d5-0e796565b99",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025993567A82D5-0E796565B99_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025993567A82D5-0E796565B99_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025993567A82D5-0E796565B99_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:06.956159Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S2025993567A82D5-0E796565B99_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:06.956159Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20254910F3607D3-EF7FDD30DBF",
+        "title": "yes San Francisco,yes Brock Purdy: 225+,yes Saquon Barkley: 90+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s20254910f3607d3-ef7fdd30dbf",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20254910F3607D3-EF7FDD30DBF_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20254910F3607D3-EF7FDD30DBF_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20254910F3607D3-EF7FDD30DBF_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:07.959167Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20254910F3607D3-EF7FDD30DBF_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:07.959167Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S202574310919539-340016F4D5A",
+        "title": "yes Brock Purdy: 225+,yes Brock Purdy: 30+,yes Over 34.5 points scored",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s202574310919539-340016f4d5a",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202574310919539-340016F4D5A_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202574310919539-340016F4D5A_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202574310919539-340016F4D5A_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:09.010035Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S202574310919539-340016F4D5A_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:09.010035Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20259FB9EE15D85-ED053049573",
+        "title": "yes Toronto,yes New England,yes Houston,no Over 45.5 points scored,no Over 40.5 points scored",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s20259fb9ee15d85-ed053049573",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20259FB9EE15D85-ED053049573_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20259FB9EE15D85-ED053049573_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20259FB9EE15D85-ED053049573_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:09.962556Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20259FB9EE15D85-ED053049573_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:09.962556Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20251043F5AF6BF-5C7263DF984",
+        "title": "yes TreVeyon Henderson,yes New England,yes Drake Maye: 175+,yes Ladd McConkey: 20+,yes Justin Herbert: 10+,yes Kimani Vidal: 10+,yes Drake Maye: 10+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s20251043f5af6bf-5c7263df984",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20251043F5AF6BF-5C7263DF984_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20251043F5AF6BF-5C7263DF984_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20251043F5AF6BF-5C7263DF984_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:10.961958Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20251043F5AF6BF-5C7263DF984_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:10.961958Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20250500FAF1898-0F43BC09611",
+        "title": "yes New England,yes Drake Maye: 175+,yes Quentin Johnston: 30+,yes Stefon Diggs: 40+,yes Justin Herbert: 10+,yes Rhamondre Stevenson: 20+,yes TreVeyon Henderson: 40+",
+        "url": "https://kalshi.com/markets/kxmvesportsmultigameextended-s20250500faf1898-0f43bc09611",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20250500FAF1898-0F43BC09611_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20250500FAF1898-0F43BC09611_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20250500FAF1898-0F43BC09611_YES",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:11.968633Z"
+        },
+        {
+          "outcome_id": "KXMVESPORTSMULTIGAMEEXTENDED-S20250500FAF1898-0F43BC09611_NO",
+          "bid": null,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:11.968633Z"
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "kalshi",
+        "market_id": "KXMVENFLSINGLEGAME-S2025905D79D571A-35BD302422C",
+        "title": "yes Justin Herbert: 175+,yes Drake Maye: 250+,yes Ladd McConkey: 2+,yes New England wins by over 2.5 points",
+        "url": "https://kalshi.com/markets/kxmvenflsinglegame-s2025905d79d571a-35bd302422c",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025905D79D571A-35BD302422C_YES",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025905D79D571A-35BD302422C_NO",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025905D79D571A-35BD302422C_YES",
+          "bid": null,
+          "ask": 0.22,
+          "mid": null,
+          "spread": null,
+          "bid_size": null,
+          "ask_size": 55.0,
+          "ts": "2026-01-11T23:57:12.938396Z"
+        },
+        {
+          "outcome_id": "KXMVENFLSINGLEGAME-S2025905D79D571A-35BD302422C_NO",
+          "bid": 0.78,
+          "ask": null,
+          "mid": null,
+          "spread": null,
+          "bid_size": 55.0,
+          "ask_size": null,
+          "ts": "2026-01-11T23:57:12.938396Z"
+        }
+      ]
+    }
+  ]
+}

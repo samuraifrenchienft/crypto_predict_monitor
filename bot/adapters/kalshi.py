@@ -66,16 +66,26 @@ class KalshiAdapter(Adapter):
         import os
         import re
         
-        # Try to load from PEM file if string key doesn't work
-        if isinstance(self.kalshi_private_key, str) and not self.kalshi_private_key.startswith('-----BEGIN'):
+        # Load private key if not already loaded
+        if not self.kalshi_private_key or (isinstance(self.kalshi_private_key, str) and not self.kalshi_private_key.startswith('-----BEGIN')):
+            # Get project root (go up from bot/adapters to project root)
+            current_dir = os.path.dirname(os.path.abspath(__file__))  # bot/adapters
+            project_root = os.path.dirname(os.path.dirname(current_dir))  # project root
+            
             # Try loading from file in project root
-            pem_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'kalshi_private.pem')
+            pem_file = os.path.join(project_root, 'kalshi_private.pem')
             if os.path.exists(pem_file):
                 with open(pem_file, 'r') as f:
-                    self.kalshi_private_key = f.read()
+                    content = f.read()
+                # Remove any BOM and clean up
+                if content.startswith('\ufeff'):
+                    content = content[1:]
+                # Ensure proper line endings
+                content = content.replace('\r\n', '\n').replace('\r', '\n')
+                self.kalshi_private_key = content
             else:
                 # Try to extract from .env.txt
-                env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env.txt')
+                env_file = os.path.join(project_root, '.env.txt')
                 if os.path.exists(env_file):
                     with open(env_file, 'r') as f:
                         content = f.read()
@@ -100,9 +110,10 @@ class KalshiAdapter(Adapter):
         if isinstance(self.kalshi_private_key, str):
             try:
                 if self.kalshi_private_key.startswith('-----BEGIN'):
-                    # PEM format
+                    # PEM format - ensure proper encoding
+                    key_bytes = self.kalshi_private_key.encode('utf-8')
                     private_key = serialization.load_pem_private_key(
-                        self.kalshi_private_key.encode('utf-8'),
+                        key_bytes,
                         password=None,
                         backend=None
                     )
