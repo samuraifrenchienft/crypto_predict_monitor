@@ -6,11 +6,15 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
 # Load environment variables
-load_dotenv('.env.txt')
+load_dotenv('.env')
 
 # Get credentials
 ACCESS_KEY = os.getenv('KALSHI_ACCESS_KEY')
-PRIVATE_KEY_PEM = os.getenv('KALSHI_PRIVATE_KEY')
+PRIVATE_KEY_FILE = os.getenv('KALSHI_PRIVATE_KEY_FILE')
+
+# Load private key from file
+with open(PRIVATE_KEY_FILE, 'r') as f:
+    PRIVATE_KEY_PEM = f.read()
 
 BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"
 
