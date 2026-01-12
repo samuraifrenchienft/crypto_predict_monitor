@@ -30,10 +30,10 @@ class DebugKalshiAdapter(KalshiAdapter):
                     self.kalshi_private_key = f.read()
                 print(f"Loaded from PEM, starts with: {self.kalshi_private_key[:50]}")
             else:
-                # Try to extract from .env.txt
-                env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env.txt')
-                print(f"Looking for .env.txt at: {env_file}")
-                print(f".env.txt exists: {os.path.exists(env_file)}")
+                # Try to extract from .env
+                env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), '.env')
+                print(f"Looking for .env at: {env_file}")
+                print(f".env exists: {os.path.exists(env_file)}")
                 
                 if os.path.exists(env_file):
                     with open(env_file, 'r') as f:
@@ -48,7 +48,7 @@ class DebugKalshiAdapter(KalshiAdapter):
                             formatted_key += key[i:i+64] + "\n"
                         formatted_key += "-----END RSA PRIVATE KEY-----"
                         self.kalshi_private_key = formatted_key
-                        print(f"Loaded from .env.txt, starts with: {self.kalshi_private_key[:50]}")
+                        print(f"Loaded from .env, starts with: {self.kalshi_private_key[:50]}")
         
         # Now call the parent method
         return super()._generate_signature(timestamp, method, path)

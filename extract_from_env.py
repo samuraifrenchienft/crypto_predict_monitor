@@ -1,8 +1,8 @@
 import os
 from bot.adapters.kalshi import KalshiAdapter
 
-# Extract from .env.txt
-with open('.env.txt', 'r') as f:
+# Extract from .env
+with open('.env', 'r') as f:
     content = f.read()
 
 # Find the key
@@ -23,7 +23,7 @@ if match:
     with open('kalshi_private.pem', 'w') as f:
         f.write(formatted_key)
     
-    print("Created PEM from .env.txt")
+    print("Created PEM from .env")
     
     # Test with adapter
     adapter = KalshiAdapter(

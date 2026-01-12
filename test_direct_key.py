@@ -1,8 +1,8 @@
 import os
 from bot.adapters.kalshi import KalshiAdapter
 
-# Load directly from .env.txt
-with open('.env.txt', 'r') as f:
+# Load directly from .env
+with open('.env', 'r') as f:
     content = f.read()
     
 # Extract the key

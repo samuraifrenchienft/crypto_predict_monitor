@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-load_dotenv(".env.txt")
+load_dotenv(".env")
 
 # Try both env variable names
 key = os.getenv("KALSHI_PRIVATE_KEY") or os.getenv("env:KALSHI_PRIVATE_KEY")
