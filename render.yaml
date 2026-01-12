@@ -6,7 +6,10 @@ services:
     rootDir: .
     buildCommand: |
       pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 dashboard.app:app
+    startCommand: |
+      echo "Starting dashboard..."
+      python -c "import dashboard.app; print('App imported successfully')" || exit 1
+      gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --access-logfile - --error-logfile - dashboard.app:app
     healthCheckPath: /api/stats
     autoDeploy: true
     envVars:
@@ -16,5 +19,14 @@ services:
         value: production
       - key: PYTHONPATH
         value: .
+      - key: DATABASE_URL
+        fromDatabase:
+          name: crypto-prediction-db
+          property: connectionString
     domains:
       - crypto-prediction-dashboard.onrender.com
+  - type: pserv
+    name: crypto-prediction-db
+    plan: free
+    env: postgres
+    healthCheckPath: /
