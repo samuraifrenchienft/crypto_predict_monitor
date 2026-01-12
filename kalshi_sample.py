@@ -15,7 +15,7 @@ PRIVATE_KEY_FILE = os.getenv('KALSHI_PRIVATE_KEY_FILE')
 
 # Check if credentials are available
 if not ACCESS_KEY or not PRIVATE_KEY_FILE:
-    print("⚠️  Kalshi credentials not configured. Set KALSHI_ACCESS_KEY and KALSHI_PRIVATE_KEY_FILE in .env")
+    print("  Kalshi credentials not configured. Set KALSHI_ACCESS_KEY and KALSHI_PRIVATE_KEY_FILE in .env")
     print("   Once configured, this script will connect to Kalshi API for market data and trading.")
     exit(0)
 
@@ -24,7 +24,7 @@ try:
     with open(PRIVATE_KEY_FILE, 'r') as f:
         PRIVATE_KEY_PEM = f.read()
 except FileNotFoundError:
-    print(f"❌ Kalshi private key file not found: {PRIVATE_KEY_FILE}")
+    print(f" Kalshi private key file not found: {PRIVATE_KEY_FILE}")
     print("   Please ensure the file exists and contains your Kalshi private key.")
     exit(0)
 
@@ -37,9 +37,9 @@ try:
         PRIVATE_KEY_PEM.encode(),
         password=None
     )
-    print("✅ Kalshi private key loaded successfully")
+    print(" Kalshi private key loaded successfully")
 except ValueError as e:
-    print(f"❌ Kalshi private key error: {e}")
+    print(f" Kalshi private key error: {e}")
     print("   Please ensure your private key is in the correct PEM format.")
     exit(0)
 
