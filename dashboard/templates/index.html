@@ -354,6 +354,14 @@
                             </button>
                         </div>
                         
+                        <!-- P&L Link -->
+                        <button onclick="openPnLModal()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>💰 P&L</span>
+                        </button>
+                        
                         <!-- Leaderboard Link -->
                         <a href="/leaderboard" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -433,68 +441,6 @@
                             <dd class="text-lg font-semibold" id="totalPnL">$0.00</dd>
                         </dl>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- P&L Tracking Section -->
-        <div id="pnlSection" class="mb-8">
-            <h2 class="text-xl font-bold text-white mb-4">💰 Profit & Loss Tracking</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- P&L Overview Card -->
-                <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 cursor-pointer hover:border-blue-500 transition-colors" onclick="openPnLModal()">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-white">Total P&L</h3>
-                        <span class="text-sm text-gray-400">Click for details →</span>
-                    </div>
-                    <div class="text-3xl font-bold mb-2" id="mainPnLDisplay">$0.00</div>
-                    <div class="text-sm text-gray-400" id="pnlStats">
-                        <span id="tradeCount">0</span> trades • <span id="gasSpent">$0.00</span> gas
-                    </div>
-                </div>
-                
-                <!-- Recent Trades -->
-                <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-                    <h3 class="text-lg font-semibold text-white mb-4">Recent Trades</h3>
-                    <div id="recentTrades" class="space-y-2">
-                        <p class="text-gray-400 text-sm">No recent trades</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Market Breakdown -->
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <h4 class="text-sm font-medium text-gray-400 mb-1">Polymarket</h4>
-                    <div class="text-xl font-semibold" id="polymarketPnL">$0.00</div>
-                    <div class="text-xs text-gray-500" id="polymarketTrades">0 trades</div>
-                </div>
-                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <h4 class="text-sm font-medium text-gray-400 mb-1">Kalshi</h4>
-                    <div class="text-xl font-semibold" id="kalshiPnL">$0.00</div>
-                    <div class="text-xs text-gray-500" id="kalshiTrades">0 trades</div>
-                </div>
-                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <h4 class="text-sm font-medium text-gray-400 mb-1">Win Rate</h4>
-                    <div class="text-xl font-semibold" id="winRate">0%</div>
-                    <div class="text-xs text-gray-500" id="winLoss">0W / 0L</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- P&L Modal -->
-        <div id="pnlModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-            <div class="bg-gray-800 rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto border border-gray-700">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-white">📊 Detailed P&L Breakdown</h3>
-                    <button onclick="closePnLModal()" class="text-gray-400 hover:text-white">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div id="pnlModalContent">
-                    <p class="text-gray-400">Loading P&L details...</p>
                 </div>
             </div>
         </div>
@@ -679,6 +625,95 @@
                             <div class="text-base font-semibold text-white mb-3">Referral Leaders</div>
                             <div id="refLeaders" class="text-sm" style="max-height: 200px; overflow: auto;"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P&L Modal -->
+    <div id="pnlModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0" onclick="closePnLModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-950 rounded-lg shadow-xl max-w-5xl w-full relative z-10 border border-gray-800">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-white">💰 Profit & Loss Tracking</h2>
+                        <button onclick="closePnLModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- P&L Overview -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Total P&L Card -->
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-white">Total P&L</h3>
+                                <span class="text-sm text-gray-400">All Markets</span>
+                            </div>
+                            <div class="text-3xl font-bold mb-2" id="modalMainPnLDisplay">$0.00</div>
+                            <div class="text-sm text-gray-400" id="modalPnlStats">
+                                <span id="modalTradeCount">0</span> trades • <span id="modalGasSpent">$0.00</span> gas
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Trades -->
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                            <h3 class="text-lg font-semibold text-white mb-4">Recent Trades</h3>
+                            <div id="modalRecentTrades" class="space-y-2">
+                                <p class="text-gray-400 text-sm">No recent trades</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Market Breakdown -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                            <h4 class="text-sm font-medium text-gray-400 mb-1">Polymarket</h4>
+                            <div class="text-xl font-semibold" id="modalPolymarketPnL">$0.00</div>
+                            <div class="text-xs text-gray-500" id="modalPolymarketTrades">0 trades</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                            <h4 class="text-sm font-medium text-gray-400 mb-1">Kalshi</h4>
+                            <div class="text-xl font-semibold" id="modalKalshiPnL">$0.00</div>
+                            <div class="text-xs text-gray-500" id="modalKalshiTrades">0 trades</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                            <h4 class="text-sm font-medium text-gray-400 mb-1">Win Rate</h4>
+                            <div class="text-xl font-semibold" id="modalWinRate">0%</div>
+                            <div class="text-xs text-gray-500" id="modalWinLoss">0W / 0L</div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics -->
+                    <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                        <h3 class="text-lg font-semibold text-white mb-4">Performance Metrics</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Sharpe Ratio</span>
+                                <span class="text-white" id="modalSharpeRatio">1.85</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Max Drawdown</span>
+                                <span class="text-red-400" id="modalMaxDrawdown">-$15.00</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Avg Trade Size</span>
+                                <span class="text-white" id="modalAvgTradeSize">$50.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3 mt-6">
+                        <button onclick="refreshPnLData()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Refresh
+                        </button>
+                        <button onclick="closePnLModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Close
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1161,36 +1196,50 @@
                     ]
                 };
                 
-                // Update main display
+                // Update main stats card (only total P&L)
                 const totalElement = document.getElementById('totalPnL');
-                const mainDisplayElement = document.getElementById('mainPnLDisplay');
                 if (totalElement) totalElement.textContent = `$${demoData.total_pnl.toFixed(2)}`;
-                if (mainDisplayElement) {
-                    mainDisplayElement.textContent = `$${demoData.total_pnl.toFixed(2)}`;
-                    mainDisplayElement.className = `text-3xl font-bold mb-2 ${demoData.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                
+                // Update modal elements
+                const modalMainDisplay = document.getElementById('modalMainPnLDisplay');
+                if (modalMainDisplay) {
+                    modalMainDisplay.textContent = `$${demoData.total_pnl.toFixed(2)}`;
+                    modalMainDisplay.className = `text-3xl font-bold mb-2 ${demoData.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
                 }
                 
-                // Update stats
-                document.getElementById('tradeCount').textContent = demoData.total_trades;
-                document.getElementById('gasSpent').textContent = `$${demoData.gas_spent.toFixed(4)}`;
+                // Update modal stats
+                const modalTradeCount = document.getElementById('modalTradeCount');
+                const modalGasSpent = document.getElementById('modalGasSpent');
+                if (modalTradeCount) modalTradeCount.textContent = demoData.total_trades;
+                if (modalGasSpent) modalGasSpent.textContent = `$${demoData.gas_spent.toFixed(4)}`;
                 
-                // Update market breakdown
-                document.getElementById('polymarketPnL').textContent = `$${demoData.polymarket_pnl.toFixed(2)}`;
-                document.getElementById('polymarketPnL').className = `text-xl font-semibold ${demoData.polymarket_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
-                document.getElementById('polymarketTrades').textContent = `${demoData.polymarket_trades} trades`;
+                // Update market breakdown in modal
+                const modalPolymarketPnL = document.getElementById('modalPolymarketPnL');
+                const modalPolymarketTrades = document.getElementById('modalPolymarketTrades');
+                if (modalPolymarketPnL) {
+                    modalPolymarketPnL.textContent = `$${demoData.polymarket_pnl.toFixed(2)}`;
+                    modalPolymarketPnL.className = `text-xl font-semibold ${demoData.polymarket_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                }
+                if (modalPolymarketTrades) modalPolymarketTrades.textContent = `${demoData.polymarket_trades} trades`;
                 
-                document.getElementById('kalshiPnL').textContent = `$${demoData.kalshi_pnl.toFixed(2)}`;
-                document.getElementById('kalshiPnL').className = `text-xl font-semibold ${demoData.kalshi_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
-                document.getElementById('kalshiTrades').textContent = `${demoData.kalshi_trades} trades`;
+                const modalKalshiPnL = document.getElementById('modalKalshiPnL');
+                const modalKalshiTrades = document.getElementById('modalKalshiTrades');
+                if (modalKalshiPnL) {
+                    modalKalshiPnL.textContent = `$${demoData.kalshi_pnl.toFixed(2)}`;
+                    modalKalshiPnL.className = `text-xl font-semibold ${demoData.kalshi_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                }
+                if (modalKalshiTrades) modalKalshiTrades.textContent = `${demoData.kalshi_trades} trades`;
                 
-                document.getElementById('winRate').textContent = `${demoData.win_rate.toFixed(1)}%`;
-                document.getElementById('winLoss').textContent = `${demoData.winning_trades}W / ${demoData.losing_trades}L`;
+                const modalWinRate = document.getElementById('modalWinRate');
+                const modalWinLoss = document.getElementById('modalWinLoss');
+                if (modalWinRate) modalWinRate.textContent = `${demoData.win_rate.toFixed(1)}%`;
+                if (modalWinLoss) modalWinLoss.textContent = `${demoData.winning_trades}W / ${demoData.losing_trades}L`;
                 
-                // Update recent trades
-                const recentTradesElement = document.getElementById('recentTrades');
-                if (recentTradesElement && demoData.recent_trades.length > 0) {
-                    recentTradesElement.innerHTML = demoData.recent_trades.map(trade => `
-                        <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                // Update recent trades in modal
+                const modalRecentTradesElement = document.getElementById('modalRecentTrades');
+                if (modalRecentTradesElement && demoData.recent_trades.length > 0) {
+                    modalRecentTradesElement.innerHTML = demoData.recent_trades.map(trade => `
+                        <div class="flex justify-between items-center p-2 bg-gray-800 rounded">
                             <div class="flex-1">
                                 <div class="text-sm font-medium text-white">${trade.market.toUpperCase()} - ${trade.ticker}</div>
                                 <div class="text-xs text-gray-400">${trade.side} • ${trade.time}</div>
@@ -1211,53 +1260,15 @@
         
         function openPnLModal() {
             document.getElementById('pnlModal').classList.remove('hidden');
-            loadPnLModalContent();
+            loadPnLData(); // Load data when modal opens
         }
         
         function closePnLModal() {
             document.getElementById('pnlModal').classList.add('hidden');
         }
         
-        async function loadPnLModalContent() {
-            const modalContent = document.getElementById('pnlModalContent');
-            modalContent.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="text-lg font-semibold text-white mb-4">P&L History</h4>
-                        <div class="space-y-2">
-                            <div class="flex justify-between p-2 bg-gray-700 rounded">
-                                <span class="text-gray-300">Today</span>
-                                <span class="text-green-400">+$25.50</span>
-                            </div>
-                            <div class="flex justify-between p-2 bg-gray-700 rounded">
-                                <span class="text-gray-300">Yesterday</span>
-                                <span class="text-red-400">-$5.25</span>
-                            </div>
-                            <div class="flex justify-between p-2 bg-gray-700 rounded">
-                                <span class="text-gray-300">This Week</span>
-                                <span class="text-green-400">+$125.50</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-semibold text-white mb-4">Performance Metrics</h4>
-                        <div class="space-y-2">
-                            <div class="flex justify-between p-2 bg-gray-700 rounded">
-                                <span class="text-gray-300">Sharpe Ratio</span>
-                                <span class="text-white">1.85</span>
-                            </div>
-                            <div class="flex justify-between p-2 bg-gray-700 rounded">
-                                <span class="text-gray-300">Max Drawdown</span>
-                                <span class="text-red-400">-$15.00</span>
-                            </div>
-                            <div class="flex justify-between p-2 bg-gray-700 rounded">
-                                <span class="text-gray-300">Avg Trade Size</span>
-                                <span class="text-white">$50.00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+        async function refreshPnLData() {
+            await loadPnLData();
         }
 
         // Whale Alert Functions
