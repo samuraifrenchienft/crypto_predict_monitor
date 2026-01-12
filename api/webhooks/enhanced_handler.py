@@ -135,32 +135,49 @@ async def get_recent_alerts(user_id: str, since: datetime) -> List[Dict[str, Any
     
     return []
 
-async def match_transaction_to_alert(transaction: TransactionData) -> Optional[AlertData]:
+async def match_transaction_to_alert(transaction: TransactionData, user_id: str = None) -> Optional[AlertData]:
     """Match a transaction to a recent arbitrage alert"""
-    user_id = transaction.from_address
-    
-    # Get recent alerts for this user
-    since = transaction.timestamp - ALERT_MATCHING_WINDOW
-    recent_alerts = await get_recent_alerts(user_id, since)
-    
-    if not recent_alerts:
-        return None
-    
-    # Find best matching alert based on timestamp proximity
-    best_match = None
-    min_time_diff = timedelta.max
-    
-    for alert in recent_alerts:
-        time_diff = abs(transaction.timestamp - alert.timestamp)
+    try:
+        if user_id is None:
+            user_id = transaction.from_address
+            
+        # Get recent alerts for this user
+        since = transaction.timestamp - ALERT_MATCHING_WINDOW
+        recent_alerts = await get_recent_alerts(user_id, since)
         
-        # Check if within matching window and closer than current best
-        if time_diff < ALERT_MATCHING_WINDOW and time_diff < min_time_diff:
-            # Additional matching criteria
-            if is_market_match(transaction, alert):
-                best_match = alert
-                min_time_diff = time_diff
-    
-    return best_match
+        if not recent_alerts:
+            logger.debug(f"No recent alerts found for user {user_id}")
+            return None
+        
+        # Find best matching alert based on timestamp proximity and market match
+        best_match = None
+        min_time_diff = timedelta.max
+        
+        for alert in recent_alerts:
+            # Convert alert timestamp to datetime if it's a string
+            alert_time = alert.get("created_at")
+            if isinstance(alert_time, str):
+                alert_time = datetime.fromisoformat(alert_time.replace('Z', '+00:00'))
+            
+            time_diff = abs(transaction.timestamp - alert_time)
+            
+            # Check if within matching window and closer than current best
+            if time_diff < ALERT_MATCHING_WINDOW and time_diff < min_time_diff:
+                # Additional matching criteria
+                if is_market_match(transaction, alert):
+                    best_match = alert
+                    min_time_diff = time_diff
+                    logger.debug(f"Found better match: time_diff={time_diff}, alert_id={alert.id}")
+        
+        if best_match:
+            logger.info(f"Matched transaction {transaction.hash[:10]} to alert {best_match.id}")
+        else:
+            logger.debug(f"No matching alert found for transaction {transaction.hash[:10]}")
+            
+        return best_match
+    except Exception as e:
+        logger.error(f"Error matching transaction to alert: {e}")
+        return None
 
 def is_market_match(transaction: TransactionData, alert: AlertData) -> bool:
     """Check if transaction matches the alert's market"""
@@ -213,19 +230,29 @@ async def get_kalshi_trade_details(tx_hash: str, user_address: str) -> Dict[str,
     }
 
 async def calculate_pnl(execution: Dict[str, Any]) -> float:
-    """Calculate P&L for a closed position"""
-    if execution.get("status") != "closed" or execution.get("exit_price") is None:
+    """Calculate P&L from execution data"""
+    try:
+        entry_price = execution.get("entry_price", 0)
+        exit_price = execution.get("exit_price", 0)
+        quantity = execution.get("quantity", 0)
+        gas_cost = execution.get("gas_cost", 0)
+        
+        # For binary options: P&L = (exit_price - entry_price) * quantity - gas_cost
+        pnl = (exit_price - entry_price) * quantity - gas_cost
+        
+        # Validate calculation
+        if not isinstance(entry_price, (int, float)) or not isinstance(exit_price, (int, float)):
+            logger.warning(f"Invalid price data: entry={entry_price}, exit={exit_price}")
+            return 0.0
+            
+        if not isinstance(quantity, (int, float)) or quantity <= 0:
+            logger.warning(f"Invalid quantity: {quantity}")
+            return 0.0
+            
+        return pnl
+    except Exception as e:
+        logger.error(f"Error calculating P&L: {e}")
         return 0.0
-    
-    entry_price = execution.get("entry_price", 0)
-    exit_price = execution.get("exit_price", 0)
-    quantity = execution.get("quantity", 0)
-    gas_cost = execution.get("gas_cost", 0)
-    
-    # For binary options: P&L = (exit_price - entry_price) * quantity - gas_cost
-    pnl = (exit_price - entry_price) * quantity - gas_cost
-    
-    return pnl
 
 async def store_execution_with_alert(
     user_id: str,
@@ -375,6 +402,10 @@ async def wallet_activity_webhook(request: Request, background_tasks: Background
         logger.error(f"Error processing webhook {webhook_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+async def process_webhook_data(webhook_data: Dict[str, Any]):
+    """Process webhook data (legacy function)"""
+    await process_webhook_with_alert_matching(webhook_data, webhook_data.get("id", "unknown"))
+
 async def process_webhook_with_alert_matching(webhook_data: Dict[str, Any], webhook_id: str):
     """Process webhook with alert matching logic"""
     try:
@@ -387,10 +418,8 @@ async def process_webhook_with_alert_matching(webhook_data: Dict[str, Any], webh
                 from_address=activity.get("fromAddress"),
                 to_address=activity.get("toAddress"),
                 timestamp=datetime.fromtimestamp(int(activity.get("timestamp", 0))),
-                gas_used=float(activity.get("gas", 0)),
-                gas_price=float(activity.get("gasPrice", 0)) / 1e18,  # Convert from wei
-                value=activity.get("value", "0"),
-                input_data=activity.get("input", "")
+                value=float(activity.get("value", 0)),
+                status="pending"  # Default status
             )
             
             # Match to recent alert
