@@ -490,6 +490,78 @@
             </div>
         </div>
 
+        <!-- Leaderboard Section -->
+        <div id="leaderboardSection" class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white">🏆 Leaderboard</h2>
+                <div class="flex items-center space-x-2">
+                    <button id="leaderboardRefreshBtn" onclick="refreshLeaderboard()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition">
+                        Refresh
+                    </button>
+                    <button onclick="openLeaderboardModal()" class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                        View Details →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Leaderboard Tabs -->
+            <div class="flex items-center gap-2 mb-4">
+                <button id="leaderboardTabCommunityMain" onclick="setLeaderboardTab('community')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow">
+                    Community
+                </button>
+                <button id="leaderboardTabTradingMain" onclick="setLeaderboardTab('trading')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700">
+                    Trading
+                </button>
+            </div>
+
+            <!-- Top 3 Leaderboard Display -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- 1st Place -->
+                <div class="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-lg p-4 border border-yellow-500 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 text-2xl">🥇</div>
+                    <div class="text-sm text-yellow-200 mb-1">1st Place</div>
+                    <div class="text-lg font-bold text-white" id="leaderboard1stUser">Loading...</div>
+                    <div class="text-xl font-bold text-yellow-300" id="leaderboard1stPnL">$0.00</div>
+                    <div class="text-xs text-yellow-200 mt-1" id="leaderboard1stTrades">0 trades</div>
+                </div>
+                
+                <!-- 2nd Place -->
+                <div class="bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg p-4 border border-gray-400 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 text-2xl">🥈</div>
+                    <div class="text-sm text-gray-200 mb-1">2nd Place</div>
+                    <div class="text-lg font-bold text-white" id="leaderboard2ndUser">Loading...</div>
+                    <div class="text-xl font-bold text-gray-300" id="leaderboard2ndPnL">$0.00</div>
+                    <div class="text-xs text-gray-200 mt-1" id="leaderboard2ndTrades">0 trades</div>
+                </div>
+                
+                <!-- 3rd Place -->
+                <div class="bg-gradient-to-br from-orange-700 to-orange-900 rounded-lg p-4 border border-orange-600 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 text-2xl">🥉</div>
+                    <div class="text-sm text-orange-200 mb-1">3rd Place</div>
+                    <div class="text-lg font-bold text-white" id="leaderboard3rdUser">Loading...</div>
+                    <div class="text-xl font-bold text-orange-300" id="leaderboard3rdPnL">$0.00</div>
+                    <div class="text-xs text-orange-200 mt-1" id="leaderboard3rdTrades">0 trades</div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Error -->
+            <div id="leaderboardMainError" class="hidden text-sm text-red-300 mb-4 bg-red-900/20 border border-red-800 rounded-lg p-3"></div>
+            
+            <!-- Your Position -->
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700" id="yourLeaderboardPosition">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="text-sm text-gray-400 mb-1">Your Position</div>
+                        <div class="text-lg font-bold text-white" id="yourLeaderboardRank">Not ranked</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-400 mb-1">Your P&L</div>
+                        <div class="text-xl font-bold text-green-400" id="yourLeaderboardPnL">$0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Whale Alerts Section -->
         <div id="whaleSection" class="mb-8 hidden">
             <h2 class="text-xl font-bold text-white mb-4">🐋 Whale Convergence Alerts</h2>
@@ -687,6 +759,7 @@
             loadMe();
             loadTrackedWallets();
             loadMarkets();
+            updateMainLeaderboardSection(); // Load leaderboard on startup
             loadPnLData();
             loadWhaleAlerts();
             checkWalletConnection();
@@ -1314,6 +1387,8 @@
 
         function setLeaderboardTab(tab) {
             activeLeaderboardTab = (tab === 'trading') ? 'trading' : 'community';
+            
+            // Update modal tabs
             const btnC = document.getElementById('leaderboardTabCommunity');
             const btnT = document.getElementById('leaderboardTabTrading');
             if (btnC && btnT) {
@@ -1325,18 +1400,116 @@
                     btnC.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700";
                 }
             }
+            
+            // Update main section tabs
+            const btnCMain = document.getElementById('leaderboardTabCommunityMain');
+            const btnTMain = document.getElementById('leaderboardTabTradingMain');
+            if (btnCMain && btnTMain) {
+                if (activeLeaderboardTab === 'community') {
+                    btnCMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow";
+                    btnTMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700";
+                } else {
+                    btnTMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow";
+                    btnCMain.className = "px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700";
+                }
+            }
+            
             refreshLeaderboardActive();
         }
 
         async function refreshLeaderboardActive() {
-            if (!isLeaderboardModalOpen()) {
+            // Always update main section
+            await updateMainLeaderboardSection();
+            
+            // Update modal if open
+            if (isLeaderboardModalOpen()) {
+                if (activeLeaderboardTab === 'trading') {
+                    await loadTradingLeaderboard();
+                } else {
+                    await loadCommunityLeaderboard();
+                }
+            }
+        }
+
+        async function updateMainLeaderboardSection() {
+            try {
+                clearLeaderboardMainError();
+                const endpoint = activeLeaderboardTab === 'trading' ? '/api/leaderboard/trading' : '/api/leaderboard/community';
+                const res = await axios.get(endpoint);
+                const leaders = res.data || [];
+                
+                // Update top 3 positions
+                updateTopPositions(leaders);
+                
+                // Update user position
+                updateUserPosition(leaders);
+                
+            } catch (error) {
+                console.error('Error updating main leaderboard:', error);
+                showLeaderboardMainError('Failed to load leaderboard data');
+            }
+        }
+
+        function updateTopPositions(leaders) {
+            const positions = [
+                { user: 'leaderboard1stUser', pnl: 'leaderboard1stPnL', trades: 'leaderboard1stTrades' },
+                { user: 'leaderboard2ndUser', pnl: 'leaderboard2ndPnL', trades: 'leaderboard2ndTrades' },
+                { user: 'leaderboard3rdUser', pnl: 'leaderboard3rdPnL', trades: 'leaderboard3rdTrades' }
+            ];
+            
+            positions.forEach((pos, index) => {
+                const leader = leaders[index];
+                if (leader) {
+                    document.getElementById(pos.user).textContent = leader.user_id || 'Anonymous';
+                    document.getElementById(pos.pnl).textContent = '$' + (leader.total_pnl || 0).toFixed(2);
+                    document.getElementById(pos.trades).textContent = (leader.total_trades || 0) + ' trades';
+                } else {
+                    document.getElementById(pos.user).textContent = 'No data';
+                    document.getElementById(pos.pnl).textContent = '$0.00';
+                    document.getElementById(pos.trades).textContent = '0 trades';
+                }
+            });
+        }
+
+        function updateUserPosition(leaders) {
+            const connectedWallet = document.getElementById('connectedWallet');
+            const isWalletConnected = connectedWallet && !connectedWallet.classList.contains('hidden');
+            
+            if (!isWalletConnected) {
+                document.getElementById('yourLeaderboardRank').textContent = 'Connect wallet';
+                document.getElementById('yourLeaderboardPnL').textContent = '$0.00';
                 return;
             }
-            if (activeLeaderboardTab === 'trading') {
-                await loadTradingLeaderboard();
+            
+            const walletAddress = document.getElementById('walletAddress').textContent;
+            const userLeader = leaders.find(l => l.user_id === walletAddress);
+            
+            if (userLeader) {
+                const rank = leaders.findIndex(l => l.user_id === walletAddress) + 1;
+                document.getElementById('yourLeaderboardRank').textContent = `#${rank}`;
+                document.getElementById('yourLeaderboardPnL').textContent = '$' + (userLeader.total_pnl || 0).toFixed(2);
             } else {
-                await loadCommunityLeaderboard();
+                document.getElementById('yourLeaderboardRank').textContent = 'Not ranked';
+                document.getElementById('yourLeaderboardPnL').textContent = '$0.00';
             }
+        }
+
+        function showLeaderboardMainError(msg) {
+            const el = document.getElementById('leaderboardMainError');
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        function clearLeaderboardMainError() {
+            const el = document.getElementById('leaderboardMainError');
+            if (!el) return;
+            el.textContent = '';
+            el.classList.add('hidden');
+        }
+
+        async function refreshLeaderboard() {
+            await updateMainLeaderboardSection();
         }
 
         function showLeaderboardError(msg) {
