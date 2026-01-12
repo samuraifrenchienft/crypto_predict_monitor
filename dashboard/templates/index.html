@@ -328,7 +328,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <!-- Existing buttons -->
-                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
+                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Email</button>
                     <button id="logoutBtn" onclick="logout()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
                     <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
                     <span id="queuedAlertsCount" class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
@@ -353,14 +353,6 @@
                                 </svg>
                             </button>
                         </div>
-                        
-                        <!-- P&L Link -->
-                        <button onclick="openPnLModal()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                            </svg>
-                            <span>💰 P&L</span>
-                        </button>
                         
                         <!-- Leaderboard Link -->
                         <a href="/leaderboard" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
@@ -420,15 +412,15 @@
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-semibold text-gray-200 tracking-wide truncate">Points</dt>
-                            <dd class="text-2xl font-bold text-white" id="userPoints">0</dd>
-                        </dl>
+                        <div class="min-w-0">
+                                <div class="text-base font-semibold text-white tracking-wide truncate">Referrals</div>
+                                <div class="text-lg font-bold text-white" id="userPoints">0</div>
+                            </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800 cursor-pointer hover:border-blue-500 transition-colors" onclick="openPnLModal()">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 stat-icon rounded-md p-3 neon-glow">
                         <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
