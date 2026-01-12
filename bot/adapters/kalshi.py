@@ -112,13 +112,13 @@ class KalshiAdapter(Adapter):
         
         return base64.b64encode(signature).decode('utf-8')
 
-    def _get_auth_headers(self) -> Dict[str, str]:
+    def _get_auth_headers(self, path: str = "/trade-api/ws/v2") -> Dict[str, str]:
         """Get authentication headers for WebSocket connection."""
         if not self.kalshi_access_key or not self.kalshi_private_key:
             raise ValueError("Kalshi access key and private key required for WebSocket authentication")
         
         timestamp = str(int(time.time() * 1000))  # Unix timestamp in milliseconds
-        signature = self._generate_signature(timestamp, "GET", "/trade-api/ws/v2")
+        signature = self._generate_signature(timestamp, "GET", path)
         
         return {
             "KALSHI-ACCESS-KEY": self.kalshi_access_key,
@@ -303,6 +303,28 @@ class KalshiAdapter(Adapter):
 
         return quotes
 
+    async def check_exchange_status(self) -> bool:
+        """Check if Kalshi exchange is active and trading is enabled."""
+        url = f"{self.base_url}/exchange/status"
+        
+        client = self._get_client()
+        try:
+            r = await retry_with_backoff(
+                client.get, self.name, url,
+                max_retries=3,
+                adapter_name=self.name
+            )
+            data = r.json()
+            
+            exchange_active = data.get("exchange_active", False)
+            trading_active = data.get("trading_active", False)
+            
+            self._ws_logger.info(f"Exchange status: active={exchange_active}, trading={trading_active}")
+            return exchange_active and trading_active
+        except Exception as e:
+            self._ws_logger.error(f"Failed to check exchange status: {e}")
+            return False
+
     async def close(self) -> None:
         """Clean up resources."""
         self._market_cache.clear()
@@ -318,8 +340,8 @@ class KalshiAdapter(Adapter):
             return  # Already connected
         
         try:
-            # Get authentication headers
-            auth_headers = self._get_auth_headers()
+            # Get authentication headers for base WebSocket path
+            auth_headers = self._get_auth_headers("/trade-api/ws/v2")
             
             # Connect with authentication
             self.ws = await websockets.connect(
@@ -339,11 +361,14 @@ class KalshiAdapter(Adapter):
         # Build full WebSocket URL with endpoint
         ws_endpoint = f"{self.ws_url}{endpoint}"
         
-        # Connect to the specific endpoint
+        # Connect to the specific endpoint with correct auth path
         if self.ws:
             await self.ws.close()
         
-        auth_headers = self._get_auth_headers()
+        # Use the endpoint path for authentication
+        auth_path = endpoint if endpoint.startswith("/") else f"/{endpoint}"
+        auth_headers = self._get_auth_headers(auth_path)
+        
         self.ws = await websockets.connect(ws_endpoint, additional_headers=auth_headers)
         
         subscription_message = {
