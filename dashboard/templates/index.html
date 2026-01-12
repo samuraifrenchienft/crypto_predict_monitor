@@ -281,27 +281,6 @@
 <body class="bg-black text-white">
     <div id="startupOverlay" class="startup-overlay" aria-live="polite" aria-busy="true">
         <div class="startup-shell">
-            <svg class="startup-logo" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Samurai logo">
-                <defs>
-                    <linearGradient id="pmG" x1="40" y1="24" x2="216" y2="232" gradientUnits="userSpaceOnUse">
-                        <stop offset="0" stop-color="#9D4EDD"/>
-                        <stop offset="0.55" stop-color="#00D9FF"/>
-                        <stop offset="1" stop-color="#00D9FF"/>
-                    </linearGradient>
-                    <linearGradient id="pmG2" x1="60" y1="44" x2="196" y2="220" gradientUnits="userSpaceOnUse">
-                        <stop offset="0" stop-color="#9D4EDD"/>
-                        <stop offset="1" stop-color="#00D9FF"/>
-                    </linearGradient>
-                </defs>
-                <path d="M74 78C50 78 34 60 34 44C34 28 46 22 58 22C76 22 90 38 96 54" stroke="url(#pmG)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M182 78C206 78 222 60 222 44C222 28 210 22 198 22C180 22 166 38 160 54" stroke="url(#pmG)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M92 70C104 56 116 50 128 50C140 50 152 56 164 70" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M64 104L92 84H164L192 104L176 188H80L64 104Z" stroke="url(#pmG)" stroke-width="10" stroke-linejoin="round"/>
-                <path d="M108 120C108 108 117 98 128 98C139 98 148 108 148 120" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round"/>
-                <path d="M94 150C104 138 116 132 128 132C140 132 152 138 162 150" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M112 160C120 154 136 154 144 160" stroke="url(#pmG2)" stroke-width="10" stroke-linecap="round"/>
-                <circle cx="128" cy="86" r="14" stroke="url(#pmG)" stroke-width="10"/>
-            </svg>
             <div class="startup-text">
                 <h1>Prediction Monitor</h1>
                 <p>Real-time market data</p>
@@ -328,7 +307,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <!-- Existing buttons -->
-                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Email</button>
+                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
                     <button id="logoutBtn" onclick="logout()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
                     <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
                     <span id="queuedAlertsCount" class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
