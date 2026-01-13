@@ -230,3 +230,39 @@ mcp_servers/
 
 # Dependency source (optional)
 requirements.in
+
+# Frontend junk
+frontend/node_modules/
+frontend/package-lock.json
+frontend/frontend/
+
+# IDE and tooling junk
+.windsurf/
+
+# Temporary docs and guides
+DEPLOYMENT_GUIDE.md
+FINAL_INTEGRATION_COMPLETE.md
+FRONTEND_INTEGRATION.md
+PNL_IMPLEMENTATION_COMPLETE.md
+PNL_SETUP_GUIDE.md
+
+# Test files (keep in separate test dir)
+test_*.py
+tests/
+
+# Assets and static files
+assets/
+
+# Docker and deployment (keep if needed)
+# docker-compose.yml
+# Dockerfile
+# nginx.conf
+
+# Environment templates
+env.*.template
+
+# Duplicate frontend files
+frontend/src/App.css
+frontend/src/App.js
+frontend/src/index.css
+frontend/src/index.js
