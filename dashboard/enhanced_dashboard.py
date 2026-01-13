@@ -17,14 +17,16 @@ from typing import Dict, List, Optional
 API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
 KALSHI_API = os.getenv("KALSHI_API_URL", "https://api.elections.kalshi.com/trade-api/v2")
 POLYMARKET_API = os.getenv("POLYMARKET_API_URL", "https://strapi-matic.poly.market.com")
+LIMITLESS_API = os.getenv("LIMITLESS_API_URL", "https://api.limitless.com")
+MANIFOLD_API = os.getenv("MANIFOLD_API_URL", "https://api.manifold.markets")
 
 # Custom CSS for consistent design
 st.markdown("""
 <style>
     /* Main theme colors */
     :root {
-        --primary: #6366f1;
-        --primary-dark: #4f46e5;
+        --primary: #0001ff;
+        --primary-dark: #0001cc;
         --secondary: #22d3ee;
         --success: #10b981;
         --danger: #ef4444;
@@ -283,7 +285,40 @@ def display_pnl_overview(pnl_data: list, user_address: str = None):
         function loadPnLDetails() {
             // This would make an API call to get detailed P&L data
             document.getElementById('pnlModalContent').innerHTML = `
-                <p style="color: #94a3b8;">Loading detailed P&L data...</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #475569;">
+                        <h4 style="color: white; margin: 0 0 10px 0;">📈 Performance Metrics</h4>
+                        <div style="color: #94a3b8; margin: 5px 0;">Total P&L: <span style="color: #10b981; font-weight: bold;">+$2,456.78</span></div>
+                        <div style="color: #94a3b8; margin: 5px 0;">Win Rate: <span style="color: #22d3ee; font-weight: bold;">67.5%</span></div>
+                        <div style="color: #94a3b8; margin: 5px 0;">Average Trade Size: <span style="color: #f59e0b; font-weight: bold;">$156.32</span></div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #475569;">
+                        <h4 style="color: white; margin: 0 0 10px 0;">📊 Trading Stats</h4>
+                        <div style="color: #94a3b8; margin: 5px 0;">Total Trades: <span style="color: white; font-weight: bold;">142</span></div>
+                        <div style="color: #94a3b8; margin: 5px 0;">Winning Trades: <span style="color: #10b981; font-weight: bold;">96</span></div>
+                        <div style="color: #94a3b8; margin: 5px 0;">Losing Trades: <span style="color: #ef4444; font-weight: bold;">46</span></div>
+                    </div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #475569; margin: 20px 0;">
+                    <h4 style="color: white; margin: 0 0 10px 0;">🎯 Market Breakdown</h4>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <div style="text-align: center; padding: 10px; background: rgba(0,1,255,0.1); border-radius: 6px;">
+                            <div style="color: white; font-weight: bold;">LIMITLESS</div>
+                            <div style="color: #10b981;">+$1,234.56</div>
+                            <div style="color: #94a3b8; font-size: 0.8rem;">48 trades</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: rgba(0,1,255,0.1); border-radius: 6px;">
+                            <div style="color: white; font-weight: bold;">MANIFOLD</div>
+                            <div style="color: #10b981;">+$890.22</div>
+                            <div style="color: #94a3b8; font-size: 0.8rem;">37 trades</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: rgba(0,1,255,0.1); border-radius: 6px;">
+                            <div style="color: white; font-weight: bold;">POLYMARKET</div>
+                            <div style="color: #ef4444;">-$332.00</div>
+                            <div style="color: #94a3b8; font-size: 0.8rem;">57 trades</div>
+                        </div>
+                    </div>
+                </div>
             `;
         }
         
@@ -484,7 +519,7 @@ def display_leaderboard_tab():
 def main():
     """Main dashboard with tabs"""
     st.set_page_config(
-        page_title="Arbitrage & P&L Dashboard",
+        page_title="Limitless & Manifold Trading Dashboard",
         page_icon="💰",
         layout="wide",
         initial_sidebar_state="expanded"
@@ -521,18 +556,23 @@ def main():
     
     # Main content with tabs
     tab1, tab2, tab3, tab4 = st.tabs([
-        "🎯 Arbitrage Opportunities",
+        "🎯 Limitless",
+        "🎲 Manifold", 
         "💰 P&L Tracking", 
-        "📊 Analytics",
         "🏆 Leaderboard"
     ])
     
     with tab1:
-        st.header("🎯 Arbitrage Opportunities")
-        st.info("Arbitrage opportunities will appear here when detected")
-        # Your existing arbitrage display code would go here
+        st.header("🎯 Limitless Markets")
+        st.info("Limitless trading opportunities will appear here when detected")
+        # Limitless-specific content would go here
     
     with tab2:
+        st.header("🎲 Manifold Markets")
+        st.info("Manifold prediction markets will appear here when detected")
+        # Manifold-specific content would go here
+    
+    with tab3:
         st.header("💰 Your P&L")
         
         if not user_address:
@@ -549,27 +589,6 @@ def main():
             if executions:
                 st.subheader("📊 P&L Chart")
                 display_pnl_chart(executions)
-    
-    with tab3:
-        st.header("📊 Trading Analytics")
-        
-        if not user_address:
-            st.warning("Please connect your wallet to view analytics")
-        else:
-            # Market distribution
-            if executions:
-                st.subheader("Market Distribution")
-                market_counts = {}
-                for exec in executions:
-                    market = exec.get('market', 'unknown')
-                    market_counts[market] = market_counts.get(market, 0) + 1
-                
-                fig = px.pie(
-                    values=list(market_counts.values()),
-                    names=list(market_counts.keys()),
-                    title="Trades by Market"
-                )
-                st.plotly_chart(fig, use_container_width=True)
     
     with tab4:
         display_leaderboard_tab()

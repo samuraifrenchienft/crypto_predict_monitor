@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
+from pathlib import Path
 
 from src.alerts import AlertRule
 from src.config import load_settings, safe_settings_summary
@@ -11,6 +13,11 @@ from src.monitor import run_monitor
 from src.schemas import WebhookPayload
 from src.webhook import send_webhook
 
+# P&L Card System imports
+from src.social.pnl_card_generator import PnLCardService
+from src.api.routes.pnl_cards import init_pnl_service, pnl_bp
+from src.utils.s3_uploader import init_s3_uploader, is_s3_available
+from src.database.migrate import run_supabase_migrations, seed_test_data
 
 def main() -> int:
     settings = load_settings()

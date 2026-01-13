@@ -10,12 +10,15 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
-            --pm-cyan: #00D9FF;
-            --pm-purple: #9D4EDD;
-            --pm-panel: rgba(10, 14, 39, 0.95);
-            --pm-glow-cyan: rgba(0, 217, 255, 0.30);
-            --pm-glow-purple: rgba(157, 78, 221, 0.20);
-            --pm-border: rgba(0, 217, 255, 0.55);
+            --pm-cyan: #0001ff;
+            --pm-purple: #0001ff;
+            --pm-panel: rgba(0, 1, 255, 0.08);
+            --pm-glow-cyan: rgba(0, 1, 255, 0.40);
+            --pm-glow-purple: rgba(0, 1, 255, 0.30);
+            --pm-border: rgba(0, 1, 255, 0.30);
+            --glass-bg: rgba(0, 1, 255, 0.05);
+            --glass-border: rgba(0, 1, 255, 0.20);
+            --glass-shadow: 0 8px 32px rgba(0, 1, 255, 0.15);
         }
 
         body {
@@ -30,9 +33,9 @@
             pointer-events: none;
             z-index: 0;
             background:
-                radial-gradient(900px circle at 20% 25%, rgba(157, 78, 221, 0.10), transparent 55%),
-                radial-gradient(900px circle at 80% 35%, rgba(0, 217, 255, 0.08), transparent 55%),
-                radial-gradient(1200px circle at 55% 85%, rgba(157, 78, 221, 0.06), transparent 60%);
+                radial-gradient(900px circle at 20% 25%, rgba(0, 1, 255, 0.15), transparent 55%),
+                radial-gradient(900px circle at 80% 35%, rgba(0, 1, 255, 0.10), transparent 55%),
+                radial-gradient(1200px circle at 55% 85%, rgba(0, 1, 255, 0.08), transparent 60%);
         }
 
         body > * {
@@ -47,9 +50,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(700px circle at 35% 55%, rgba(139, 92, 246, 0.18), transparent 55%),
-                        radial-gradient(800px circle at 65% 45%, rgba(34, 211, 238, 0.14), transparent 60%),
-                        linear-gradient(135deg, #020617 0%, #042f2e 45%, #0b1020 100%);
+            background: radial-gradient(700px circle at 35% 55%, rgba(0, 1, 255, 0.20), transparent 55%),
+                        radial-gradient(800px circle at 65% 45%, rgba(0, 1, 255, 0.15), transparent 60%),
+                        linear-gradient(135deg, #000000 0%, #000011 45%, #000022 100%);
             opacity: 1;
             visibility: visible;
             transform: translateZ(0);
@@ -71,7 +74,7 @@
             width: 210px;
             height: 210px;
             flex: 0 0 auto;
-            filter: drop-shadow(0 0 22px rgba(0, 217, 255, 0.18)) drop-shadow(0 0 26px rgba(157, 78, 221, 0.16));
+            filter: drop-shadow(0 0 22px rgba(0, 1, 255, 0.25)) drop-shadow(0 0 26px rgba(0, 1, 255, 0.20));
         }
         .startup-text h1 {
             font-size: 48px;
@@ -163,12 +166,17 @@
             box-shadow: 0 0 24px rgba(0, 217, 255, 0.42), 0 0 34px rgba(157, 78, 221, 0.28);
         }
         .stat-icon {
-            background: linear-gradient(135deg, var(--pm-cyan), var(--pm-purple));
+            background: #0001ff;
+            box-shadow: 0 0 15px rgba(0, 1, 255, 0.5);
         }
 
         header {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important;
             border-bottom: 1px solid var(--pm-cyan) !important;
-            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.10);
+            box-shadow: var(--glass-shadow) !important;
         }
 
         h1, h2, h3 {
@@ -178,22 +186,24 @@
         .bg-gray-900,
         .bg-gray-800,
         .bg-gray-950 {
-            background: var(--pm-panel) !important;
-            border-color: var(--pm-border) !important;
-            box-shadow: 0 0 20px var(--pm-glow-cyan), 0 0 30px var(--pm-glow-purple) !important;
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border) !important;
+            box-shadow: var(--glass-shadow) !important;
         }
 
         .border-gray-800,
         .border-gray-700 {
-            border-color: var(--pm-border) !important;
+            border-color: var(--glass-border) !important;
         }
 
         .market-card {
-            background: rgba(10, 14, 39, 0.72) !important;
-            border: 1px solid var(--pm-border) !important;
-            box-shadow: 0 0 20px var(--pm-glow-cyan), 0 0 30px var(--pm-glow-purple) !important;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important;
+            box-shadow: var(--glass-shadow) !important;
             transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
         }
 
@@ -203,16 +213,16 @@
         }
 
         button {
-            background: linear-gradient(135deg, var(--pm-cyan), var(--pm-purple)) !important;
-            border: 1px solid rgba(0, 217, 255, 0.65) !important;
-            box-shadow: 0 0 18px rgba(0, 217, 255, 0.24), 0 0 26px rgba(157, 78, 221, 0.18);
+            background: #0001ff !important;
+            border: 1px solid rgba(0, 1, 255, 0.50) !important;
+            box-shadow: 0 0 18px rgba(0, 1, 255, 0.30), 0 0 26px rgba(0, 1, 255, 0.20);
             transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
         }
 
         button:hover {
-            filter: brightness(1.07);
+            filter: brightness(1.15);
             transform: translateY(-1px);
-            box-shadow: 0 0 22px rgba(0, 217, 255, 0.34), 0 0 32px rgba(157, 78, 221, 0.24);
+            box-shadow: 0 0 22px rgba(0, 1, 255, 0.45), 0 0 32px rgba(0, 1, 255, 0.35);
         }
 
         button:disabled {
@@ -231,13 +241,13 @@
         }
 
         .filter-tab:hover {
-            filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.25));
+            filter: drop-shadow(0 0 12px rgba(0, 1, 255, 0.35));
         }
 
         .filter-tab.active {
             border-bottom-color: var(--pm-cyan) !important;
             color: var(--pm-cyan) !important;
-            filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.28));
+            filter: drop-shadow(0 0 12px rgba(0, 1, 255, 0.40));
         }
 
         .text-blue-400,
@@ -250,7 +260,7 @@
         }
 
         .bg-\[\#0001ff\] {
-            background: linear-gradient(135deg, var(--pm-cyan), var(--pm-purple)) !important;
+            background: #0001ff !important;
         }
 
         header h1.text-2xl {
@@ -287,9 +297,9 @@
                 <svg class="startup-spinner" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <defs>
                         <linearGradient id="pmSpin" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
-                            <stop offset="0" stop-color="#9D4EDD"/>
-                            <stop offset="0.55" stop-color="#00D9FF"/>
-                            <stop offset="1" stop-color="#00D9FF"/>
+                            <stop offset="0" stop-color="#0001ff"/>
+                            <stop offset="0.55" stop-color="#0001ff"/>
+                            <stop offset="1" stop-color="#0001ff"/>
                         </linearGradient>
                     </defs>
                     <circle cx="32" cy="32" r="24" stroke="rgba(148,163,184,0.22)" stroke-width="6" />
@@ -307,14 +317,14 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <!-- Existing buttons -->
-                    <button id="loginBtn" onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
-                    <button id="logoutBtn" onclick="logout()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
-                    <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
-                    <span id="queuedAlertsCount" class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
+                        <button id="loginBtn" onclick="login()" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
+                    <button id="logoutBtn" onclick="logout()" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
+                    <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
+                    <span id="queuedAlertsCount" class="bg-[#0001ff] text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
                     
                     <!-- Wallet Connection -->
                     <div id="walletSection" class="flex items-center space-x-3">
-                        <button id="connectWalletBtn" onclick="connectWallet()" class="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
+                        <button id="connectWalletBtn" onclick="connectWallet()" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                             </svg>
@@ -334,7 +344,7 @@
                         </div>
                         
                         <!-- Leaderboard Link -->
-                        <a href="/leaderboard" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
+                        <a href="/leaderboard" class="bg-gradient-to-r from-[#0001ff] to-purple-600 hover:from-[#0001ff] hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm-9-1h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7H8v10h5"></path>
@@ -1052,7 +1062,7 @@
                         const conv = (r.referrals_converted != null) ? String(r.referrals_converted) : '0';
                         return `
                             <div class="flex items-center justify-between py-1 border-b border-gray-800">
-                                <div class="text-gray-300">#${i + 1} ${short}</div>
+                                <div class="text-gray-300">${short}</div>
                                 <div class="text-gray-400">${conv} conv</div>
                                 <div style="color: var(--pm-cyan);" class="font-semibold">${pts} pts</div>
                             </div>
@@ -1511,6 +1521,125 @@
             const el = document.getElementById('startupOverlay');
             if (!el) return;
             el.classList.add('hidden');
+        }
+
+        function openLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.remove('hidden');
+            loadCommunityLeaderboard();
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.add('hidden');
+        }
+
+        async function refreshLeaderboardActive() {
+            loadCommunityLeaderboard();
+        }
+
+        function setLeaderboardTab(tab) {
+            // Update tab styles
+            const communityTab = document.getElementById('leaderboardTabCommunity');
+            const tradingTab = document.getElementById('leaderboardTabTrading');
+            
+            if (tab === 'community') {
+                communityTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow';
+                tradingTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700';
+                loadCommunityLeaderboard();
+            } else if (tab === 'trading') {
+                tradingTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow';
+                communityTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700';
+                loadTradingLeaderboard();
+            }
+        }
+
+        async function loadTradingLeaderboard() {
+            const contentEl = document.getElementById('leaderboardContent');
+            const errorEl = document.getElementById('leaderboardError');
+            
+            if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Loading...</div>';
+            if (errorEl) errorEl.classList.add('hidden');
+            
+            try {
+                const res = await axios.get('/api/leaderboard/trading');
+                const leaders = (res.data?.leaders || []).slice(0, 10);
+                
+                if (contentEl) {
+                    contentEl.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                                <div class="text-base font-semibold text-white mb-3">Trading Leaders</div>
+                                <div class="space-y-2">
+                                    ${leaders.map((r, i) => {
+                                        const label = (r.wallet || r.user_id || '').toString();
+                                        const short = label.length > 12 ? (label.slice(0, 6) + '...' + label.slice(-4)) : label;
+                                        const pnl = (r.total_pnl != null) ? String(r.total_pnl) : '0';
+                                        const trades = (r.total_trades != null) ? String(r.total_trades) : '0';
+                                        return `
+                                            <div class="flex items-center justify-between py-2 border-b border-gray-800">
+                                                <div class="text-gray-300">${short}</div>
+                                                <div class="text-gray-400">${trades} trades</div>
+                                                <div style="color: var(--pm-cyan);" class="font-semibold">$${pnl}</div>
+                                            </div>
+                                        `;
+                                    }).join('') || '<div class="text-gray-400">No trading leaders yet.</div>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Error loading trading leaderboard:', e);
+                if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Unable to load trading leaders.</div>';
+                if (errorEl) {
+                    errorEl.textContent = 'Failed to load trading leaderboard';
+                    errorEl.classList.remove('hidden');
+                }
+            }
+        }
+
+        async function loadCommunityLeaderboard() {
+            const contentEl = document.getElementById('leaderboardContent');
+            const errorEl = document.getElementById('leaderboardError');
+            
+            if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Loading...</div>';
+            if (errorEl) errorEl.classList.add('hidden');
+            
+            try {
+                const res = await axios.get('/api/leaderboard/community');
+                const leaders = (res.data?.leaders || []).slice(0, 10);
+                
+                if (contentEl) {
+                    contentEl.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                                <div class="text-base font-semibold text-white mb-3">Community Leaders</div>
+                                <div class="space-y-2">
+                                    ${leaders.map((r, i) => {
+                                        const label = (r.wallet || r.user_id || '').toString();
+                                        const short = label.length > 12 ? (label.slice(0, 6) + '...' + label.slice(-4)) : label;
+                                        const pts = (r.points_earned != null) ? String(r.points_earned) : '0';
+                                        const conv = (r.referrals_converted != null) ? String(r.referrals_converted) : '0';
+                                        return `
+                                            <div class="flex items-center justify-between py-2 border-b border-gray-800">
+                                                <div class="text-gray-300">${short}</div>
+                                                <div class="text-gray-400">${conv} conv</div>
+                                                <div style="color: var(--pm-cyan);" class="font-semibold">${pts} pts</div>
+                                            </div>
+                                        `;
+                                    }).join('') || '<div class="text-gray-400">No leaders yet.</div>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Error loading community leaderboard:', e);
+                if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Unable to load leaders.</div>';
+                if (errorEl) {
+                    errorEl.textContent = 'Failed to load leaderboard';
+                    errorEl.classList.remove('hidden');
+                }
+            }
         }
 
         window.addEventListener('load', function() {
