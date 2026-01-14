@@ -7,38 +7,38 @@
 - **Failed**: 3 ❌
 - **Skipped**: 0 ⏭️
 - **Success Rate**: 70.0%
-- **Total Duration**: 10.95s
+- **Total Duration**: 12.41s
 
 ## Test Results
 
 ### ❌ Code Quality
 - **Status**: FAIL
-- **Duration**: 0.13s
+- **Duration**: 0.26s
 - **Message**: Test failed
 
 ### ✅ Dependencies
 - **Status**: PASS
-- **Duration**: 2.07s
+- **Duration**: 3.17s
 - **Message**: Test passed
 
 ### ✅ Configuration
 - **Status**: PASS
-- **Duration**: 0.03s
+- **Duration**: 0.04s
 - **Message**: Test passed
 
 ### ❌ API Endpoints
 - **Status**: FAIL
-- **Duration**: 8.15s
+- **Duration**: 8.21s
 - **Message**: Test failed
 
 ### ❌ Database Connection
 - **Status**: FAIL
-- **Duration**: 0.00s
+- **Duration**: 0.03s
 - **Message**: Test failed
 
 ### ✅ P&L System
 - **Status**: PASS
-- **Duration**: 0.32s
+- **Duration**: 0.40s
 - **Message**: Test passed
 
 ### ✅ Security
@@ -58,7 +58,7 @@
 
 ### ✅ Performance
 - **Status**: PASS
-- **Duration**: 0.24s
+- **Duration**: 0.30s
 - **Message**: Test passed
 
 ## Recommendations

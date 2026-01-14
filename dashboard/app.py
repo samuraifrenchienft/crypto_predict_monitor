@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from bot.config import load_config
 from bot.adapters.manifold import ManifoldAdapter
-from bot.adapters.kalshi import KalshiAdapter
+from bot.adapters.azuro import AzuroAdapter
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
 from bot.arbitrage import detect_cross_market_arbitrage
@@ -203,7 +203,7 @@ async def update_all_markets():
     print("DEBUG: update_all_markets starting")
     try:
         cfg = load_config()
-        print(f"DEBUG: Config loaded. Kalshi enabled: {cfg.kalshi.enabled}")
+        print(f"DEBUG: Config loaded. Azuro enabled: {cfg.azuro.enabled}")
         adapters = []
         
         # Create adapters based on config
@@ -225,20 +225,20 @@ async def update_all_markets():
             except ModuleNotFoundError as e:
                 print(f"limitless disabled at runtime (missing dependency): {e}")
 
-        if cfg.kalshi.enabled:
-            print("DEBUG: Adding Kalshi adapter")
+        if cfg.azuro.enabled:
+            print("DEBUG: Adding Azuro adapter")
             from bot.rate_limit import RateLimitConfig
-            adapters.append(("kalshi", KalshiAdapter(
-                base_url=cfg.kalshi.base_url,
-                markets_limit=cfg.kalshi.markets_limit,
+            adapters.append(("azuro", AzuroAdapter(
+                base_url=cfg.azuro.base_url,
+                markets_limit=cfg.azuro.markets_limit,
                 rate_limit_config=RateLimitConfig(
-                    requests_per_second=cfg.kalshi.requests_per_second,
-                    requests_per_minute=cfg.kalshi.requests_per_minute,
-                    burst_size=cfg.kalshi.burst_size,
+                    requests_per_second=cfg.azuro.requests_per_second,
+                    requests_per_minute=cfg.azuro.requests_per_minute,
+                    burst_size=cfg.azuro.burst_size,
                 ),
             )))
         else:
-            print("DEBUG: Kalshi not enabled in config")
+            print("DEBUG: Azuro not enabled in config")
         
         if cfg.manifold.enabled:
             from bot.rate_limit import RateLimitConfig
@@ -412,7 +412,7 @@ def _classic_arb_opportunities_from_cache() -> List[Dict[str, Any]]:
     with _cache_lock:
         snapshot = json.loads(json.dumps(market_cache))
 
-    for source in ("polymarket", "kalshi"):
+    for source in ("polymarket", "azuro"):
         for m in snapshot.get(source, []) or []:
             outcomes = m.get("outcomes") or []
             yes = next((o for o in outcomes if str(o.get("name")).upper() == "YES"), None)
@@ -1151,6 +1151,7 @@ def my_executions():
     rows = (
         g.db.query(TradeExecution)
         .filter(TradeExecution.user_id == user.id)
+        .filter(TradeExecution.source == "polymarket")
         .order_by(TradeExecution.executed_at.desc())
         .limit(200)
         .all()
@@ -1181,7 +1182,7 @@ def trading_leaderboard():
     now = datetime.now(timezone.utc)
 
     def compute(start: Optional[datetime]) -> Dict[int, Dict[str, Any]]:
-        q = g.db.query(TradeExecution)
+        q = g.db.query(TradeExecution).filter(TradeExecution.source == "polymarket")
         if start is not None:
             q = q.filter(TradeExecution.executed_at >= start)
         rows = q.all()
@@ -1359,7 +1360,7 @@ def pnl_graphic():
     else:
         tf_label = "ALL"
 
-    q = g.db.query(TradeExecution).filter(TradeExecution.user_id == int(user.id))
+    q = g.db.query(TradeExecution).filter(TradeExecution.user_id == int(user.id)).filter(TradeExecution.source == "polymarket")
     if start is not None:
         q = q.filter(TradeExecution.executed_at >= start)
     rows = q.order_by(TradeExecution.executed_at.desc()).limit(5000).all()
@@ -1617,18 +1618,16 @@ def get_arbitrage():
 
 @app.route("/api/pnl/<user_address>")
 def get_pnl_data(user_address: str):
-    """Get P&L data for a user"""
+    """Get Polymarket P&L data for a user"""
     try:
         # For demo, return placeholder data
-        # In production, this would query the executions table
+        # In production, this would query the executions table filtered by market = "polymarket"
         pnl_data = {
             "total_pnl": 125.50,
-            "polymarket_pnl": 75.25,
-            "kalshi_pnl": 50.25,
+            "polymarket_pnl": 125.50,
             "total_trades": 15,
             "gas_spent": 0.015,
-            "polymarket_trades": 8,
-            "kalshi_trades": 7,
+            "polymarket_trades": 15,
             "win_rate": 73.3,
             "winning_trades": 11,
             "losing_trades": 4,
@@ -1648,22 +1647,35 @@ def get_pnl_data(user_address: str):
                 },
                 {
                     "id": "2",
-                    "market": "kalshi",
-                    "market_ticker": "KXMARKET123",
-                    "side": "NO",
-                    "entry_price": 0.35,
-                    "exit_price": 0.30,
+                    "market": "polymarket",
+                    "market_ticker": "BTC-PRICE",
+                    "side": "YES",
+                    "entry_price": 0.45,
+                    "exit_price": 0.55,
                     "quantity": 100,
-                    "pnl": -5.25,
+                    "pnl": 10.00,
                     "status": "closed",
                     "entry_timestamp": "2024-01-11T09:00:00Z",
                     "exit_timestamp": "2024-01-11T11:00:00Z"
+                },
+                {
+                    "id": "3",
+                    "market": "polymarket",
+                    "market_ticker": "ETH-PRICE",
+                    "side": "NO",
+                    "entry_price": 0.40,
+                    "exit_price": 0.35,
+                    "quantity": 100,
+                    "pnl": 5.00,
+                    "status": "closed",
+                    "entry_timestamp": "2024-01-11T08:00:00Z",
+                    "exit_timestamp": "2024-01-11T10:00:00Z"
                 }
             ]
         }
         return jsonify(pnl_data)
     except Exception as e:
-        logger.error(f"Error fetching P&L data: {e}")
+        logger.error(f"Error fetching Polymarket P&L data: {e}")
         return jsonify({"error": str(e)}), 500
 
 

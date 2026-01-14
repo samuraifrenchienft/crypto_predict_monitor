@@ -115,6 +115,17 @@ class ManifoldCfg:
     markets_limit: int = 50
     requests_per_second: float = 2.0
     requests_per_minute: int = 120
+
+
+@dataclass(frozen=True)
+class AzuroCfg:
+    enabled: bool
+    graphql_base_url: str
+    subgraph_base_url: str
+    rest_base_url: str
+    markets_limit: int
+    use_fallback: bool
+    use_websocket: bool
     burst_size: int = 10
 
 
@@ -129,6 +140,7 @@ class AppConfig:
     limitless: LimitlessCfg
     kalshi: KalshiCfg
     manifold: ManifoldCfg
+    azuro: AzuroCfg
     discord_webhook_url: Optional[str]
 
 
@@ -216,6 +228,17 @@ def load_config() -> AppConfig:
         burst_size=int(mf_raw.get("burst_size", 10)),
     )
 
+    az_raw = ad_raw.get("azuro", {})
+    azuro = AzuroCfg(
+        enabled=bool(az_raw.get("enabled", False)),
+        graphql_base_url=str(az_raw.get("graphql_base_url", "https://api.azuro.org/graphql")),
+        subgraph_base_url=str(az_raw.get("subgraph_base_url", "https://subgraph.azuro.org")),
+        rest_base_url=str(az_raw.get("rest_base_url", "https://azuro.org/api/v1")),
+        markets_limit=int(az_raw.get("markets_limit", 50)),
+        use_fallback=bool(az_raw.get("use_fallback", True)),
+        use_websocket=bool(az_raw.get("use_websocket", False)),
+    )
+
     k_raw = _must_get(ad_raw, "kalshi")
     kalshi = KalshiCfg(
         enabled=bool(_must_get(k_raw, "enabled")),
@@ -252,6 +275,14 @@ def load_config() -> AppConfig:
     mf_rpm = _env_int("MANIFOLD_REQUESTS_PER_MINUTE")
     mf_burst = _env_int("MANIFOLD_BURST_SIZE")
 
+    az_enabled = _env_bool("AZURO_ENABLED")
+    az_graphql = _env_str("AZURO_GRAPHQL_BASE_URL")
+    az_subgraph = _env_str("AZURO_SUBGRAPH_BASE_URL")
+    az_rest = _env_str("AZURO_REST_BASE_URL")
+    az_markets_limit = _env_int("AZURO_MARKETS_LIMIT")
+    az_fallback = _env_bool("AZURO_USE_FALLBACK")
+    az_websocket = _env_bool("AZURO_USE_WEBSOCKET")
+
     polymarket = PolymarketCfg(
         enabled=pm_enabled if pm_enabled is not None else polymarket.enabled,
         gamma_base_url=pm_gamma or polymarket.gamma_base_url,
@@ -285,6 +316,16 @@ def load_config() -> AppConfig:
         burst_size=mf_burst if mf_burst is not None else manifold.burst_size,
     )
 
+    azuro = AzuroCfg(
+        enabled=az_enabled if az_enabled is not None else azuro.enabled,
+        graphql_base_url=az_graphql or azuro.graphql_base_url,
+        subgraph_base_url=az_subgraph or azuro.subgraph_base_url,
+        rest_base_url=az_rest or azuro.rest_base_url,
+        markets_limit=az_markets_limit if az_markets_limit is not None else azuro.markets_limit,
+        use_fallback=az_fallback if az_fallback is not None else azuro.use_fallback,
+        use_websocket=az_websocket if az_websocket is not None else azuro.use_websocket,
+    )
+
     return AppConfig(
         bot=bot,
         discord=discord,
@@ -295,5 +336,6 @@ def load_config() -> AppConfig:
         limitless=limitless,
         kalshi=kalshi,
         manifold=manifold,
+        azuro=azuro,
         discord_webhook_url=webhook,
     )
