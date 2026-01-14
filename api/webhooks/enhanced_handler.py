@@ -53,10 +53,6 @@ POLYMARKET_ADDRESSES = [
     "0x4D6D095E4213c4A9A8F7b3A5E3e8c9D9A8b7C6D5",  # Additional
 ]
 
-KALSHI_ADDRESSES = [
-    # Add Kalshi contract addresses when available
-]
-
 @dataclass
 class AlertData:
     """Structure for arbitrage alert data"""
@@ -184,8 +180,8 @@ def is_market_match(transaction: TransactionData, alert: AlertData) -> bool:
     # Check if transaction involves the correct market contract
     if alert.market == "polymarket":
         return transaction.to_address.lower() in [addr.lower() for addr in POLYMARKET_ADDRESSES]
-    elif alert.market == "kalshi":
-        return transaction.to_address.lower() in [addr.lower() for addr in KALSHI_ADDRESSES]
+    elif alert.market == "azuro":
+        return True  # Azuro transactions would have different detection logic
     
     return False
 
@@ -194,8 +190,8 @@ async def get_trade_details_from_tx(market: str, tx_hash: str, user_address: str
     try:
         if market == "polymarket":
             return await get_polymarket_trade_details(tx_hash, user_address)
-        elif market == "kalshi":
-            return await get_kalshi_trade_details(tx_hash, user_address)
+        elif market == "azuro":
+            return await get_azuro_trade_details(tx_hash, user_address)
     except Exception as e:
         logger.error(f"Error fetching trade details: {e}")
         return {}
@@ -218,11 +214,11 @@ async def get_polymarket_trade_details(tx_hash: str, user_address: str) -> Dict[
         "gas_cost": 0.001  # Calculate from gas_used * gas_price
     }
 
-async def get_kalshi_trade_details(tx_hash: str, user_address: str) -> Dict[str, Any]:
-    """Fetch trade details from Kalshi"""
-    # Similar implementation for Kalshi
+async def get_azuro_trade_details(tx_hash: str, user_address: str) -> Dict[str, Any]:
+    """Fetch trade details from Azuro"""
+    # Implementation would parse Azuro transaction data
     return {
-        "market_ticker": "KXMARKET123",
+        "market_ticker": "AZUROMARKET123",
         "side": "yes",
         "entry_price": 0.65,
         "quantity": 100,

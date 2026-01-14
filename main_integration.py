@@ -14,7 +14,7 @@ from contextlib import asynccontextmanager
 from utils.fallback_poller import start_fallback_polling
 from utils.alert_manager import start_alert_system, create_alert_from_opportunity
 from bot.arbitrage import detect_cross_market_arbitrage
-from bot.adapters import polymarket, kalshi
+from bot.adapters import polymarket, azuro
 
 # Configure logging
 logging.basicConfig(
@@ -130,15 +130,18 @@ async def enhanced_arbitrage_detection():
     
     # Get adapters
     poly_adapter = polymarket.PolymarketAdapter()
-    kalshi_adapter = kalshi.KalshiAdapter(
-        kalshi_access_key=os.getenv("KALSHI_ACCESS_KEY"),
-        kalshi_private_key=os.getenv("KALSHI_PRIVATE_KEY")
+    azuro_adapter = azuro.AzuroAdapter(
+        graphql_base_url=os.getenv("AZURO_GRAPHQL_BASE_URL", "https://api.azuro.org/graphql"),
+        subgraph_base_url=os.getenv("AZURO_SUBGRAPH_BASE_URL", "https://subgraph.azuro.org"),
+        rest_base_url=os.getenv("AZURO_REST_BASE_URL", "https://azuro.org/api/v1"),
+        markets_limit=int(os.getenv("AZURO_MARKETS_LIMIT", "50")),
+        use_fallback=os.getenv("AZURO_USE_FALLBACK", "true").lower() == "true"
     )
     
     # Detect arbitrage opportunities
     opportunities = await detect_cross_market_arbitrage(
         poly_adapter, 
-        kalshi_adapter,
+        azuro_adapter,
         min_spread=0.08
     )
     

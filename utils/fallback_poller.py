@@ -42,8 +42,8 @@ class FallbackPoller:
                 "0x4bF53B9B888197B09A09e6dC3fea0837eBBdF5aB",
                 "0x8b6f69c4297e3461e1c0d3643e639c444c4af642",
             ],
-            "kalshi": [
-                # Add Kalshi addresses
+            "azuro": [
+                # Add Azuro addresses
             ]
         }
     
@@ -259,8 +259,8 @@ class FallbackPoller:
         
         if market == "polymarket":
             return to_address in [addr.lower() for addr in self.market_addresses["polymarket"]]
-        elif market == "kalshi":
-            return to_address in [addr.lower() for addr in self.market_addresses["kalshi"]]
+        elif market == "azuro":
+            return to_address in [addr.lower() for addr in self.market_addresses["azuro"]]
         
         return False
     

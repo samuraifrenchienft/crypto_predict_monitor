@@ -99,16 +99,6 @@ class LimitlessCfg:
 
 
 @dataclass(frozen=True)
-class KalshiCfg:
-    enabled: bool
-    base_url: str
-    markets_limit: int = 50
-    requests_per_second: float = 1.0
-    requests_per_minute: int = 60
-    burst_size: int = 5
-
-
-@dataclass(frozen=True)
 class ManifoldCfg:
     enabled: bool
     base_url: str
@@ -138,7 +128,6 @@ class AppConfig:
     whale_watch: WhaleWatchConfig
     polymarket: PolymarketCfg
     limitless: LimitlessCfg
-    kalshi: KalshiCfg
     manifold: ManifoldCfg
     azuro: AzuroCfg
     discord_webhook_url: Optional[str]
@@ -239,16 +228,6 @@ def load_config() -> AppConfig:
         use_websocket=bool(az_raw.get("use_websocket", False)),
     )
 
-    k_raw = _must_get(ad_raw, "kalshi")
-    kalshi = KalshiCfg(
-        enabled=bool(_must_get(k_raw, "enabled")),
-        base_url=str(_must_get(k_raw, "base_url")),
-        markets_limit=int(k_raw.get("markets_limit", 50)),
-        requests_per_second=float(k_raw.get("requests_per_second", 1.0)),
-        requests_per_minute=int(k_raw.get("requests_per_minute", 60)),
-        burst_size=int(k_raw.get("burst_size", 5)),
-    )
-
     # Secret lives ONLY in .env; we just read it (no printing).
     webhook = os.getenv("DISCORD_WEBHOOK_URL") or None
 
@@ -260,13 +239,6 @@ def load_config() -> AppConfig:
 
     lim_enabled = _env_bool("LIMITLESS_ENABLED")
     lim_base_url = _env_str("LIMITLESS_BASE_URL")
-
-    kal_enabled = _env_bool("KALSHI_ENABLED")
-    kal_base_url = _env_str("KALSHI_BASE_URL")
-    kal_markets_limit = _env_int("KALSHI_MARKETS_LIMIT")
-    kal_rps = _env_float("KALSHI_REQUESTS_PER_SECOND")
-    kal_rpm = _env_int("KALSHI_REQUESTS_PER_MINUTE")
-    kal_burst = _env_int("KALSHI_BURST_SIZE")
 
     mf_enabled = _env_bool("MANIFOLD_ENABLED")
     mf_base_url = _env_str("MANIFOLD_BASE_URL")
@@ -298,15 +270,6 @@ def load_config() -> AppConfig:
         use_websocket=limitless.use_websocket,
     )
 
-    kalshi = KalshiCfg(
-        enabled=kal_enabled if kal_enabled is not None else kalshi.enabled,
-        base_url=kal_base_url or kalshi.base_url,
-        markets_limit=kal_markets_limit if kal_markets_limit is not None else kalshi.markets_limit,
-        requests_per_second=kal_rps if kal_rps is not None else kalshi.requests_per_second,
-        requests_per_minute=kal_rpm if kal_rpm is not None else kalshi.requests_per_minute,
-        burst_size=kal_burst if kal_burst is not None else kalshi.burst_size,
-    )
-
     manifold = ManifoldCfg(
         enabled=mf_enabled if mf_enabled is not None else manifold.enabled,
         base_url=mf_base_url or manifold.base_url,
@@ -334,7 +297,6 @@ def load_config() -> AppConfig:
         whale_watch=whale_watch,
         polymarket=polymarket,
         limitless=limitless,
-        kalshi=kalshi,
         manifold=manifold,
         azuro=azuro,
         discord_webhook_url=webhook,

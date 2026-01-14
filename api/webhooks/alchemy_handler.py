@@ -1,6 +1,6 @@
 """
 Alchemy Webhook Handler for Real-Time Trade Execution Tracking
-Receives webhook notifications when users execute trades on Polymarket/Kalshi
+Receives webhook notifications when users execute trades on Polymarket/Azuro
 """
 
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
@@ -30,7 +30,7 @@ ALCHEMY_WEBHOOK_SECRET = os.getenv("ALCHEMY_WEBHOOK_SECRET")
 
 # Market detection patterns
 POLYMETRIC_ADDRESS = "0x4bF53B9B888197B09A09e6dC3fea0837eBBdF5aB"  # CTF Exchange
-KALSHI_ADDRESS = "0x0000000000000000000000000000000000000000"  # Update with actual
+AZURO_ADDRESS = "0x0000000000000000000000000000000000000000"  # Update with actual
 
 app = FastAPI(title="Trade Execution Webhook API")
 
@@ -53,8 +53,8 @@ async def detect_market_from_transaction(tx_data: Dict[str, Any]) -> Optional[st
     # Check if transaction involves known market addresses
     if tx_data.get("to", "").lower() == POLYMETRIC_ADDRESS.lower():
         return "polymarket"
-    elif tx_data.get("to", "").lower() == KALSHI_ADDRESS.lower():
-        return "kalshi"
+    elif tx_data.get("to", "").lower() == AZURO_ADDRESS.lower():
+        return "azuro"
     
     # Could also check transaction input data for market-specific patterns
     input_data = tx_data.get("input", "")
@@ -69,8 +69,8 @@ async def get_trade_details(market: str, tx_hash: str, user_address: str) -> Dic
     try:
         if market == "polymarket":
             return await get_polymarket_trade_details(tx_hash, user_address)
-        elif market == "kalshi":
-            return await get_kalshi_trade_details(tx_hash, user_address)
+        elif market == "azuro":
+            return await get_azuro_trade_details(tx_hash, user_address)
     except Exception as e:
         logger.error(f"Error fetching trade details: {e}")
         return {}
@@ -87,12 +87,12 @@ async def get_polymarket_trade_details(tx_hash: str, user_address: str) -> Dict[
         "gas_cost": 0.001
     }
 
-async def get_kalshi_trade_details(tx_hash: str, user_address: str) -> Dict[str, Any]:
-    """Fetch trade details from Kalshi API"""
-    # Implementation would call Kalshi's API
+async def get_azuro_trade_details(tx_hash: str, user_address: str) -> Dict[str, Any]:
+    """Fetch trade details from Azuro API"""
+    # Implementation would call Azuro's API
     # For now, return placeholder structure
     return {
-        "market_ticker": "KXMARKET123",
+        "market_ticker": "AZURO-placeholder-market",
         "side": "yes",  # or "no"
         "price": 0.65,
         "quantity": 100,

@@ -21,7 +21,7 @@ def get_env(key: str) -> Optional[str]:
         return value
     
     # Try PowerShell format (remove $env: and quotes)
-    ps_key = key.replace("KALSHI_", "env:KALSHI_")
+    ps_key = key.replace("AZURO_", "env:AZURO_")
     value = os.getenv(ps_key)
     if value:
         # Remove quotes if present
@@ -40,7 +40,7 @@ from bot.errors import ErrorInfo, ErrorType, log_error_metrics, FatalError, Retr
 from bot.models import Market, Outcome, Quote
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.adapters.limitless import LimitlessAdapter
-from bot.adapters.kalshi import KalshiAdapter
+from bot.adapters.azuro import AzuroAdapter
 from bot.adapters.manifold import ManifoldAdapter
 # from bot.adapters.metaculus import MetaculusAdapter  # TODO: Implement
 from bot.rate_limit import RateLimitConfig
@@ -106,18 +106,14 @@ async def main() -> None:
         console.print("[cyan]boot:[/cyan] enabling Limitless adapter")
         adapters.append(LimitlessAdapter(base_url=cfg.limitless.base_url))
 
-    if cfg.kalshi.enabled:
-        console.print("[cyan]boot:[/cyan] enabling Kalshi adapter")
-        adapters.append(KalshiAdapter(
-            base_url=cfg.kalshi.base_url,
-            markets_limit=cfg.kalshi.markets_limit,
-            rate_limit_config=RateLimitConfig(
-                requests_per_second=cfg.kalshi.requests_per_second,
-                requests_per_minute=cfg.kalshi.requests_per_minute,
-                burst_size=cfg.kalshi.burst_size,
-            ),
-            kalshi_access_key=get_env("KALSHI_ACCESS_KEY"),
-            kalshi_private_key=get_env("KALSHI_PRIVATE_KEY"),
+    if cfg.azuro.enabled:
+        console.print("[cyan]boot:[/cyan] enabling Azuro adapter")
+        adapters.append(AzuroAdapter(
+            graphql_base_url=cfg.azuro.graphql_base_url,
+            subgraph_base_url=cfg.azuro.subgraph_base_url,
+            rest_base_url=cfg.azuro.rest_base_url,
+            markets_limit=cfg.azuro.markets_limit,
+            use_fallback=cfg.azuro.use_fallback,
         ))
 
     if cfg.manifold.enabled:
