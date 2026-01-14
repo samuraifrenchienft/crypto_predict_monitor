@@ -41,15 +41,15 @@ arbitrage:
 
 whale_watch:
   enabled: true
-  # List of wallet addresses or usernames to track (platform-specific)
+  # List of Polymarket wallet addresses to track
   wallets:
     - address: "0xabc123..."  # example: Polymarket wallet
       platform: "polymarket"
       label: "WhaleA"
-    - address: "user123"      # example: Manifold username
-      platform: "manifold"
+    - address: "0xdef456..."  # example: Polymarket wallet
+      platform: "polymarket"
       label: "WhaleB"
-    # Add up to 4 wallets/bots
+    # Add up to 4 Polymarket wallets
   # Alert if N of these wallets invest in the same new market within time window
   convergence_threshold: 2  # how many wallets must agree
   time_window_hours: 6      # time window to detect convergence
@@ -64,7 +64,7 @@ adapters:
     clob_base_url: "https://clob.polymarket.com"
     data_base_url: "https://data-api.polymarket.com"
     events_limit: 50
-    # Use WS later (we’ll wire it after HTTP is stable)
+    # Use WS later (we'll wire it after HTTP is stable)
     use_websocket: false
 
   limitless:
@@ -92,3 +92,15 @@ adapters:
     requests_per_second: 2.0
     requests_per_minute: 120
     burst_size: 10
+
+  azuro:
+    enabled: true
+    # Azuro Protocol endpoints (GraphQL, REST, Subgraph)
+    graphql_base_url: "https://api.azuro.org/graphql"
+    subgraph_base_url: "https://subgraph.azuro.org"
+    rest_base_url: "https://azuro.org/api/v1"
+    markets_limit: 50
+    # Use fallback data if APIs are not available (Azuro is newer)
+    use_fallback: true
+    # Optional WS later
+    use_websocket: false

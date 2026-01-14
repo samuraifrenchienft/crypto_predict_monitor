@@ -141,7 +141,7 @@
             font-weight: 600;
         }
         .source-manifold { background: #fbbf24; color: #78350f; }
-        .source-kalshi { background: #60a5fa; color: #1e3a8a; }
+        .source-azuro { background: #8b5cf6; color: #ffffff; }
         .source-polymarket { background: #34d399; color: #064e3b; }
         .source-limitless { background: #f87171; color: #7f1d1d; }
         .loading-spinner {
@@ -317,14 +317,14 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <!-- Existing buttons -->
-                        <button id="loginBtn" onclick="login()" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
-                    <button id="logoutBtn" onclick="logout()" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
+                        <button id="loginBtn" onclick="login(); beep();" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
+                    <button id="logoutBtn" onclick="logout(); beep();" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
                     <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
                     <span id="queuedAlertsCount" class="bg-[#0001ff] text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
                     
                     <!-- Wallet Connection -->
                     <div id="walletSection" class="flex items-center space-x-3">
-                        <button id="connectWalletBtn" onclick="connectWallet()" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
+                        <button id="connectWalletBtn" onclick="connectWallet(); beep();" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                             </svg>
@@ -344,7 +344,7 @@
                         </div>
                         
                         <!-- Leaderboard Link -->
-                        <a href="/leaderboard" class="bg-gradient-to-r from-[#0001ff] to-purple-600 hover:from-[#0001ff] hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
+                        <a href="/leaderboard" onclick="beep();" class="bg-gradient-to-r from-[#0001ff] to-purple-600 hover:from-[#0001ff] hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm-9-1h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7H8v10h5"></path>
@@ -428,7 +428,7 @@
 
         <!-- Whale Alerts Section -->
         <div id="whaleSection" class="mb-8 hidden">
-            <h2 class="text-xl font-bold text-white mb-4">🐋 Whale Convergence Alerts</h2>
+            <h2 class="text-xl font-bold text-white mb-4">🐋 Polymarket Whale Alerts</h2>
             <div id="whaleGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Whale alerts will be inserted here -->
             </div>
@@ -444,8 +444,8 @@
                     <button onclick="filterMarkets('manifold', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Manifold
                     </button>
-                    <button onclick="filterMarkets('kalshi', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
-                        Kalshi
+                    <button onclick="filterMarkets('azuro', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
+                        Azuro
                     </button>
                     <button onclick="filterMarkets('polymarket', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
                         Polymarket
@@ -522,7 +522,7 @@
             <div class="bg-gray-950 rounded-lg shadow-xl max-w-lg w-full relative z-10 border border-gray-800">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-white">🐋 Track Wallets</h2>
+                        <h2 class="text-xl font-bold text-white">🐋 Track Polymarket Wallets</h2>
                         <button onclick="closeWhaleModal()" class="text-gray-400 hover:text-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -530,7 +530,7 @@
                         </button>
                     </div>
                     
-                    <p class="text-gray-400 text-sm mb-4">Add up to 4 wallets to track. Get alerts when multiple wallets bet on the same market.</p>
+                    <p class="text-gray-400 text-sm mb-4">Add up to 4 Polymarket wallets to track. Get alerts when multiple wallets trade on the same market.</p>
                     
                     <div id="walletInputs" class="space-y-4">
                         <!-- Wallet inputs will be generated here -->
@@ -633,7 +633,7 @@
                         <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-semibold text-white">Total P&L</h3>
-                                <span class="text-sm text-gray-400">All Markets</span>
+                                <span class="text-sm text-gray-400">Polymarket</span>
                             </div>
                             <div class="text-3xl font-bold mb-2" id="modalMainPnLDisplay">$0.00</div>
                             <div class="text-sm text-gray-400" id="modalPnlStats">
@@ -651,16 +651,11 @@
                     </div>
                     
                     <!-- Market Breakdown -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
                             <h4 class="text-sm font-medium text-gray-400 mb-1">Polymarket</h4>
                             <div class="text-xl font-semibold" id="modalPolymarketPnL">$0.00</div>
                             <div class="text-xs text-gray-500" id="modalPolymarketTrades">0 trades</div>
-                        </div>
-                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
-                            <h4 class="text-sm font-medium text-gray-400 mb-1">Kalshi</h4>
-                            <div class="text-xl font-semibold" id="modalKalshiPnL">$0.00</div>
-                            <div class="text-xs text-gray-500" id="modalKalshiTrades">0 trades</div>
                         </div>
                         <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
                             <h4 class="text-sm font-medium text-gray-400 mb-1">Win Rate</h4>
@@ -671,19 +666,23 @@
 
                     <!-- Performance Metrics -->
                     <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
-                        <h3 class="text-lg font-semibold text-white mb-4">Performance Metrics</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <h3 class="text-lg font-semibold text-white mb-4">Polymarket P&L</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex justify-between p-2 bg-gray-800 rounded">
-                                <span class="text-gray-300">Sharpe Ratio</span>
-                                <span class="text-white" id="modalSharpeRatio">1.85</span>
+                                <span class="text-gray-300">Total Trades</span>
+                                <span class="text-white" id="modalTotalTrades">0</span>
                             </div>
                             <div class="flex justify-between p-2 bg-gray-800 rounded">
-                                <span class="text-gray-300">Max Drawdown</span>
-                                <span class="text-red-400" id="modalMaxDrawdown">-$15.00</span>
+                                <span class="text-gray-300">Win Rate</span>
+                                <span class="text-green-400" id="modalWinRate">0%</span>
                             </div>
                             <div class="flex justify-between p-2 bg-gray-800 rounded">
                                 <span class="text-gray-300">Avg Trade Size</span>
-                                <span class="text-white" id="modalAvgTradeSize">$50.00</span>
+                                <span class="text-white" id="modalAvgTradeSize">$0.00</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Total Gas Spent</span>
+                                <span class="text-white" id="modalGasSpent">$0.00</span>
                             </div>
                         </div>
                     </div>
@@ -1097,7 +1096,7 @@
             let html = '';
             
             for (let i = 0; i < MAX_WALLETS; i++) {
-                const wallet = trackedWallets[i] || { label: '', address: '', platform: 'manifold' };
+                const wallet = trackedWallets[i] || { label: '', address: '', platform: 'polymarket' };
                 html += `
                     <div class="bg-gray-700 rounded-lg p-4">
                         <div class="flex items-center space-x-2 mb-3">
@@ -1110,14 +1109,12 @@
                         </div>
                         <div class="flex space-x-2">
                             <select id="walletPlatform${i}" class="bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500">
-                                <option value="manifold" ${wallet.platform === 'manifold' ? 'selected' : ''}>Manifold</option>
                                 <option value="polymarket" ${wallet.platform === 'polymarket' ? 'selected' : ''}>Polymarket</option>
-                                <option value="limitless" ${wallet.platform === 'limitless' ? 'selected' : ''}>Limitless</option>
                             </select>
                             <input type="text" 
                                    id="walletAddress${i}" 
                                    value="${wallet.address}" 
-                                   placeholder="Username or wallet address" 
+                                   placeholder="Polymarket wallet address (0x...)" 
                                    class="flex-1 bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
                         </div>
                     </div>
@@ -1161,19 +1158,17 @@
                 // In production, this would call your P&L API
                 const demoData = {
                     total_pnl: 125.50,
-                    polymarket_pnl: 75.25,
-                    kalshi_pnl: 50.25,
+                    polymarket_pnl: 125.50,
                     total_trades: 15,
                     gas_spent: 0.015,
-                    polymarket_trades: 8,
-                    kalshi_trades: 7,
+                    polymarket_trades: 15,
                     win_rate: 73.3,
                     winning_trades: 11,
                     losing_trades: 4,
                     recent_trades: [
                         { market: 'polymarket', ticker: 'PRES-2024', side: 'YES', pnl: 15.50, time: '2 hours ago' },
-                        { market: 'kalshi', ticker: 'KXMARKET123', side: 'NO', pnl: -5.25, time: '3 hours ago' },
-                        { market: 'polymarket', ticker: 'BTC-PRICE', side: 'YES', pnl: 8.75, time: '5 hours ago' }
+                        { market: 'polymarket', ticker: 'BTC-PRICE', side: 'YES', pnl: 10.00, time: '5 hours ago' },
+                        { market: 'polymarket', ticker: 'ETH-PRICE', side: 'NO', pnl: 5.00, time: '6 hours ago' }
                     ]
                 };
                 
@@ -1202,14 +1197,6 @@
                     modalPolymarketPnL.className = `text-xl font-semibold ${demoData.polymarket_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
                 }
                 if (modalPolymarketTrades) modalPolymarketTrades.textContent = `${demoData.polymarket_trades} trades`;
-                
-                const modalKalshiPnL = document.getElementById('modalKalshiPnL');
-                const modalKalshiTrades = document.getElementById('modalKalshiTrades');
-                if (modalKalshiPnL) {
-                    modalKalshiPnL.textContent = `$${demoData.kalshi_pnl.toFixed(2)}`;
-                    modalKalshiPnL.className = `text-xl font-semibold ${demoData.kalshi_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
-                }
-                if (modalKalshiTrades) modalKalshiTrades.textContent = `${demoData.kalshi_trades} trades`;
                 
                 const modalWinRate = document.getElementById('modalWinRate');
                 const modalWinLoss = document.getElementById('modalWinLoss');
