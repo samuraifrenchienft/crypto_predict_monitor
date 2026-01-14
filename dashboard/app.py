@@ -103,11 +103,16 @@ def _close_db_session(_exc):
     finally:
         close_session()
 
-# Global cache for market data
+# Global cache for market data (cleared for fresh restart)
 market_cache: Dict[str, List[Dict[str, Any]]] = {}
 last_update: Dict[str, datetime] = {}
 _cache_lock = threading.Lock()
 _background_started = False
+
+# Clear cache on startup for fresh data
+print("🔄 Clearing market cache for fresh restart...")
+market_cache.clear()
+last_update.clear()
 
 
 def _run_async(coro):
