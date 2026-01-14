@@ -125,6 +125,11 @@ async def store_execution(user_id: str, market: str, trade_details: Dict[str, An
 async def check_for_exit_position(user_id: str, market: str, side: str, market_ticker: str):
     """Check if user has an open position to close"""
     try:
+        # Validate user_id parameter
+        if not user_id or user_id == "user" or user_id.lower() == "user":
+            logger.error(f"Invalid user_id parameter in check_for_exit_position: {user_id}")
+            return None
+            
         result = supabase.table("executions").select("*").eq("user_id", user_id).eq("market", market).eq("market_ticker", market_ticker).eq("side", side).eq("status", "open").execute()
         
         if result.data and len(result.data) > 0:
@@ -248,6 +253,10 @@ async def process_webhook(webhook_data: Dict[str, Any], webhook_id: str, user_ad
 async def get_user_executions(user_id: str, market: Optional[str] = None, status: Optional[str] = None):
     """Get user's execution history"""
     try:
+        # Validate user_id parameter
+        if not user_id or user_id == "user" or user_id.lower() == "user":
+            return {"error": "Invalid user_id parameter. Please provide a valid user ID."}
+        
         query = supabase.table("executions").select("*").eq("user_id", user_id)
         
         if market:
@@ -265,6 +274,10 @@ async def get_user_executions(user_id: str, market: Optional[str] = None, status
 async def get_user_pnl(user_id: str):
     """Get user's P&L summary"""
     try:
+        # Validate user_id parameter
+        if not user_id or user_id == "user" or user_id.lower() == "user":
+            return {"error": "Invalid user_id parameter. Please provide a valid user ID."}
+        
         result = supabase.table("user_pnl_summary").select("*").eq("user_id", user_id).execute()
         return result.data
     except Exception as e:

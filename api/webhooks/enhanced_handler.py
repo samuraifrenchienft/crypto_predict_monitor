@@ -316,6 +316,11 @@ async def store_execution_with_alert(
 
 async def get_open_position(user_id: str, market: str, ticker: str, side: str) -> Optional[Dict[str, Any]]:
     """Get open position for user, market, and side"""
+    # Validate user_id parameter
+    if not user_id or user_id == "user" or user_id.lower() == "user":
+        logger.error(f"Invalid user_id parameter: {user_id}")
+        return None
+        
     if supabase:
         try:
             result = supabase.table("executions").select("*").eq("user_id", user_id).eq("market", market).eq("market_ticker", ticker).eq("side", side).eq("status", "open").execute()
@@ -343,6 +348,11 @@ async def process_leaderboard_updates():
     
     for user_id in users_to_update:
         try:
+            # Validate user_id parameter
+            if not user_id or user_id == "user" or user_id.lower() == "user":
+                logger.error(f"Invalid user_id in leaderboard update: {user_id}")
+                continue
+                
             if supabase:
                 # Calculate user's total P&L
                 result = supabase.table("executions").select("pnl").eq("user_id", user_id).eq("status", "closed").execute()
