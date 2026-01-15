@@ -9,7 +9,7 @@ services:
     startCommand: |
       echo "Starting dashboard..."
       python -c "import dashboard.app; print('App imported successfully')" || exit 1
-      gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --access-logfile - --error-logfile - dashboard.app:app
+      gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --access-logfile - --error-logfile - --reload dashboard.app:app
     healthCheckPath: /api/stats
     autoDeploy: true
     envVars:
