@@ -23,6 +23,10 @@ services:
         fromDatabase:
           name: crypto-prediction-db
           property: connectionString
+      - key: SUPABASE_URL
+        value: your-supabase-url-here
+      - key: SUPABASE_KEY
+        value: your-supabase-anon-key-here
     domains:
       - crypto-prediction-dashboard.onrender.com
   - type: pserv

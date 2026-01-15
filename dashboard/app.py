@@ -73,9 +73,13 @@ CORS(app)  # Enable CORS for frontend
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 
 try:
+    print("[db] Creating database tables...")
     Base.metadata.create_all(bind=engine)
+    print("[db] Database tables created successfully")
 except Exception as e:
     print(f"[db] failed to create tables: {e}")
+    import traceback
+    traceback.print_exc()
 
 
 @app.before_request
