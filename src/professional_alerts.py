@@ -48,8 +48,9 @@ class ProfessionalArbitrageAlerts:
         # Brand configuration
         self.brand_name = "CPM Monitor"
         self.brand_tagline = "Premium Arbitrage Detection"
-        self.brand_icon = "https://i.imgur.com/7GkUJvA.png"
-        self.brand_logo = "https://i.imgur.com/7GkUJvA.png"
+        # Samurai Frenchie Icon - Replace with your hosted URL
+        self.brand_icon = "https://your-hosting.com/cpm_samurai_bulldog.png"  # Samurai bulldog icon
+        self.brand_logo = "https://your-hosting.com/cpm_samurai_bulldog.png"
         
     async def __aenter__(self):
         """Async context manager entry"""
@@ -102,9 +103,25 @@ class ProfessionalArbitrageAlerts:
         confidence_tier = self.get_confidence_tier(opportunity.confidence_score)
         quality_level = self.get_quality_level(opportunity.quality_score)
         
-        # Generate Polymarket and analysis links
-        polymarket_url = opportunity.polymarket_link or f"https://polymarket.com/market/{opportunity.market_id}"
-        analysis_url = opportunity.analysis_link or f"https://api.example.com/analysis/{opportunity.market_id}"
+        # Generate Polymarket and analysis links with better URL handling
+        if opportunity.polymarket_link and opportunity.polymarket_link.startswith('https://polymarket.com'):
+            polymarket_url = opportunity.polymarket_link
+        elif opportunity.market_id:
+            # Try multiple URL formats for Polymarket
+            polymarket_url = f"https://polymarket.com/event/{opportunity.market_id}"
+        else:
+            # Fallback - use search if no market ID
+            market_slug = opportunity.market_name.lower().replace(' ', '-').replace('?', '').replace('!', '').replace('.', '')
+            polymarket_url = f"https://polymarket.com/search?q={market_slug.replace('-', '%20')}"
+        
+        # Generate Polymarket event image URL
+        if opportunity.market_id:
+            # Polymarket event images follow this pattern
+            event_image_url = f"https://polymarket.com/content/event-images/{opportunity.market_id}.png"
+        else:
+            event_image_url = None
+        
+        analysis_url = opportunity.analysis_link or f"https://api.example.com/analysis/{opportunity.market_id or 'unknown'}"
         
         # Format prices with liquidity (right-aligned formatting)
         yes_price_formatted = f"${opportunity.yes_price:.3f} | Liquidity: ${opportunity.yes_liquidity:,.0f}"
@@ -185,6 +202,10 @@ class ProfessionalArbitrageAlerts:
             "thumbnail": {
                 "url": self.brand_icon
             },
+            # Add Polymarket event image in top right if available
+            "image": {
+                "url": event_image_url
+            } if event_image_url else None,
             "footer": {
                 "text": f"{self.brand_name} | {self.brand_tagline}",
                 "icon_url": self.brand_logo

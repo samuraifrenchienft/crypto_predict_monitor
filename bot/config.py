@@ -105,6 +105,7 @@ class ManifoldCfg:
     markets_limit: int = 50
     requests_per_second: float = 2.0
     requests_per_minute: int = 120
+    burst_size: int = 10
 
 
 @dataclass(frozen=True)

@@ -152,7 +152,7 @@ class DiscordAlerter:
             ],
             "footer": {
                 "text": f"⚡ Arbitrage Alert System • Generated at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}",
-                "icon_url": "https://i.imgur.com/7GkUJvA.png"  # Optional: Add your icon URL
+                "icon_url": "https://your-hosting.com/cpm_samurai_bulldog.png"  # Samurai bulldog icon
             }
         }
         
@@ -202,7 +202,7 @@ class DiscordAlerter:
             ],
             "footer": {
                 "text": f"⚡ Arbitrage Alert • {alert_data.market_source.upper()}",
-                "icon_url": "https://i.imgur.com/7GkUJvA.png"
+                "icon_url": "https://your-hosting.com/cpm_samurai_bulldog.png"
             }
         }
         
@@ -220,7 +220,7 @@ class DiscordAlerter:
             payload = {
                 "embeds": [embed],
                 "username": "Arbitrage Alerts",
-                "avatar_url": "https://i.imgur.com/7GkUJvA.png"
+                "avatar_url": "https://your-hosting.com/cpm_samurai_bulldog.png"
             }
             
             async with self.session.post(
@@ -276,14 +276,14 @@ class DiscordAlerter:
                 "timestamp": datetime.utcnow().isoformat(),
                 "footer": {
                     "text": f"⚡ Crypto Prediction Monitor • {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}",
-                    "icon_url": "https://i.imgur.com/7GkUJvA.png"
+                    "icon_url": "https://your-hosting.com/cpm_samurai_bulldog.png"
                 }
             }
             
             payload = {
                 "embeds": [embed],
                 "username": "Health Monitor",
-                "avatar_url": "https://i.imgur.com/7GkUJvA.png"
+                "avatar_url": "https://your-hosting.com/cpm_samurai_bulldog.png"
             }
             
             async with self.session.post(

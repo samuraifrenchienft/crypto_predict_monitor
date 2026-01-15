@@ -241,12 +241,9 @@ frontend/frontend/
 
 # Temporary docs and guides
 DEPLOYMENT_GUIDE.md
-FINAL_INTEGRATION_COMPLETE.md
-FRONTEND_INTEGRATION.md
-PNL_IMPLEMENTATION_COMPLETE.md
-PNL_SETUP_GUIDE.md
 
-# Test files (keep in separate test dir)
+# Test files (temporarily unignored for Discord alert test)
+test_discord_alert.py
 test_*.py
 tests/
 
@@ -254,12 +251,12 @@ tests/
 assets/
 
 # Docker and deployment (keep if needed)
-# docker-compose.yml
-# Dockerfile
-# nginx.conf
+docker-compose.yml
+Dockerfile
+nginx.conf
 
-# Environment templates
-env.*.template
+# Environment variables (temporarily unignored for webhook setup)
+# .env
 
 # Duplicate frontend files
 frontend/src/App.css

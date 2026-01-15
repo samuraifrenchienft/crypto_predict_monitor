@@ -257,5 +257,10 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
     print("✅ Continuous monitoring complete")
 
 if __name__ == "__main__":
-    # Run demo
-    asyncio.run(run_professional_demo())
+    # Check if running in production (Render) or demo mode
+    if os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production":
+        # Production: Run continuous monitoring indefinitely
+        asyncio.run(run_continuous_monitoring(interval_minutes=5, max_scans=1000000))
+    else:
+        # Demo mode: Run single scan
+        asyncio.run(run_professional_demo())
