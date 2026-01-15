@@ -8,12 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
-            --pm-cyan: #00D9FF;
-            --pm-purple: #9D4EDD;
-            --pm-panel: rgba(10, 14, 39, 0.95);
-            --pm-glow-cyan: rgba(0, 217, 255, 0.30);
-            --pm-glow-purple: rgba(157, 78, 221, 0.20);
-            --pm-border: rgba(0, 217, 255, 0.55);
+            --pm-cyan: #0001ff;
+            --pm-purple: #0001ff;
+            --pm-panel: rgba(0, 1, 255, 0.08);
+            --pm-glow-cyan: rgba(0, 1, 255, 0.40);
+            --pm-glow-purple: rgba(0, 1, 255, 0.30);
+            --pm-border: rgba(0, 1, 255, 0.30);
         }
 
         body {
@@ -39,7 +39,7 @@
         }
 
         .neon-glow {
-            box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 1, 255, 0.5);
         }
 
         .loading-spinner {
@@ -67,8 +67,85 @@
             100% { background-position: -200% 0; }
         }
 
-        .table-row-hover:hover {
-            background: rgba(0, 217, 255, 0.05);
+        /* Clean Leaderboard Styles */
+        .leaderboard-container {
+            width: 100%;
+            background-color: rgba(5, 5, 40, 0.8);
+            border: 1px solid rgba(0, 1, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 1, 255, 0.2);
+        }
+
+        .leaderboard-clean {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-clean thead {
+            border-bottom: 2px solid rgba(0, 1, 255, 0.5);
+        }
+
+        .leaderboard-clean th {
+            padding: 12px;
+            text-align: left;
+            color: #6496ff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .leaderboard-clean td {
+            padding: 12px;
+            color: #c8c8e6;
+            border-bottom: 1px solid rgba(0, 1, 255, 0.1);
+        }
+
+        .leaderboard-clean tr:hover {
+            background-color: rgba(0, 1, 255, 0.05);
+        }
+
+        .leaderboard-clean tr.top-performer {
+            background-color: rgba(0, 1, 255, 0.08);
+            border-left: 3px solid #0001ff;
+        }
+
+        .rank-col {
+            width: 10%;
+            font-weight: bold;
+            color: #0001ff;
+        }
+
+        .user-col {
+            width: 35%;
+        }
+
+        .winrate-col {
+            width: 18%;
+            text-align: right;
+        }
+
+        .pnl-col {
+            width: 18%;
+            text-align: right;
+        }
+
+        .volume-col {
+            width: 19%;
+            text-align: right;
+        }
+
+        .metric {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: rgba(0, 1, 255, 0.1);
+        }
+
+        .positive {
+            color: #00ff64;
+        }
+
+        .negative {
+            color: #ff5050;
         }
     </style>
 </head>
@@ -78,11 +155,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="/" class="text-xl font-bold text-white hover:text-cyan-400 transition">
+                    <a href="/" class="text-xl font-bold text-white hover:text-blue-400 transition">
                         🏠 Dashboard
                     </a>
                     <span class="mx-3 text-gray-500">/</span>
-                    <span class="text-xl font-bold text-cyan-400">📊 P&L Rankings</span>
+                    <span class="text-xl font-bold text-blue-400">📊 P&L Rankings</span>
                 </div>
                 <div class="flex items-center space-x-4">
                     <button onclick="refreshLeaderboard()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2">
@@ -125,65 +202,68 @@
         </div>
 
         <!-- Rankings Table -->
-        <div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-800">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Rank</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">User</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Total P&L</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardTableBody" class="divide-y divide-gray-700">
-                        <!-- Leaderboard rows will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="leaderboard-container">
+            <table class="leaderboard-clean">
+                <thead>
+                    <tr>
+                        <th class="rank-col">Rank</th>
+                        <th class="user-col">User</th>
+                        <th class="winrate-col">Win Rate</th>
+                        <th class="pnl-col">P&L %</th>
+                        <th class="volume-col">Volume</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardTableBody" class="divide-y divide-gray-700">
+                    <!-- Leaderboard rows will be inserted here -->
+                </tbody>
+            </table>
         </div>
 
         <!-- Loading State -->
         <div id="loadingState" class="hidden">
-            <div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-800">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Rank</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Total P&L</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-700">
-                            <!-- Skeleton rows -->
-                            <tr class="table-row-hover">
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-8 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-32 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-20 rounded"></div></td>
-                            </tr>
-                            <tr class="table-row-hover">
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-8 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-32 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-20 rounded"></div></td>
-                            </tr>
-                            <tr class="table-row-hover">
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-8 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-32 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-20 rounded"></div></td>
-                            </tr>
-                            <tr class="table-row-hover">
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-8 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-32 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-20 rounded"></div></td>
-                            </tr>
-                            <tr class="table-row-hover">
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-8 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-32 rounded"></div></td>
-                                <td class="px-6 py-4"><div class="skeleton h-4 w-20 rounded"></div></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="leaderboard-container">
+                <table class="leaderboard-clean">
+                    <thead>
+                        <tr>
+                            <th class="rank-col">Rank</th>
+                            <th class="user-col">User</th>
+                            <th class="winrate-col">Win Rate</th>
+                            <th class="pnl-col">P&L %</th>
+                            <th class="volume-col">Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        <!-- Skeleton rows -->
+                        <tr class="table-row-hover">
+                            <td class="rank-col"><div class="skeleton h-4 w-8 rounded"></div></td>
+                            <td class="user-col"><div class="skeleton h-4 w-32 rounded"></div></td>
+                            <td class="winrate-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="pnl-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="volume-col"><div class="skeleton h-4 w-16 rounded"></div></td>
+                        </tr>
+                        <tr class="table-row-hover">
+                            <td class="rank-col"><div class="skeleton h-4 w-8 rounded"></div></td>
+                            <td class="user-col"><div class="skeleton h-4 w-32 rounded"></div></td>
+                            <td class="winrate-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="pnl-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="volume-col"><div class="skeleton h-4 w-16 rounded"></div></td>
+                        </tr>
+                        <tr class="table-row-hover">
+                            <td class="rank-col"><div class="skeleton h-4 w-8 rounded"></div></td>
+                            <td class="user-col"><div class="skeleton h-4 w-32 rounded"></div></td>
+                            <td class="winrate-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="pnl-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="volume-col"><div class="skeleton h-4 w-16 rounded"></div></td>
+                        </tr>
+                        <tr class="table-row-hover">
+                            <td class="rank-col"><div class="skeleton h-4 w-8 rounded"></div></td>
+                            <td class="user-col"><div class="skeleton h-4 w-32 rounded"></div></td>
+                            <td class="winrate-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="pnl-col"><div class="skeleton h-4 w-12 rounded"></div></td>
+                            <td class="volume-col"><div class="skeleton h-4 w-16 rounded"></div></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -252,22 +332,29 @@
                 const isCurrentUser = isUserConnected() && leader.user_id === getCurrentWallet();
                 
                 const row = document.createElement('tr');
-                row.className = 'table-row-hover';
+                row.className = index === 0 ? 'top-performer' : '';
                 if (isCurrentUser) {
                     row.className += ' bg-blue-900/30 border-l-4 border-l-blue-500';
                 }
                 
+                // Calculate mock data for demo (in production, this would come from API)
+                const winRate = leader.win_rate || (Math.random() * 30 + 50); // 50-80%
+                const pnlPercent = leader.pnl_percent || (Math.random() * 40 - 10); // -10% to 30%
+                const totalVolume = leader.total_volume || (Math.random() * 50000 + 10000); // 10K-60K
+                
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-lg font-bold text-gray-300">${rank}</div>
+                    <td class="rank-col">#${rank}</td>
+                    <td class="user-col">${formatUserId(leader.user_id)}</td>
+                    <td class="winrate-col">
+                        <span class="metric">${winRate.toFixed(1)}%</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-white">${formatUserId(leader.user_id)}</div>
+                    <td class="pnl-col">
+                        <span class="${pnlPercent > 0 ? 'positive' : 'negative'}">
+                            ${pnlPercent > 0 ? '+' : ''}${pnlPercent.toFixed(2)}%
+                        </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-bold ${leader.total_pnl_all_time >= 0 ? 'text-green-400' : 'text-red-400'}">
-                            $${(leader.total_pnl_all_time || 0).toFixed(2)}
-                        </div>
+                    <td class="volume-col">
+                        $${(totalVolume / 1000).toFixed(0)}K
                     </td>
                 `;
                 
@@ -315,7 +402,7 @@
         function showLoading(show) {
             document.getElementById('loadingState').classList.toggle('hidden', !show);
             document.getElementById('yourPositionCard').classList.toggle('hidden', show);
-            document.querySelector('.bg-gray-900.rounded-lg').classList.toggle('hidden', show);
+            document.querySelector('.leaderboard-container').classList.toggle('hidden', show);
         }
 
         function showError(message) {
@@ -332,7 +419,7 @@
         function showEmptyState() {
             document.getElementById('emptyState').classList.remove('hidden');
             document.getElementById('yourPositionCard').classList.add('hidden');
-            document.querySelector('.bg-gray-900.rounded-lg').classList.add('hidden');
+            document.querySelector('.leaderboard-container').classList.add('hidden');
         }
 
         function checkWalletConnection() {
