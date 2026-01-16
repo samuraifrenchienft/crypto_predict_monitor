@@ -49,10 +49,10 @@ class ProfessionalArbitrageAlerts:
             try:
                 from bot.config import load_config
                 cfg = load_config()
-                self.webhook_url = cfg.discord.cpm_webhook_url
+                self.webhook_url = cfg.alerts.discord.cpm_webhook_url
             except:
-                # Fallback to environment variable
-                self.webhook_url = os.getenv("CPM_WEBHOOK_URL")
+                # Fallback to hardcoded webhook URL
+                self.webhook_url = "https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV"
         
         self.health_webhook_url = os.getenv("DISCORD_HEALTH_WEBHOOK_URL")
         self.session = None
