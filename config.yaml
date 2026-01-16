@@ -1,3 +1,8 @@
+# CRITICAL: LIVE DATA CONFIGURATION - NO DEMO MODE
+demo_mode: false
+use_mock_data: false
+is_dev_mode: false
+
 bot:
   # Main loop sleep time between polling cycles
   poll_interval_seconds: 30
@@ -59,38 +64,44 @@ whale_watch:
 adapters:
   polymarket:
     enabled: true
-    # HTTP endpoints (official)
+    # LIVE PRODUCTION endpoints (NO DEV/DEMO)
     gamma_base_url: "https://gamma-api.polymarket.com"
     clob_base_url: "https://clob.polymarket.com"
     data_base_url: "https://data-api.polymarket.com"
     events_limit: 50
-    # Use WS later (we'll wire it after HTTP is stable)
+    # CRITICAL: Use WebSocket for real-time data
     use_websocket: false
+    # LIVE mode flag
+    is_dev: false
 
   limitless:
     enabled: true
-    # Use official SDK base
+    # LIVE PRODUCTION endpoint (NOT localhost or dev)
     base_url: "https://api.limitless.exchange"
-    # Optional WS later
     use_websocket: false
+    # LIVE mode flag
+    is_dev: false
 
   manifold:
     enabled: true
-    base_url: "https://api.manifold.markets"
+    # LIVE PRODUCTION endpoint (NOT dev)
+    base_url: "https://api.manifold.markets/v0"
     markets_limit: 50
     # Rate limiting (moderate - Manifold is more lenient)
     requests_per_second: 2.0
     requests_per_minute: 120
     burst_size: 10
+    # LIVE mode flag
+    is_dev: false
 
   azuro:
     enabled: true
-    # Azuro Protocol endpoints (GraphQL, REST, Subgraph)
+    # LIVE PRODUCTION GraphQL endpoints (NOT dev-* or localhost)
     graphql_base_url: "https://api.azuro.org/graphql"
-    subgraph_base_url: "https://subgraph.azuro.org"
+    subgraph_base_url: "https://thegraph.onchainfeed.org/subgraphs/name/azuro-protocol/azuro-api-polygon-v3"
     rest_base_url: "https://azuro.org/api/v1"
     markets_limit: 50
     # Use fallback data if APIs are not available (Azuro is newer)
     use_fallback: true
-    # Optional WS later
-    use_websocket: false
+    # LIVE mode flag
+    is_dev: false

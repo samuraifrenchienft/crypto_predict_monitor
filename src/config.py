@@ -182,6 +182,7 @@ def load_settings() -> Settings:
             data["health_webhook_url"] = os.environ.get("DISCORD_HEALTH_WEBHOOK_URL")
 
     if "polymarket_base_url" not in data or not data.get("polymarket_base_url"):
+        # FORCE LIVE PRODUCTION URL - NO DEV/DEMO
         data["polymarket_base_url"] = "https://clob.polymarket.com"
 
     rules_json_raw = data.get("rules_json")

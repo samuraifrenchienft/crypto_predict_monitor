@@ -506,6 +506,11 @@
                     <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
                     <span id="queuedAlertsCount" class="bg-[#0001ff] text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
                     
+                    <!-- Debug button for development -->
+                    <button onclick="forceRefresh()" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg font-medium transition text-sm">
+                        🔄 Debug Refresh
+                    </button>
+                    
                     <!-- Wallet Connection -->
                     <div id="walletSection" class="flex items-center space-x-3">
                         <button id="connectWalletBtn" onclick="connectWallet(); beep();" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
@@ -1719,15 +1724,61 @@
 
         // Market Functions
         async function loadMarkets() {
+            console.log('🔍 DEBUG: Starting loadMarkets()');
             showLoading(true);
             try {
+                console.log('📡 DEBUG: Fetching from /api/markets...');
                 const response = await axios.get('/api/markets');
+                
+                console.log('📊 DEBUG: API Response:', response);
+                console.log('📊 DEBUG: Response data:', response.data);
+                
                 allMarkets = response.data.markets;
+                console.log('📈 DEBUG: Markets count:', allMarkets ? allMarkets.length : 'undefined');
+                
+                if (allMarkets && allMarkets.length > 0) {
+                    console.log('🔍 DEBUG: First market sample:', allMarkets[0]);
+                    
+                    // Check for demo data indicators
+                    if (allMarkets[0].id === 'demo' || allMarkets[0].name === 'Bitcoin Price #1') {
+                        console.error('❌ ERROR: STILL USING MOCK DATA!');
+                    }
+                    
+                    // Check for realistic prices
+                    const prices = allMarkets.slice(0, 10).map(m => {
+                        if (m.outcomes && m.outcomes.length > 0) {
+                            return m.outcomes[0].mid || m.outcomes[0].price || 0;
+                        }
+                        return 0;
+                    });
+                    const allSamePrice = prices.every(p => p === 0.5);
+                    if (allSamePrice) {
+                        console.error('❌ ERROR: All prices are 0.5 - likely demo data!');
+                    } else {
+                        console.log('✅ DEBUG: Prices vary - good sign of real data');
+                    }
+                    
+                    // Check volumes
+                    const volumes = allMarkets.slice(0, 10).map(m => m.volume_24h || 0);
+                    const allZeroVolume = volumes.every(v => v === 0);
+                    if (allZeroVolume) {
+                        console.error('❌ ERROR: All volumes are 0 - likely demo data!');
+                    } else {
+                        console.log('✅ DEBUG: Real volumes detected');
+                    }
+                    
+                    console.log('✅ DEBUG: Market data appears to be LIVE');
+                } else {
+                    console.error('❌ ERROR: No markets data received');
+                }
+                
                 updateStats(response.data);
                 displayMarkets();
                 updateLastRefresh();
+                
             } catch (error) {
-                console.error('Error loading markets:', error);
+                console.error('❌ ERROR: Error loading markets:', error);
+                console.error('❌ ERROR: Error details:', error.response?.data || error.message);
                 showError('Failed to load market data');
             } finally {
                 showLoading(false);
@@ -1765,6 +1816,22 @@
                 button.innerHTML = originalContent;
                 button.disabled = false;
             }
+        }
+
+        // Force refresh function for debugging
+        function forceRefresh() {
+            console.log('🔄 DEBUG: Force refreshing - clearing cache and reloading...');
+            
+            // Clear any cached data
+            localStorage.removeItem('markets_cache');
+            localStorage.removeItem('pnl_cache');
+            localStorage.removeItem('whale_cache');
+            
+            // Clear allMarkets
+            allMarkets = {};
+            
+            // Force page reload
+            window.location.reload();
         }
 
         // Dashboard Tab Functions

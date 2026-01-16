@@ -305,22 +305,10 @@ async def update_all_markets():
                 
     except Exception as e:
         print(f"Error updating markets: {e}")
-        # Add demo data if configuration fails
+        # NO DEMO DATA - Show error state instead of fake data
         with _cache_lock:
-            market_cache["demo"] = [
-                {
-                    "source": "demo",
-                    "market_id": "demo-1",
-                    "title": "Demo Market - Configuration Needed",
-                    "url": "#",
-                    "outcomes": [
-                        {"outcome_id": "demo-1_YES", "name": "YES", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()},
-                        {"outcome_id": "demo-1_NO", "name": "NO", "bid": 0.45, "ask": 0.55, "mid": 0.50, "spread": 0.10, "bid_size": 100, "ask_size": 100, "timestamp": datetime.now(timezone.utc).isoformat()}
-                    ],
-                    "last_updated": datetime.now(timezone.utc).isoformat(),
-                }
-            ]
-            last_update["demo"] = datetime.now(timezone.utc)
+            market_cache[adapter_name] = []
+            last_update[adapter_name] = datetime.now(timezone.utc)
 
 
 def _build_quotes_for_arbitrage() -> tuple[Dict[str, List[Market]], Dict[str, Dict[str, List[Quote]]]]:
@@ -1651,59 +1639,67 @@ def get_arbitrage():
 def get_pnl_data(user_address: str):
     """Get Polymarket P&L data for a user"""
     try:
-        # For demo, return placeholder data
-        # In production, this would query the executions table filtered by market = "polymarket"
+        # Query real execution data from database
+        executions = (
+            db.query(Execution)
+            .filter(
+                Execution.user_address == user_address.lower(),
+                Execution.market == "polymarket"
+            )
+            .order_by(Execution.executed_at.desc())
+            .all()
+        )
+        
+        if not executions:
+            return jsonify({
+                "total_pnl": 0.0,
+                "polymarket_pnl": 0.0,
+                "total_trades": 0,
+                "gas_spent": 0.0,
+                "polymarket_trades": 0,
+                "win_rate": 0.0,
+                "winning_trades": 0,
+                "losing_trades": 0,
+                "executions": []
+            })
+        
+        # Calculate real P&L from executions
+        total_pnl = sum(exec.pnl or 0 for exec in executions)
+        total_trades = len(executions)
+        winning_trades = len([exec for exec in executions if (exec.pnl or 0) > 0])
+        losing_trades = len([exec for exec in executions if (exec.pnl or 0) < 0])
+        win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0.0
+        gas_spent = sum(exec.gas_used or 0 for exec in executions) * 0.00000002  # Approximate gas cost
+        
+        # Format execution data
+        execution_data = []
+        for exec in executions:
+            execution_data.append({
+                "id": str(exec.id),
+                "market": exec.market,
+                "market_ticker": exec.market_ticker or "Unknown",
+                "side": exec.side,
+                "entry_price": exec.entry_price,
+                "exit_price": exec.exit_price,
+                "quantity": exec.quantity,
+                "pnl": exec.pnl,
+                "status": exec.status,
+                "entry_timestamp": exec.executed_at.isoformat() if exec.executed_at else None,
+                "exit_timestamp": exec.closed_at.isoformat() if exec.closed_at else None
+            })
+        
         pnl_data = {
-            "total_pnl": 125.50,
-            "polymarket_pnl": 125.50,
-            "total_trades": 15,
-            "gas_spent": 0.015,
-            "polymarket_trades": 15,
-            "win_rate": 73.3,
-            "winning_trades": 11,
-            "losing_trades": 4,
-            "executions": [
-                {
-                    "id": "1",
-                    "market": "polymarket",
-                    "market_ticker": "PRES-2024",
-                    "side": "YES",
-                    "entry_price": 0.65,
-                    "exit_price": 0.80,
-                    "quantity": 100,
-                    "pnl": 15.50,
-                    "status": "closed",
-                    "entry_timestamp": "2024-01-11T10:00:00Z",
-                    "exit_timestamp": "2024-01-11T12:00:00Z"
-                },
-                {
-                    "id": "2",
-                    "market": "polymarket",
-                    "market_ticker": "BTC-PRICE",
-                    "side": "YES",
-                    "entry_price": 0.45,
-                    "exit_price": 0.55,
-                    "quantity": 100,
-                    "pnl": 10.00,
-                    "status": "closed",
-                    "entry_timestamp": "2024-01-11T09:00:00Z",
-                    "exit_timestamp": "2024-01-11T11:00:00Z"
-                },
-                {
-                    "id": "3",
-                    "market": "polymarket",
-                    "market_ticker": "ETH-PRICE",
-                    "side": "NO",
-                    "entry_price": 0.40,
-                    "exit_price": 0.35,
-                    "quantity": 100,
-                    "pnl": 5.00,
-                    "status": "closed",
-                    "entry_timestamp": "2024-01-11T08:00:00Z",
-                    "exit_timestamp": "2024-01-11T10:00:00Z"
-                }
-            ]
+            "total_pnl": total_pnl,
+            "polymarket_pnl": total_pnl,
+            "total_trades": total_trades,
+            "gas_spent": gas_spent,
+            "polymarket_trades": total_trades,
+            "win_rate": win_rate,
+            "winning_trades": winning_trades,
+            "losing_trades": losing_trades,
+            "executions": execution_data
         }
+        
         return jsonify(pnl_data)
     except Exception as e:
         logger.error(f"Error fetching Polymarket P&L data: {e}")
@@ -1714,14 +1710,29 @@ def get_pnl_data(user_address: str):
 def get_leaderboard():
     """Get trading leaderboard"""
     try:
-        # For demo, return placeholder data
-        # In production, this would query the leaderboard table
-        leaderboard = [
-            {"rank": 1, "user_id": "0x1234...5678", "total_pnl": 500.00, "total_trades": 25, "win_rate": 80.0},
-            {"rank": 2, "user_id": "0xabcd...efgh", "total_pnl": 350.00, "total_trades": 20, "win_rate": 75.0},
-            {"rank": 3, "user_id": "0x5678...9abc", "total_pnl": 200.00, "total_trades": 15, "win_rate": 66.7},
-        ]
-        return jsonify(leaderboard)
+        # Query real leaderboard data from database
+        leaders = (
+            db.query(Leaderboard)
+            .order_by(Leaderboard.total_pnl.desc())
+            .limit(100)
+            .all()
+        )
+        
+        if not leaders:
+            return jsonify([])
+        
+        # Format leaderboard data
+        leaderboard_data = []
+        for i, leader in enumerate(leaders, 1):
+            leaderboard_data.append({
+                "rank": i,
+                "user_id": leader.user_address[:6] + "..." + leader.user_address[-4:] if leader.user_address else "Unknown",
+                "total_pnl": leader.total_pnl or 0.0,
+                "total_trades": leader.total_trades or 0,
+                "win_rate": leader.win_rate or 0.0
+            })
+        
+        return jsonify(leaderboard_data)
     except Exception as e:
         logger.error(f"Error fetching leaderboard: {e}")
         return jsonify({"error": str(e)}), 500
@@ -1733,10 +1744,13 @@ def create_alert():
     try:
         data = request.get_json()
         opportunity = data.get("opportunity")
-        user_id = data.get("user_id", "demo_user")
+        user_id = data.get("user_id")
         
         if not opportunity:
             return jsonify({"error": "Missing opportunity data"}), 400
+        
+        if not user_id:
+            return jsonify({"error": "Missing user_id"}), 400
         
         # Create alert
         from utils.alert_manager import ArbitrageAlertManager
@@ -1871,8 +1885,22 @@ def connect_wallet():
         if not wallet_address.startswith("0x") or len(wallet_address) != 42:
             return jsonify({"error": "Invalid wallet address format"}), 400
         
-        # Store wallet in database (for demo, just return success)
-        # In production, you would store this in Supabase or your database
+        # Store wallet in database
+        user = User(
+            discord_id=user_id,
+            wallet_address=wallet_address,
+            connected_at=datetime.now(timezone.utc)
+        )
+        
+        # Check if user already exists
+        existing_user = db.query(User).filter(User.discord_id == user_id).first()
+        if existing_user:
+            existing_user.wallet_address = wallet_address
+            existing_user.connected_at = datetime.now(timezone.utc)
+            db.commit()
+        else:
+            db.add(user)
+            db.commit()
         
         logger.info(f"Wallet connected: {wallet_address}")
         
@@ -1897,8 +1925,11 @@ def disconnect_wallet():
         if not wallet_address:
             return jsonify({"error": "Wallet address required"}), 400
         
-        # Remove wallet from database (for demo, just return success)
-        # In production, you would remove this from Supabase or your database
+        # Remove wallet from database
+        user = db.query(User).filter(User.wallet_address == wallet_address).first()
+        if user:
+            user.wallet_address = None
+            db.commit()
         
         logger.info(f"Wallet disconnected: {wallet_address}")
         
@@ -1923,13 +1954,28 @@ def create_webhook():
         if not user_id or not wallet_address:
             return jsonify({"error": "User ID and wallet address required"}), 400
         
-        # For demo, return success
-        # In production, you would call the Alchemy API to create the webhook
-        logger.info(f"Creating webhook for user {user_id}, wallet {wallet_address}")
+        # Create real Alchemy webhook for wallet monitoring
+        import httpx
+        
+        alchemy_url = f"https://dashboard.alchemy.com/api/notify-webhook"
+        webhook_data = {
+            "network": "ETH_MAINNET",
+            "address": wallet_address,
+            "webhook_url": f"{request.host_url}/api/webhooks/alchemy",
+            "types": ["TRANSACTION"]
+        }
+        
+        response = httpx.post(alchemy_url, json=webhook_data)
+        if response.status_code != 200:
+            logger.error(f"Failed to create Alchemy webhook: {response.text}")
+            return jsonify({"error": "Failed to create webhook"}), 500
+        
+        webhook_id = response.json().get("data", {}).get("id")
+        logger.info(f"Created webhook {webhook_id} for user {user_id}, wallet {wallet_address}")
         
         return jsonify({
             "status": "success",
-            "webhook_id": f"webhook_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
+            "webhook_id": webhook_id,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
