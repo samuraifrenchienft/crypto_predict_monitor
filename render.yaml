@@ -36,8 +36,6 @@ services:
         value: https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV
       - key: DISCORD_HEALTH_WEBHOOK_URL
         value: https://discord.com/api/webhooks/1455877944005365814/TpDNqyFu6XhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb
-      - key: DISCORD_BOT_TOKEN
-        value: MTQ1OTU0NTg5MDcyMDMyMTUzNg.G71ck4.rqB-iZ-erIQ-bdCq-r55q_0Y3SYYajbtZ-i8Ks
       - key: ALCHEMY_API_KEY
         value: LHxDbj5Kc53tKUvwy9vOD
       - key: DB_ECHO
