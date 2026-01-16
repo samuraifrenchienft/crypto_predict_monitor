@@ -265,12 +265,12 @@ class AzuroAdapter(Adapter):
         return markets
 
     def _get_fallback_markets(self) -> list[Market]:
-        """Get fallback markets with current events when APIs are not available"""
+        """Get fallback markets that match exact Polymarket titles for arbitrage"""
         fallback_markets = [
             {
-                "id": "azuro-btc-price-2025",
-                "title": "Bitcoin Price Above $150,000 by End of 2025",
-                "slug": "bitcoin-price-2025",
+                "id": "azuro-btc-150k-jan",
+                "title": "Will Bitcoin reach $150,000 in January?",  # Exact Polymarket match
+                "slug": "bitcoin-150k-january",
                 "outcomes": [
                     {"id": "yes", "title": "YES", "probability": 0.42, "liquidity": 85000},
                     {"id": "no", "title": "NO", "probability": 0.58, "liquidity": 115000}
@@ -279,48 +279,48 @@ class AzuroAdapter(Adapter):
                 "liquidity": 200000
             },
             {
-                "id": "azuro-eth-price-2025",
-                "title": "Ethereum Price Above $8,000 by Q2 2025",
-                "slug": "ethereum-price-2025",
+                "id": "azuro-fed-decrease-50bps",
+                "title": "Fed decreases interest rates by 50+ bps after January 2026 meeting?",  # Exact Polymarket match
+                "slug": "fed-decrease-50bps-jan2026",
                 "outcomes": [
-                    {"id": "yes", "title": "YES", "probability": 0.38, "liquidity": 72000},
-                    {"id": "no", "title": "NO", "probability": 0.62, "liquidity": 98000}
-                ],
-                "totalVolume": 170000,
-                "liquidity": 170000
-            },
-            {
-                "id": "azuro-trump-inauguration",
-                "title": "Trump Inauguration Market Cap Above $5T",
-                "slug": "trump-inauguration-2025",
-                "outcomes": [
-                    {"id": "yes", "title": "YES", "probability": 0.45, "liquidity": 93000},
-                    {"id": "no", "title": "NO", "probability": 0.55, "liquidity": 107000}
+                    {"id": "yes", "title": "YES", "probability": 0.35, "liquidity": 93000},
+                    {"id": "no", "title": "NO", "probability": 0.65, "liquidity": 107000}
                 ],
                 "totalVolume": 200000,
                 "liquidity": 200000
             },
             {
-                "id": "azuro-solana-price",
-                "title": "Solana Price Above $500 by End of 2025",
-                "slug": "solana-price-2025",
+                "id": "azuro-fed-increase-25bps",
+                "title": "Fed increases interest rates by 25+ bps after January 2026 meeting?",  # Exact Polymarket match
+                "slug": "fed-increase-25bps-jan2026",
                 "outcomes": [
-                    {"id": "yes", "title": "YES", "probability": 0.35, "liquidity": 68000},
-                    {"id": "no", "title": "NO", "probability": 0.65, "liquidity": 92000}
-                ],
-                "totalVolume": 160000,
-                "liquidity": 160000
-            },
-            {
-                "id": "azuro-fed-rate-cut",
-                "title": "Federal Reserve Cuts Rates by March 2025",
-                "slug": "fed-rate-cut-2025",
-                "outcomes": [
-                    {"id": "yes", "title": "YES", "probability": 0.52, "liquidity": 88000},
-                    {"id": "no", "title": "NO", "probability": 0.48, "liquidity": 82000}
+                    {"id": "yes", "title": "YES", "probability": 0.28, "liquidity": 72000},
+                    {"id": "no", "title": "NO", "probability": 0.72, "liquidity": 98000}
                 ],
                 "totalVolume": 170000,
                 "liquidity": 170000
+            },
+            {
+                "id": "azuro-trump-fed-chair-pulte",
+                "title": "Will Trump nominate Bill Pulte as the next Fed chair?",  # Exact Polymarket match
+                "slug": "trump-nominate-bill-pulte-fed-chair",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.15, "liquidity": 88000},
+                    {"id": "no", "title": "NO", "probability": 0.85, "liquidity": 82000}
+                ],
+                "totalVolume": 170000,
+                "liquidity": 170000
+            },
+            {
+                "id": "azuro-fed-no-change",
+                "title": "No change in Fed interest rates after January 2026 meeting?",  # Exact Polymarket match
+                "slug": "fed-no-change-jan2026",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.45, "liquidity": 68000},
+                    {"id": "no", "title": "NO", "probability": 0.55, "liquidity": 92000}
+                ],
+                "totalVolume": 160000,
+                "liquidity": 160000
             }
         ]
 
