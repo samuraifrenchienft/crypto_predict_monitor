@@ -341,7 +341,7 @@ def _build_quotes_for_arbitrage() -> tuple[Dict[str, List[Market]], Dict[str, Di
 async def _arbitrage_alert_loop() -> None:
     cfg = load_config()
     alerter = DiscordAlerter(
-        webhook_url=cfg.discord_health_webhook_url,  # Use health webhook for dashboard changes
+        webhook_url=cfg.discord_webhook_url,  # Use working main webhook
         enabled=cfg.discord.enabled,
         min_seconds_between_same_alert=cfg.discord.min_seconds_between_same_alert,
     )
@@ -351,7 +351,7 @@ async def _arbitrage_alert_loop() -> None:
     while True:
         try:
             # Discord health check
-            if cfg.discord_health_webhook_url:
+            if cfg.discord_webhook_url:
                 await alerter.health_check()
             
             # Refresh referrals
@@ -1645,6 +1645,12 @@ def get_stats():
             prioritize_new=cfg.arbitrage.prioritize_new_events,
             new_event_hours=cfg.arbitrage.new_event_hours,
         )
+        
+        # DEBUG: Log arbitrage detection results
+        print(f"[ARBITRAGE DEBUG] Detected {len(opportunities)} opportunities")
+        for i, opp in enumerate(opportunities[:3]):  # Log first 3
+            print(f"  {i+1}. Spread: {opp.get('spread_percentage', 'N/A')}% | Markets: {len(opp.get('markets', []))}")
+        
         stats["arbitrage"] = {
             "mode": cfg.arbitrage.mode,
             "opportunities": len(opportunities),

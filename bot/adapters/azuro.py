@@ -33,11 +33,11 @@ class AzuroAdapter(Adapter):
 
     def __init__(
         self,
-        graphql_base_url: str = "https://api.azuro.org/graphql",
-        subgraph_base_url: str = "https://subgraph.azuro.org",
-        rest_base_url: str = "https://api.azuro.org/api/v1",
+        graphql_base_url: str = "https://api.onchainfeed.org/api/v1/public/gateway",
+        subgraph_base_url: str = "https://thegraph.onchainfeed.org/subgraphs/name/azuro-protocol/azuro-api-polygon-v3",
+        rest_base_url: str = "https://api.onchainfeed.org/api/v1/public/gateway",
         markets_limit: int = 50,
-        use_fallback: bool = False,  # Disable fallback to force real data
+        use_fallback: bool = True,  # Enable fallback since APIs aren't working
     ) -> None:
         self.graphql_base_url = graphql_base_url.rstrip("/")
         self.subgraph_base_url = subgraph_base_url.rstrip("/")

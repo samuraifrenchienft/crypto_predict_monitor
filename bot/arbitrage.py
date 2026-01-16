@@ -129,6 +129,7 @@ def score_arbitrage_opportunity(
                     "sources": [s1, s2],
                     "mids": {s1: mid1, s2: mid2},
                     "spread": spread,
+                    "spread_percentage": spread * 100,  # Add percentage for dashboard
                     "priority": priority,
                     "action": action,
                     "markets": [{"source": s, "market_id": m.market_id, "title": m.title} for s, m in markets],
