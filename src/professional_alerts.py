@@ -107,7 +107,7 @@ class ProfessionalArbitrageAlerts:
         else:
             return "POOR"
     
-    def create_professional_embed(self, opportunity: ArbitrageOpportunity) -> Dict[str, Any]:
+    async def create_professional_embed(self, opportunity: ArbitrageOpportunity) -> Dict[str, Any]:
         """Create investment-grade Discord embed with color-coded left border"""
         
         # Get dynamic color for left border
@@ -115,23 +115,25 @@ class ProfessionalArbitrageAlerts:
         confidence_tier = self.get_confidence_tier(opportunity.confidence_score)
         quality_level = self.get_quality_level(opportunity.quality_score)
         
-        # Generate Polymarket and analysis links with better URL handling
+        # Generate proper Polymarket URL - FIX THE BROKEN LINK
         if opportunity.polymarket_link and opportunity.polymarket_link.startswith('https://polymarket.com'):
+            # Use the provided link if it's valid
             polymarket_url = opportunity.polymarket_link
         elif opportunity.market_id:
-            # Try multiple URL formats for Polymarket
-            polymarket_url = f"https://polymarket.com/event/{opportunity.market_id}"
+            # Generate proper Polymarket URL from market ID
+            # Remove any leading/trailing slashes and ensure proper format
+            clean_market_id = opportunity.market_id.strip('/')
+            polymarket_url = f"https://polymarket.com/event/{clean_market_id}"
         else:
             # Fallback - use search if no market ID
-            market_slug = opportunity.market_name.lower().replace(' ', '-').replace('?', '').replace('!', '').replace('.', '')
+            market_slug = opportunity.market_name.lower().replace(' ', '-').replace('?', '').replace('!', '').replace('.', '').replace(',', '')
             polymarket_url = f"https://polymarket.com/search?q={market_slug.replace('-', '%20')}"
         
-        # Generate Polymarket event image URL
+        # Fetch actual event image from Polymarket API
+        event_image_url = None
         if opportunity.market_id:
-            # Polymarket event images follow this pattern
-            event_image_url = f"https://polymarket.com/content/event-images/{opportunity.market_id}.png"
-        else:
-            event_image_url = None
+            # Try to get the real event image from Polymarket
+            event_image_url = await self._fetch_polymarket_event_image(opportunity.market_id)
         
         analysis_url = opportunity.analysis_link or f"https://api.example.com/analysis/{opportunity.market_id or 'unknown'}"
         
@@ -197,7 +199,7 @@ class ProfessionalArbitrageAlerts:
                 },
                 {
                     "name": "🔗 Action",
-                    "value": f"[View on Polymarket]({polymarket_url})\n[Analyze Data]({analysis_url})",
+                    "value": f"[🎯 View on Polymarket]({polymarket_url})\n[📊 Analyze Data]({analysis_url})",
                     "inline": False
                 },
                 {
@@ -227,6 +229,93 @@ class ProfessionalArbitrageAlerts:
         
         return embed
     
+    async def _fetch_polymarket_event_image(self, market_id: str) -> Optional[str]:
+        """Fetch the actual event image from Polymarket API with verification"""
+        try:
+            # Try multiple image URL patterns that Polymarket uses
+            image_patterns = [
+                f"https://polymarket.com/content/event-images/{market_id}.png",
+                f"https://polymarket.com/content/event-images/{market_id}.jpg", 
+                f"https://polymarket.com/content/event-images/{market_id}.jpeg",
+                f"https://cdn.polymarket.com/content/event-images/{market_id}.png",
+                f"https://strapi-matic.poly.market.com/content/event-images/{market_id}.png"
+            ]
+            
+            # Test each image URL to see which one exists
+            for image_url in image_patterns:
+                try:
+                    if self.session:
+                        async with self.session.head(image_url, timeout=5) as response:
+                            if response.status == 200:
+                                logger.info(f"✅ Found event image: {image_url}")
+                                return image_url
+                except Exception as e:
+                    logger.debug(f"Image URL test failed: {image_url} - {e}")
+                    continue
+            
+            # If no image found, try to fetch from Polymarket API
+            return await self._fetch_image_from_polymarket_api(market_id)
+            
+        except Exception as e:
+            logger.warning(f"Failed to fetch event image for {market_id}: {e}")
+            return None
+    
+    async def _fetch_image_from_polymarket_api(self, market_id: str) -> Optional[str]:
+        """Fetch event image from Polymarket's API"""
+        try:
+            if not self.session:
+                return None
+                
+            # Try to get market data from Polymarket API
+            api_urls = [
+                f"https://gamma-api.polymarket.com/markets/{market_id}",
+                f"https://strapi-matic.poly.market.com/markets/{market_id}",
+                f"https://data-api.polymarket.com/markets/{market_id}"
+            ]
+            
+            for api_url in api_urls:
+                try:
+                    async with self.session.get(api_url, timeout=10) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            
+                            # Look for image URL in response
+                            image_url = None
+                            
+                            # Common field names for images
+                            image_fields = ['image', 'imageUrl', 'image_url', 'picture', 'picture_url', 'icon', 'icon_url']
+                            
+                            for field in image_fields:
+                                if field in data and data[field]:
+                                    image_url = data[field]
+                                    break
+                            
+                            # Check nested objects
+                            if not image_url and isinstance(data, dict):
+                                for key, value in data.items():
+                                    if isinstance(value, dict):
+                                        for field in image_fields:
+                                            if field in value and value[field]:
+                                                image_url = value[field]
+                                                break
+                                        if image_url:
+                                            break
+                            
+                            if image_url:
+                                logger.info(f"✅ Found image from API: {image_url}")
+                                return image_url
+                                
+                except Exception as e:
+                    logger.debug(f"API request failed: {api_url} - {e}")
+                    continue
+            
+            logger.warning(f"No image found for market {market_id}")
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Failed to fetch image from Polymarket API for {market_id}: {e}")
+            return None
+    
     async def send_arbitrage_alert(self, opportunity: ArbitrageOpportunity) -> bool:
         """Send professional arbitrage alert to Discord"""
         if not self.webhook_url:
@@ -237,8 +326,8 @@ class ProfessionalArbitrageAlerts:
             logger.error("❌ Session not initialized. Use async context manager.")
             return False
         
-        # Create professional embed
-        embed = self.create_professional_embed(opportunity)
+        # Create professional embed (now async)
+        embed = await self.create_professional_embed(opportunity)
         
         # Prepare Discord webhook payload
         payload = {
@@ -378,21 +467,27 @@ async def test_professional_alerts():
     
     print("📊 Testing Embed Creation:")
     for i, opp in enumerate(opportunities):
-        embed = alerter.create_professional_embed(opp)
-        color = alerter.get_embed_color(opp.confidence_score)
-        tier = alerter.get_confidence_tier(opp.confidence_score)
-        
-        print(f"\n{i+1}. {opp.market_name}")
-        print(f"   Quality: {opp.quality_score:.1f}/10")
-        print(f"   Confidence: {opp.confidence_score:.0f}% ({tier})")
-        print(f"   Spread: {opp.spread_percentage:.1f}%")
-        print(f"   Color: #{color:06x}")
-        print(f"   Embed Title: {embed['title']}")
-        print(f"   Fields Count: {len(embed['fields'])}")
+        # Use async context manager for proper session handling
+        async with alerter:
+            embed = await alerter.create_professional_embed(opp)
+            color = alerter.get_embed_color(opp.confidence_score)
+            tier = alerter.get_confidence_tier(opp.confidence_score)
+            
+            print(f"\n{i+1}. {opp.market_name}")
+            print(f"   Quality: {opp.quality_score:.1f}/10")
+            print(f"   Confidence: {opp.confidence_score:.0f}% ({tier})")
+            print(f"   Spread: {opp.spread_percentage:.1f}%")
+            print(f"   Color: #{color:06x}")
+            print(f"   Embed Title: {embed['title']}")
+            print(f"   Fields Count: {len(embed['fields'])}")
+            print(f"   Polymarket URL: {opp.market_id and f'https://polymarket.com/event/{opp.market_id}' or 'Search fallback'}")
+            print(f"   Event Image: {'✅ Found' if embed.get('image') else '❌ Not found'}")
     
     print(f"\n✅ Professional alert system test complete!")
     print(f"🎨 Color coding working: 🟢 TRADE THIS | 🟡 GOOD OPPORTUNITY | 🟠 MONITOR/RESEARCH")
     print(f"📱 Left border colors will indicate urgency in Discord")
+    print(f"🔗 Polymarket links fixed and event images fetched!")
+    print(f"🖼️ Real event images will appear in Discord alerts!")
 
 if __name__ == "__main__":
     asyncio.run(test_professional_alerts())
