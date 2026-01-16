@@ -2115,6 +2115,134 @@ def database_metrics():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/test/alert", methods=["POST"])
+def test_discord_alert():
+    """Test Discord alert endpoint"""
+    try:
+        data = request.get_json() or {}
+        message = data.get("message", "Test alert from dashboard")
+        
+        # Use the ProfessionalArbitrageAlerts system
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        
+        from professional_alerts import ProfessionalArbitrageAlerts
+        import asyncio
+        
+        async def send_test_alert():
+            async with ProfessionalArbitrageAlerts() as alerts:
+                if not alerts.webhook_url:
+                    return {"error": "No webhook URL configured"}
+                
+                test_payload = {
+                    "content": f"🧪 {message}",
+                    "username": "CPM Monitor",
+                    "embeds": [{
+                        "title": "Dashboard Alert Test",
+                        "description": "Test alert from dashboard API endpoint",
+                        "color": 0x00ff00,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    }]
+                }
+                
+                import aiohttp
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(alerts.webhook_url, json=test_payload) as response:
+                        if response.status == 204:
+                            return {"success": True, "message": "Test alert sent successfully"}
+                        else:
+                            text = await response.text()
+                            return {"error": f"Failed to send alert: {text}"}
+        
+        result = asyncio.run(send_test_alert())
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Test alert failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/arbitrage", methods=["GET"])
+def get_arbitrage_opportunities():
+    """Get current arbitrage opportunities"""
+    try:
+        # This would integrate with the arbitrage detection system
+        # For now, return a placeholder response
+        return jsonify({
+            "opportunities": [],
+            "last_checked": datetime.now(timezone.utc).isoformat(),
+            "status": "Arbitrage detection system not running"
+        })
+    except Exception as e:
+        logger.error(f"Failed to get arbitrage opportunities: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/alert", methods=["POST"])
+def create_discord_alert():
+    """Create and send a Discord alert"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        alert_type = data.get("type", "info")
+        message = data.get("message", "")
+        severity = data.get("severity", "info")
+        
+        if not message:
+            return jsonify({"error": "Message is required"}), 400
+        
+        # Use the ProfessionalArbitrageAlerts system
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        
+        from professional_alerts import ProfessionalArbitrageAlerts
+        import asyncio
+        
+        async def send_alert():
+            async with ProfessionalArbitrageAlerts() as alerts:
+                if not alerts.webhook_url:
+                    return {"error": "No webhook URL configured"}
+                
+                # Set color based on severity
+                colors = {
+                    "info": 0x00ff00,
+                    "warning": 0xffff00,
+                    "error": 0xff0000,
+                    "critical": 0xff0000
+                }
+                
+                alert_payload = {
+                    "content": f"🚨 {alert_type.upper()}: {message}",
+                    "username": "CPM Monitor",
+                    "embeds": [{
+                        "title": f"{alert_type.title()} Alert",
+                        "description": message,
+                        "color": colors.get(severity, 0x00ff00),
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    }]
+                }
+                
+                import aiohttp
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(alerts.webhook_url, json=alert_payload) as response:
+                        if response.status == 204:
+                            return {"success": True, "message": "Alert sent successfully"}
+                        else:
+                            text = await response.text()
+                            return {"error": f"Failed to send alert: {text}"}
+        
+        result = asyncio.run(send_alert())
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Create alert failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     # Run Flask app
     import os
