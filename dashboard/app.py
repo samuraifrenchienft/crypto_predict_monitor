@@ -370,7 +370,7 @@ async def _arbitrage_alert_loop() -> None:
                 opportunities = detect_cross_market_arbitrage(
                     markets_by_source,
                     quotes_by_source,
-                    min_spread=cfg.arbitrage.min_spread,
+                    min_spread=cfg.thresholds.min_spread,  # Use thresholds.min_spread (0.08 = 8 cents)
                     prioritize_new=cfg.arbitrage.prioritize_new_events,
                     new_event_hours=cfg.arbitrage.new_event_hours,
                 )
@@ -1575,7 +1575,7 @@ def get_stats():
         opportunities = detect_cross_market_arbitrage(
             markets_by_source,
             quotes_by_source,
-            min_spread=cfg.arbitrage.min_spread,
+            min_spread=cfg.thresholds.min_spread,  # Use thresholds.min_spread (0.08 = 8 cents)
             prioritize_new=cfg.arbitrage.prioritize_new_events,
             new_event_hours=cfg.arbitrage.new_event_hours,
         )
@@ -1625,7 +1625,7 @@ def get_arbitrage():
     opportunities = detect_cross_market_arbitrage(
         markets_by_source,
         quotes_by_source,
-        min_spread=cfg.arbitrage.min_spread,
+        min_spread=cfg.thresholds.min_spread,  # Use thresholds.min_spread (0.08 = 8 cents)
         prioritize_new=cfg.arbitrage.prioritize_new_events,
         new_event_hours=cfg.arbitrage.new_event_hours,
     )

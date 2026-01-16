@@ -9,11 +9,15 @@ import os
 import sys
 import time
 import threading
+from datetime import datetime
 from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+# Import MarketData for strategy filters
+from arbitrage_detector import MarketData
 
 # Configure logging
 logging.basicConfig(
@@ -264,44 +268,27 @@ def start_arbitrage_bot():
 def apply_strategy_filters(market_data: MarketData) -> bool:
     """Apply your specific arbitrage strategy filters"""
     try:
-        # Filter 1: Minimum spread requirements (1.5% minimum)
-        if market_data.spread_percentage < 1.5:  # Less than 1.5% spread
+        # Filter 1: Minimum spread requirements (from your config: 0.08 = 8 cents)
+        if market_data.spread_percentage < 0.08:  # 8 cents minimum spread
             return False
         
-        # Filter 2: Minimum liquidity requirements
-        min_liquidity = min(market_data.yes_liquidity, market_data.no_liquidity)
-        if min_liquidity < 25000:  # Less than $25K liquidity
-            return False
-        
-        # Filter 3: Minimum volume requirements
-        if market_data.volume_24h < 100000:  # Less than $100K volume
-            return False
-        
-        # Filter 4: Price range validation (avoid extreme prices)
+        # Filter 2: Basic market validation (avoid extreme prices)
         if market_data.yes_price < 0.1 or market_data.yes_price > 0.9:
             return False
         
-        # Filter 5: Time window validation (avoid expired markets)
+        # Filter 3: Time window validation (avoid expired markets)
         if market_data.expires_at:
             time_remaining = market_data.expires_at - datetime.now()
             if time_remaining.total_seconds() < 1800:  # Less than 30 minutes remaining
                 return False
         
-        # Filter 6: Market name quality (avoid spam/markets we don't want)
+        # Filter 4: Market name quality (avoid spam/markets we don't want)
         market_name_lower = market_data.market_name.lower()
         excluded_keywords = ['test', 'demo', 'spam', 'fake', 'mock']
         if any(keyword in market_name_lower for keyword in excluded_keywords):
             return False
         
-        # Filter 7: Source-specific filters
-        if market_data.market_source.lower() == 'manifold':
-            # Manifold-specific filters
-            if market_data.yes_liquidity < 10000:  # Lower liquidity threshold for Manifold
-                return False
-        
-        # Filter 8: Volatility filter (avoid too volatile or too stable)
-        if market_data.price_volatility > 0.5:  # Too volatile
-            return False
+        # Filter 5: Basic volatility filter (avoid stale data)
         if market_data.price_volatility < 0.01:  # Too stable (possibly stale data)
             return False
         
@@ -310,29 +297,6 @@ def apply_strategy_filters(market_data: MarketData) -> bool:
         
     except Exception as e:
         logger.debug(f"Strategy filter error: {e}")
-        return False
-                            
-                        except Exception as e:
-                            logger.error(f"❌ Arbitrage scan error: {e}")
-                            await asyncio.sleep(60)  # Wait 1 minute on error
-                
-                # Run the arbitrage loop
-                asyncio.run(arbitrage_loop())
-                
-            except Exception as e:
-                logger.error(f"❌ Arbitrage bot failed: {e}")
-                import traceback
-                traceback.print_exc()
-        
-        # Start arbitrage bot in background thread
-        arbitrage_thread = threading.Thread(target=run_arbitrage, daemon=True)
-        arbitrage_thread.start()
-        logger.info("✅ Arbitrage bot started in background")
-        
-        return True
-        
-    except Exception as e:
-        logger.error(f"❌ Failed to start arbitrage bot: {e}")
         return False
 
 
