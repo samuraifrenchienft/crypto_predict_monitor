@@ -96,12 +96,12 @@ adapters:
 
   azuro:
     enabled: true
-    # LIVE PRODUCTION GraphQL endpoints (NOT dev-* or localhost)
-    graphql_base_url: "https://api.azuro.org/graphql"
+    # LIVE PRODUCTION endpoints from Azuro documentation
+    graphql_base_url: "https://api.onchainfeed.org/api/v1/public/gateway"
     subgraph_base_url: "https://thegraph.onchainfeed.org/subgraphs/name/azuro-protocol/azuro-api-polygon-v3"
-    rest_base_url: "https://azuro.org/api/v1"
+    rest_base_url: "https://api.onchainfeed.org/api/v1/public/gateway"
     markets_limit: 50
     # Use fallback data if APIs are not available (Azuro is newer)
-    use_fallback: true
+    use_fallback: false  # Force use of real APIs (Azuro is newer)
     # LIVE mode flag
     is_dev: false

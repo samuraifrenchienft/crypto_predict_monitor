@@ -56,18 +56,18 @@ class AzuroAdapter(Adapter):
         Tries multiple endpoints and falls back to mock data if needed.
         """
         
-        # Try GraphQL first
+        # Try subgraph first (this is the working endpoint)
+        markets = await self._fetch_from_subgraph()
+        if markets:
+            return markets
+            
+        # Try GraphQL
         markets = await self._fetch_from_graphql()
         if markets:
             return markets
             
         # Try REST API
         markets = await self._fetch_from_rest()
-        if markets:
-            return markets
-            
-        # Try subgraph
-        markets = await self._fetch_from_subgraph()
         if markets:
             return markets
             
@@ -143,41 +143,80 @@ class AzuroAdapter(Adapter):
         """Try to fetch from subgraph"""
         query = """
         query {
-            markets(
+            conditions(
                 first: %d,
-                orderBy: volume,
-                orderDirection: desc,
-                where: {
-                    active: true
-                }
+                where: {status_not_in: ["Resolved"]},
+                orderBy: createdBlockTimestamp,
+                orderDirection: desc
             ) {
                 id
                 title
+                status
                 outcomes {
                     id
                     title
-                    probability
+                    currentOdds
                 }
-                volume
+                createdBlockTimestamp
             }
-        """ % self.markets_limit
-
+        }
+        """
+        
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(
                     self.subgraph_base_url,
-                    json={"query": query}
+                    json={"query": query % self.markets_limit}
                 )
                 response.raise_for_status()
                 data = response.json()
+                print(f"Azuro subgraph response: {data}")
                 
             if "errors" not in data:
-                return self._parse_markets_data(data.get("data", {}).get("markets", []))
+                return self._parse_conditions_data(data.get("data", {}).get("conditions", []))
+            else:
+                print(f"Subgraph errors: {data.get('errors', [])}")
                 
         except Exception as e:
             print(f"Subgraph fetch failed: {e}")
             
         return []
+
+    def _parse_conditions_data(self, conditions_data: list) -> list[Market]:
+        """Parse conditions data from Azuro subgraph"""
+        markets: list[Market] = []
+        self._market_cache.clear()
+
+        for condition_data in conditions_data:
+            if not isinstance(condition_data, dict):
+                continue
+
+            condition_id = str(condition_data.get("id", ""))
+            title = str(condition_data.get("title", f"Condition {condition_id}")).strip()
+            status = condition_data.get("status", "")
+            
+            # Skip resolved conditions, but include others (Created, Canceled, Paused)
+            if status == "Resolved":
+                continue
+            
+            if not condition_id:
+                continue
+
+            # Create frontend URL
+            url = f"https://azuro.org/conditions/{condition_id}"
+
+            # Cache condition data
+            self._market_cache[condition_id] = condition_data
+
+            markets.append(Market(
+                source=self.name,
+                market_id=condition_id,
+                title=title,
+                url=url,
+                outcomes=[]
+            ))
+
+        return markets
 
     def _parse_markets_data(self, markets_data: list) -> list[Market]:
         """Parse market data from API responses"""
@@ -292,12 +331,15 @@ class AzuroAdapter(Adapter):
             outcome_id = str(outcome_data.get("id", ""))
             title = str(outcome_data.get("title", "")).strip()
             
-            if not outcome_id or not title:
+            if not outcome_id:
                 continue
 
+            # Map to YES/NO for binary markets
+            name = title.upper() if title.upper() in ["YES", "NO"] else title
+            
             outcomes.append(Outcome(
                 outcome_id=outcome_id,
-                name=title,  # Use 'name' instead of 'title'
+                name=name,
             ))
 
         return outcomes
@@ -312,60 +354,58 @@ class AzuroAdapter(Adapter):
         # Check cache first
         cached_market = self._market_cache.get(market_id)
         if not cached_market:
-            print(f"No cached data for Azuro market {market_id}")
             return []
 
         outcomes_data = cached_market.get("outcomes", [])
         if not outcomes_data:
-            print(f"No outcomes data for Azuro market {market_id}")
             return []
 
         quotes: list[Quote] = []
 
-        # For binary markets, we typically have 2 outcomes
-        if len(outcomes_data) == 2:
-            outcome1 = outcomes_data[0]
-            outcome2 = outcomes_data[1]
-
-            # Extract probabilities/odds
-            prob1 = float(outcome1.get("probability", 0.0))
-            prob2 = float(outcome2.get("probability", 0.0))
-
-            # Extract liquidity
-            liq1 = float(outcome1.get("liquidity", 0.0))
-            liq2 = float(outcome2.get("liquidity", 0.0))
-
-            # Create quotes for YES/NO style outcomes
-            # Map first outcome to YES, second to NO
-            quotes.append(Quote(
-                outcome_id=outcome1.get("id", "yes"),
-                bid=max(0.0, prob1 - 0.01),  # Simple bid/ask spread
-                ask=min(1.0, prob1 + 0.01),
-                bid_size=liq1,
-                ask_size=liq1,
-            ))
-
-            quotes.append(Quote(
-                outcome_id=outcome2.get("id", "no"),
-                bid=max(0.0, prob2 - 0.01),
-                ask=min(1.0, prob2 + 0.01),
-                bid_size=liq2,
-                ask_size=liq2,
-            ))
-
-        else:
-            # For multi-outcome markets, create quotes for each outcome
-            for outcome_data in outcomes_data:
-                outcome_id = outcome_data.get("id", "")
-                probability = float(outcome_data.get("probability", 0.0))
-                liquidity = float(outcome_data.get("liquidity", 0.0))
-
+        for outcome_data in outcomes_data:
+            outcome_id = str(outcome_data.get("id", ""))
+            current_odds = outcome_data.get("currentOdds")
+            
+            if current_odds is not None:
+                try:
+                    # Convert odds to probability (1/odds)
+                    probability = 1.0 / float(current_odds)
+                    
+                    # Create bid/ask from probability
+                    mid = probability
+                    bid = max(0.001, mid - 0.01)
+                    ask = min(0.999, mid + 0.01)
+                    
+                    quotes.append(Quote(
+                        outcome_id=outcome_id,
+                        bid=bid,
+                        ask=ask,
+                        mid=mid,
+                        spread=ask - bid,
+                        bid_size=None,
+                        ask_size=None,
+                    ))
+                except (ValueError, TypeError):
+                    # Fallback if odds conversion fails
+                    quotes.append(Quote(
+                        outcome_id=outcome_id,
+                        bid=None,
+                        ask=None,
+                        mid=None,
+                        spread=None,
+                        bid_size=None,
+                        ask_size=None,
+                    ))
+            else:
+                # No odds data available
                 quotes.append(Quote(
                     outcome_id=outcome_id,
-                    bid=max(0.0, probability - 0.01),
-                    ask=min(1.0, probability + 0.01),
-                    bid_size=liquidity,
-                    ask_size=liquidity,
+                    bid=None,
+                    ask=None,
+                    mid=None,
+                    spread=None,
+                    bid_size=None,
+                    ask_size=None,
                 ))
 
         return quotes
