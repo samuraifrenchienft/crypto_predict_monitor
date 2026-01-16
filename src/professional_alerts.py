@@ -440,7 +440,7 @@ class ProfessionalArbitrageAlerts:
                 },
                 {
                     "name": "🕐 Timestamp",
-                    "value": f"<t:{int(asyncio.get_event_loop().time())}:R>",
+                    "value": f"<t:{int(datetime.utcnow().timestamp())}:R>",
                     "inline": True
                 },
                 {
