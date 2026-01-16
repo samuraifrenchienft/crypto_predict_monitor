@@ -390,6 +390,86 @@
             filter: brightness(1.07);
             box-shadow: 0 0 26px rgba(0, 217, 255, 0.42), 0 0 38px rgba(157, 78, 221, 0.28) !important;
         }
+
+        /* Whale Tracker Styles */
+        .whale-tracker-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .whale-stats .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .whale-stats .stat-card:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 0 22px rgba(0, 217, 255, 0.35), 0 0 32px rgba(0, 217, 255, 0.25);
+        }
+
+        .whale-activity-table {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        .whale-activity-table table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .whale-activity-table th {
+            background: rgba(0, 1, 255, 0.1);
+            border-bottom: 1px solid var(--pm-cyan);
+            color: var(--pm-cyan);
+            font-weight: 600;
+        }
+
+        .whale-activity-table td {
+            border-bottom: 1px solid rgba(0, 1, 255, 0.1);
+            transition: background-color 0.2s ease;
+        }
+
+        .whale-activity-table tr:hover td {
+            background: rgba(0, 1, 255, 0.05);
+        }
+
+        .whale-wallet-address {
+            font-family: 'Courier New', monospace;
+            color: #6496ff;
+            font-size: 0.875rem;
+        }
+
+        .whale-amount {
+            font-weight: 600;
+            color: #00ff64;
+        }
+
+        .whale-amount.negative {
+            color: #ff4444;
+        }
+
+        .whale-time {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .whale-market {
+            color: #f59e0b;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body class="bg-black text-white">
@@ -447,14 +527,20 @@
                             </button>
                         </div>
                         
-                        <!-- Leaderboard Link -->
-                        <a href="/leaderboard" onclick="beep();" class="bg-gradient-to-r from-[#0001ff] to-purple-600 hover:from-[#0001ff] hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm-9-1h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7H8v10h5"></path>
-                            </svg>
-                            <span>🏆 Leaderboard</span>
-                        </a>
+                        {/* HEADER (Leaderboard button lives here) */}
+                        <div class="dashboard-header">
+                            <button
+                                id="header-leaderboard-btn"
+                                onclick="setActiveTab('leaderboard')"
+                                class="bg-gradient-to-r from-[#0001ff] to-purple-600 hover:from-[#0001ff] hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm-9-1h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7H8v10h5"></path>
+                                </svg>
+                                <span>🏆 Leaderboard</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -514,6 +600,62 @@
             </div>
         </div>
 
+        <!-- ✅ ADD BACK: Whale Wallet Tracker (was removed) -->
+        <div class="whale-tracker-section mb-8">
+            <h3 class="text-xl font-bold text-white mb-4">🐋 Whale Wallet Tracker</h3>
+            
+            <div class="whale-stats grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="stat-card bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
+                    <span class="label text-sm font-medium text-gray-400 block mb-1">Top Whale Activity</span>
+                    <span class="value text-lg font-semibold text-white" id="whaleVolume">$0</span>
+                </div>
+                
+                <div class="stat-card bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
+                    <span class="label text-sm font-medium text-gray-400 block mb-1">Large Transactions</span>
+                    <span class="value text-lg font-semibold text-white" id="largeTransactions">0</span>
+                </div>
+                
+                <div class="stat-card bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
+                    <span class="label text-sm font-medium text-gray-400 block mb-1">Wallet Movements</span>
+                    <span class="value text-lg font-semibold text-white" id="walletMovements">0</span>
+                </div>
+            </div>
+            
+            <!-- Whale Activity Table -->
+            <div class="whale-activity-table bg-gray-900 rounded-lg shadow-lg border border-gray-800 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-800">
+                    <h4 class="text-lg font-semibold text-white">Recent Whale Activity</h4>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-800">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Wallet</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Market</th>
+                            </tr>
+                        </thead>
+                        <tbody id="whaleActivityTableBody" class="bg-gray-900 divide-y divide-gray-800">
+                            <!-- Whale activity data will be inserted here -->
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        <h3 class="text-sm font-medium text-gray-300">No whale activity detected</h3>
+                                        <p class="mt-1 text-sm text-gray-500">Large transactions will appear here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Whale Alerts Section -->
         <div id="whaleSection" class="mb-8 hidden">
             <h2 class="text-xl font-bold text-white mb-4">🐋 Polymarket Whale Alerts</h2>
@@ -522,7 +664,7 @@
             </div>
         </div>
 
-        <!-- Dashboard Tabs -->
+        {/* UPDATE Dashboard Tab Navigation (NO Leaderboard tab button) */}
         <div class="dashboard-tabs">
             <button 
                 id="tab-polymarket"
@@ -533,17 +675,24 @@
             </button>
             
             <button 
-                id="tab-azuro"
-                onclick="setActiveTab('azuro')"
+                id="tab-manifold"
+                onclick="setActiveTab('manifold')"
             >
-                🌐 Azuro (Multi-Chain)
+                🎯 Manifold
             </button>
             
             <button 
-                id="tab-leaderboard"
-                onclick="setActiveTab('leaderboard')"
+                id="tab-limitless"
+                onclick="setActiveTab('limitless')"
             >
-                🏆 Leaderboard
+                ∞ Limitless
+            </button>
+            
+            <button 
+                id="tab-azuro"
+                onclick="setActiveTab('azuro')"
+            >
+                🌐 Azuro
             </button>
         </div>
 
@@ -582,6 +731,36 @@
                 </svg>
                 <h3 class="mt-2 text-sm font-medium text-gray-300">No markets found</h3>
                 <p class="mt-1 text-sm text-gray-500">Try refreshing the data or check your configuration.</p>
+            </div>
+        </div>
+
+        <div id="manifold-content" class="tab-content" style="display: none;">
+            <!-- Manifold View Content -->
+            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                <h2 class="text-xl font-bold text-white mb-4">🎯 Manifold Markets</h2>
+                <p class="text-gray-400 mb-4">Real-money prediction markets with community-driven outcomes</p>
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-300">Manifold Integration Coming Soon</h3>
+                    <p class="mt-1 text-sm text-gray-500">Community prediction markets will be available here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="limitless-content" class="tab-content" style="display: none;">
+            <!-- Limitless View Content -->
+            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                <h2 class="text-xl font-bold text-white mb-4">∞ Limitless Markets</h2>
+                <p class="text-gray-400 mb-4">Decentralized prediction markets on Ethereum</p>
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-300">Limitless Integration Coming Soon</h3>
+                    <p class="mt-1 text-sm text-gray-500">Decentralized markets will be available here.</p>
+                </div>
             </div>
         </div>
 
@@ -876,16 +1055,16 @@
             loadMarkets();
             loadPnLData();
             loadWhaleAlerts();
+            loadWhaleTracker(); // Load whale tracker data
             checkWalletConnection();
             // Auto-refresh every 30 seconds
             setInterval(() => {
-                if (document.visibilityState === 'visible') {
-                    refreshMe();
-                    refreshTrackedWallets();
+                if (!document.hidden) {
+                    loadMarkets();
+                    loadPnLData();
+                    loadWhaleAlerts();
+                    loadWhaleTracker(); // Refresh whale tracker
                 }
-                loadMarkets();
-                loadPnLData();
-                loadWhaleAlerts();
             }, 30000);
         });
         
@@ -1437,6 +1616,90 @@
             }
         }
 
+        // Whale Tracker Functions
+        async function loadWhaleTracker() {
+            try {
+                // Load whale statistics
+                const statsResponse = await axios.get('/api/whales/stats');
+                const stats = statsResponse.data || {};
+                
+                // Update whale stats display
+                document.getElementById('whaleVolume').textContent = `$${(stats.totalVolume || 0).toLocaleString()}`;
+                document.getElementById('largeTransactions').textContent = stats.largeTransactions || 0;
+                document.getElementById('walletMovements').textContent = stats.walletMovements || 0;
+                
+                // Load whale activity data
+                const activityResponse = await axios.get('/api/whales/activity');
+                const activities = activityResponse.data.activities || [];
+                
+                if (activities.length > 0) {
+                    renderWhaleActivityTable(activities);
+                } else {
+                    showEmptyWhaleActivity();
+                }
+                
+            } catch (error) {
+                console.error('Error loading whale tracker:', error);
+                // Show empty state on error
+                showEmptyWhaleActivity();
+            }
+        }
+
+        function renderWhaleActivityTable(activities) {
+            const tbody = document.getElementById('whaleActivityTableBody');
+            
+            tbody.innerHTML = activities.slice(0, 10).map(activity => {
+                const walletAddress = activity.wallet || '0x0000...0000';
+                const shortAddress = walletAddress.length > 10 ? 
+                    `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 
+                    walletAddress;
+                
+                const amount = activity.amount || 0;
+                const amountClass = amount > 0 ? 'whale-amount' : 'whale-amount negative';
+                const amountPrefix = amount > 0 ? '+' : '';
+                
+                const time = activity.timestamp ? new Date(activity.timestamp).toLocaleString() : 'Unknown';
+                const market = activity.market || activity.title || 'Unknown Market';
+                
+                return `
+                    <tr class="hover:bg-gray-800 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="whale-wallet-address">${shortAddress}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            ${activity.transaction_type || 'Trade'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="${amountClass}">${amountPrefix}$${Math.abs(amount).toLocaleString()}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="whale-time">${time}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="whale-market">${market}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function showEmptyWhaleActivity() {
+            const tbody = document.getElementById('whaleActivityTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <div class="flex flex-col items-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <h3 class="text-sm font-medium text-gray-300">No whale activity detected</h3>
+                            <p class="mt-1 text-sm text-gray-500">Large transactions will appear here</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
         function renderWhaleCards(alerts) {
             const grid = document.getElementById('whaleGrid');
             grid.innerHTML = alerts.slice(0, 6).map(alert => `
@@ -1482,6 +1745,7 @@
                 await loadMarkets();
                 await loadPnLData();
                 await loadWhaleAlerts();
+                await loadWhaleTracker(); // Refresh whale tracker
                 return;
             }
             const originalContent = button.innerHTML;
@@ -1493,6 +1757,7 @@
                 await loadMarkets();
                 await loadPnLData();
                 await loadWhaleAlerts();
+                await loadWhaleTracker(); // Refresh whale tracker
             } catch (error) {
                 console.error('Error refreshing data:', error);
                 showError('Failed to refresh data');
@@ -1513,10 +1778,24 @@
                 content.style.display = 'none';
             });
             
-            // Remove active class from all tabs
+            // Remove active class from all dashboard tabs
             document.querySelectorAll('.dashboard-tabs button').forEach(button => {
                 button.classList.remove('active');
             });
+            
+            // Update header leaderboard button styling
+            const headerLeaderboardBtn = document.getElementById('header-leaderboard-btn');
+            if (headerLeaderboardBtn) {
+                if (tab === 'leaderboard') {
+                    headerLeaderboardBtn.style.opacity = '1';
+                    headerLeaderboardBtn.style.transform = 'scale(1.05)';
+                    headerLeaderboardBtn.style.boxShadow = '0 0 20px rgba(0, 1, 255, 0.6)';
+                } else {
+                    headerLeaderboardBtn.style.opacity = '0.8';
+                    headerLeaderboardBtn.style.transform = 'scale(1)';
+                    headerLeaderboardBtn.style.boxShadow = '0 0 15px rgba(0, 1, 255, 0.3)';
+                }
+            }
             
             // Show selected tab content
             const contentElement = document.getElementById(`${tab}-content`);
@@ -1524,7 +1803,7 @@
                 contentElement.style.display = 'block';
             }
             
-            // Add active class to selected tab
+            // Add active class to selected tab (if it exists in dashboard tabs)
             const tabButton = document.getElementById(`tab-${tab}`);
             if (tabButton) {
                 tabButton.classList.add('active');
