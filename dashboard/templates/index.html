@@ -1964,7 +1964,7 @@
         }
 
         // Dashboard Tab Functions
-        let activeTab = 'polymarket';
+        let activeTab = 'all-markets';
         
         function setActiveTab(tab) {
             activeTab = tab;
@@ -2005,42 +2005,21 @@
                 tabButton.classList.add('active');
             }
             
-            // Load specific content if needed
-            if (tab === 'polymarket') {
-                loadMarkets(); // Load markets for polymarket view
+            // Load all markets for the all-markets tab
+            if (tab === 'all-markets') {
+                loadMarkets(); // Load all markets
             }
         }
         
-        // Market Filter Functions (for Polymarket tab)
-        function filterMarkets(source, el) {
-            currentFilter = source;
-            
-            // Update tab styles
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.classList.remove('border-blue-500', 'text-blue-400');
-                tab.classList.add('border-transparent', 'text-gray-400');
-            });
-            const target = el || (typeof event !== 'undefined' ? event.target : null);
-            if (target && target.classList) {
-                target.classList.remove('border-transparent', 'text-gray-400');
-                target.classList.add('border-blue-500', 'text-blue-400');
-            }
-            
-            displayMarkets();
-        }
-
         function displayMarkets() {
             const grid = document.getElementById('marketsGrid');
             const emptyState = document.getElementById('emptyState');
             
             let marketsToShow = [];
-            if (currentFilter === 'all') {
-                Object.values(allMarkets).forEach(sourceMarkets => {
-                    marketsToShow.push(...sourceMarkets);
-                });
-            } else if (allMarkets[currentFilter]) {
-                marketsToShow = allMarkets[currentFilter];
-            }
+            // Show all markets from all 4 sources: Polymarket, Manifold, Limitless, Azuro
+            Object.values(allMarkets).forEach(sourceMarkets => {
+                marketsToShow.push(...sourceMarkets);
+            });
             
             if (marketsToShow.length === 0) {
                 grid.classList.add('hidden');
