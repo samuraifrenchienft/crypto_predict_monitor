@@ -14,10 +14,9 @@ class ArbitrageConfig:
     HIGH_QUALITY_THRESHOLD = 8.5  # High confidence threshold
     MEDIUM_QUALITY_THRESHOLD = 6.5  # Medium confidence threshold
     
-    # Market filters
-    MIN_SPREAD_PERCENTAGE = 1.0  # Minimum spread percentage
-    MIN_LIQUIDITY_USD = 25000  # Minimum liquidity in USD
-    MIN_VOLUME_24H = 100000  # Minimum 24h volume in USD
+    # Market filters (matching updated config.yaml)
+    MIN_SPREAD_PERCENTAGE = 0.015  # From updated config.yaml thresholds.min_spread (1.5%)
+    # Remove arbitrary liquidity and volume requirements - user didn't specify these
     
     # Alert settings
     MAX_ALERTS_PER_BATCH = 5  # Maximum alerts to send in one batch
@@ -90,14 +89,14 @@ class ArbitrageConfig:
         "poor": 0             # <$100K
     }
     
-    # Spread thresholds
+    # Spread thresholds (matching user's strategy)
     SPREAD_THRESHOLDS = {
-        "exceptional": 3.0,    # 3%+ spread - Blue
-        "excellent": 2.51,    # 2.51-3% spread - Green
-        "very_good": 2.01,    # 2.01-2.5% spread - Yellow
-        "good": 1.5,          # 1.5-2% spread - Orange
-        "fair": 1.0,          # 1-1.5% spread
-        "poor": 0.5           # <1% spread
+        "exceptional": 3.0,     # 3%+ spread - Blue
+        "excellent": 2.51,      # 2.51-3% spread - Green
+        "very_good": 2.01,      # 2.01-2.5% spread - Yellow
+        "good": 1.5,            # 1.5-2% spread - Orange
+        "fair": 1.0,            # 1-1.5% spread
+        "poor": 0.5             # <1% spread
     }
     
     # Branding

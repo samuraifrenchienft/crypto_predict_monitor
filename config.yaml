@@ -25,8 +25,8 @@ alerts:
     min_seconds_between_same_alert: 600
 
 thresholds:
-  # Alert if spread >= this (0.08 = 8 cents wide)
-  min_spread: 0.08
+  # Alert if spread >= this (1.5% minimum from user's strategy)
+  min_spread: 0.015
 
   # Alert if mid price moves by this fraction vs last seen (0.05 = 5%)
   price_move_pct: 0.05
@@ -38,8 +38,8 @@ arbitrage:
   # Strategy mode: "cross_market" (same event across platforms) or "any_market" (any wide spread)
   mode: cross_market
 
-  # Minimum spread to consider arbitrage (same as thresholds.min_spread but can be overridden here)
-  min_spread: 0.08
+  # Minimum spread to consider arbitrage (1.5% from user's strategy)
+  min_spread: 0.015
 
   # Prioritize new events (hours since market creation)
   prioritize_new_events: true

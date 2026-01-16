@@ -268,8 +268,8 @@ def start_arbitrage_bot():
 def apply_strategy_filters(market_data: MarketData) -> bool:
     """Apply your specific arbitrage strategy filters"""
     try:
-        # Filter 1: Minimum spread requirements (from your config: 0.08 = 8 cents)
-        if market_data.spread_percentage < 0.08:  # 8 cents minimum spread
+        # Filter 1: Minimum spread requirements (from updated config: 1.5%)
+        if market_data.spread_percentage < 1.5:  # Less than 1.5% spread
             return False
         
         # Filter 2: Basic market validation (avoid extreme prices)
