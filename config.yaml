@@ -103,6 +103,6 @@ adapters:
     rest_base_url: "https://api.onchainfeed.org/api/v1/public/gateway"
     markets_limit: 50
     # Use fallback data if APIs are not available (Azuro is newer)
-    use_fallback: false  # Force use of real APIs (Azuro is newer)
+    use_fallback: true  # Use fallback data since live APIs aren't working properly
     # LIVE mode flag
     is_dev: false

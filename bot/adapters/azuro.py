@@ -52,31 +52,41 @@ class AzuroAdapter(Adapter):
 
     async def list_active_markets(self) -> list[Market]:
         """
-        Fetch active prediction markets from Azuro Protocol.
-        Tries multiple endpoints and falls back to mock data if needed.
+        List active Azuro markets.
+        Tries multiple endpoints and falls back to test data if needed.
         """
         
-        # Try subgraph first (this is the working endpoint)
-        markets = await self._fetch_from_subgraph()
-        if markets:
-            return markets
-            
-        # Try GraphQL
+        # Try GraphQL first
         markets = await self._fetch_from_graphql()
-        if markets:
+        if markets and self._validate_markets(markets):
             return markets
             
         # Try REST API
         markets = await self._fetch_from_rest()
-        if markets:
+        if markets and self._validate_markets(markets):
+            return markets
+            
+        # Try Subgraph
+        markets = await self._fetch_from_subgraph()
+        if markets and self._validate_markets(markets):
             return markets
             
         # Use fallback data if enabled
         if self.use_fallback:
-            print("Using fallback data for Azuro (APIs not available)")
+            print("Using fallback data for Azuro (APIs not returning valid data)")
             return self._get_fallback_markets()
             
         return []
+    
+    def _validate_markets(self, markets: list[Market]) -> bool:
+        """Validate that markets have proper titles and data"""
+        valid_count = 0
+        for market in markets[:5]:  # Check first 5 markets
+            if market.title and market.title.strip() and market.title != "None":
+                valid_count += 1
+        
+        # If at least 3 out of 5 markets have valid titles, consider it working
+        return valid_count >= 3
 
     async def _fetch_from_graphql(self) -> list[Market]:
         """Try to fetch from GraphQL API"""
