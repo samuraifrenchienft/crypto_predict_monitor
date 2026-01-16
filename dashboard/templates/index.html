@@ -644,15 +644,8 @@
                     <span id="queuedAlertsCount" class="bg-[#0001ff] text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
                     
                     
-                    <!-- Wallet Connection -->
+                    <!-- Wallet Connection Status (no button - only in mini P&L) -->
                     <div id="walletSection" class="flex items-center space-x-3">
-                        <button id="connectWalletBtn" onclick="connectWallet(); beep();" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                            </svg>
-                            <span>Connect Wallet</span>
-                        </button>
-                        
                         <div id="connectedWallet" class="hidden flex items-center space-x-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-700">
                             <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>

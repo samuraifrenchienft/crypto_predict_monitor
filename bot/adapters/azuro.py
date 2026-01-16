@@ -375,14 +375,33 @@ class AzuroAdapter(Adapter):
         for outcome_data in outcomes_data:
             outcome_id = str(outcome_data.get("id", ""))
             current_odds = outcome_data.get("currentOdds")
+            probability = outcome_data.get("probability")  # Check for probability in fallback data
             
-            if current_odds is not None:
+            # Use probability if available, otherwise try odds conversion
+            if probability is not None:
+                # Direct probability from fallback data
                 try:
-                    # Convert odds to probability (1/odds)
-                    probability = 1.0 / float(current_odds)
+                    prob = float(probability)
+                    mid = prob
+                    bid = max(0.001, mid - 0.01)
+                    ask = min(0.999, mid + 0.01)
                     
-                    # Create bid/ask from probability
-                    mid = probability
+                    quotes.append(Quote(
+                        outcome_id=outcome_id,
+                        bid=bid,
+                        ask=ask,
+                        mid=mid,
+                        spread=ask - bid,
+                        bid_size=outcome_data.get("liquidity", 1000),
+                        ask_size=outcome_data.get("liquidity", 1000),
+                    ))
+                except (ValueError, TypeError):
+                    pass
+            elif current_odds is not None:
+                # Convert odds to probability (1/odds)
+                try:
+                    prob = 1.0 / float(current_odds)
+                    mid = prob
                     bid = max(0.001, mid - 0.01)
                     ask = min(0.999, mid + 0.01)
                     
@@ -396,16 +415,7 @@ class AzuroAdapter(Adapter):
                         ask_size=None,
                     ))
                 except (ValueError, TypeError):
-                    # Fallback if odds conversion fails
-                    quotes.append(Quote(
-                        outcome_id=outcome_id,
-                        bid=None,
-                        ask=None,
-                        mid=None,
-                        spread=None,
-                        bid_size=None,
-                        ask_size=None,
-                    ))
+                    pass
             else:
                 # No odds data available
                 quotes.append(Quote(
