@@ -1,0 +1,5 @@
+﻿FROM python:3.11-slim
+WORKDIR /app
+RUN pip install flask flask-cors requests
+COPY simple_backend.py .
+CMD ["python", "simple_backend.py"]

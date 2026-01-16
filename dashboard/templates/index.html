@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Monitor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        :root {
+            --pm-cyan: #0001ff;
+            --pm-purple: #0001ff;
+            --pm-panel: rgba(0, 1, 255, 0.08);
+            --pm-glow-cyan: rgba(0, 1, 255, 0.40);
+            --pm-glow-purple: rgba(0, 1, 255, 0.30);
+            --pm-border: rgba(0, 1, 255, 0.30);
+            --glass-bg: rgba(0, 1, 255, 0.05);
+            --glass-border: rgba(0, 1, 255, 0.20);
+            --glass-shadow: 0 8px 32px rgba(0, 1, 255, 0.15);
+        }
+
+        body {
+            background: #000000 !important;
+            color: #ffffff;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(900px circle at 20% 25%, rgba(0, 1, 255, 0.15), transparent 55%),
+                radial-gradient(900px circle at 80% 35%, rgba(0, 1, 255, 0.10), transparent 55%),
+                radial-gradient(1200px circle at 55% 85%, rgba(0, 1, 255, 0.08), transparent 60%);
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .startup-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(700px circle at 35% 55%, rgba(0, 1, 255, 0.20), transparent 55%),
+                        radial-gradient(800px circle at 65% 45%, rgba(0, 1, 255, 0.15), transparent 60%),
+                        linear-gradient(135deg, #000000 0%, #000011 45%, #000022 100%);
+            opacity: 1;
+            visibility: visible;
+            transform: translateZ(0);
+            transition: opacity 400ms ease, visibility 400ms ease;
+        }
+        .startup-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .startup-shell {
+            width: min(1040px, 92vw);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 36px;
+            padding: 36px;
+        }
+        .startup-logo {
+            width: 210px;
+            height: 210px;
+            flex: 0 0 auto;
+            filter: drop-shadow(0 0 22px rgba(0, 1, 255, 0.25)) drop-shadow(0 0 26px rgba(0, 1, 255, 0.20));
+        }
+        .startup-text h1 {
+            font-size: 48px;
+            line-height: 1.05;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+        .startup-text p {
+            margin-top: 10px;
+            font-size: 18px;
+            line-height: 1.5;
+            color: rgba(148, 163, 184, 0.92);
+        }
+        .startup-spinner {
+            margin-top: 20px;
+            width: 54px;
+            height: 54px;
+            transform-origin: 50% 50%;
+            animation: startupSpin 1.1s linear infinite;
+        }
+        @keyframes startupSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 1024px) {
+            .startup-shell { gap: 28px; padding: 28px; }
+            .startup-logo { width: 190px; height: 190px; }
+            .startup-text h1 { font-size: 40px; }
+            .startup-text p { font-size: 16px; }
+        }
+        @media (max-width: 768px) {
+            .startup-shell {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 18px;
+                padding: 22px;
+            }
+            .startup-logo { width: 170px; height: 170px; }
+            .startup-text h1 { font-size: 34px; }
+            .startup-text p { font-size: 15px; }
+            .startup-spinner {
+                margin-top: 0;
+                position: fixed;
+                left: 50%;
+                bottom: 42px;
+                transform: translateX(-50%);
+            }
+        }
+        .market-card {
+            transition: all 0.3s ease;
+        }
+        .market-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .price-up { color: #10b981; }
+        .price-down { color: #ef4444; }
+        .source-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+        .source-manifold { background: #0001ff; color: #ffffff; }
+        .source-azuro { background: #0001ff; color: #ffffff; }
+        .source-polymarket { background: #0001ff; color: #ffffff; }
+        .source-limitless { background: #0001ff; color: #ffffff; }
+        /* Minimal P&L Card Styles */
+        .pnl-minimal {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 150px;
+            background-color: rgba(5, 5, 40, 0.95);
+            border: 1px solid rgba(0, 1, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 0 20px rgba(0, 1, 255, 0.4);
+            z-index: 1000;
+            font-size: 12px;
+        }
+
+        .pnl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .pnl-header:hover {
+            background-color: rgba(0, 1, 255, 0.1);
+        }
+
+        .pnl-content {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0, 1, 255, 0.2);
+        }
+
+        .pnl-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            color: #c8c8e6;
+        }
+
+        .pnl-stat .positive {
+            color: #00ff64;
+        }
+
+        .pnl-stat .negative {
+            color: #ff5050;
+        }
+
+        .connect-wallet-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 6px;
+            background-color: #0001ff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 1, 255, 0.5);
+            transition: all 0.2s;
+        }
+
+        .connect-wallet-btn:hover {
+            background-color: #0000cc;
+            box-shadow: 0 0 20px rgba(0, 1, 255, 0.7);
+        }
+
+        .loading-spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-left: 2px solid var(--pm-cyan);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.85);
+        }
+        .neon-glow {
+            box-shadow: 0 0 20px var(--pm-glow-cyan), 0 0 30px var(--pm-glow-purple);
+        }
+        .neon-glow:hover {
+            box-shadow: 0 0 24px rgba(0, 217, 255, 0.42), 0 0 34px rgba(157, 78, 221, 0.28);
+        }
+        .stat-icon {
+            background: #0001ff;
+            box-shadow: 0 0 15px rgba(0, 1, 255, 0.5);
+        }
+
+        header {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important;
+            border-bottom: 1px solid var(--pm-cyan) !important;
+            box-shadow: var(--glass-shadow) !important;
+        }
+
+        h1, h2, h3 {
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75), 0 0 16px rgba(0, 217, 255, 0.10);
+        }
+
+        .bg-gray-900,
+        .bg-gray-800,
+        .bg-gray-950 {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border) !important;
+            box-shadow: var(--glass-shadow) !important;
+        }
+
+        .border-gray-800,
+        .border-gray-700 {
+            border-color: var(--glass-border) !important;
+        }
+
+        .market-card {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important;
+            box-shadow: var(--glass-shadow) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+        }
+
+        .market-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 26px rgba(0, 217, 255, 0.42), 0 0 38px rgba(157, 78, 221, 0.28) !important;
+        }
+
+        button {
+            background: #0001ff !important;
+            border: 1px solid rgba(0, 1, 255, 0.50) !important;
+            box-shadow: 0 0 18px rgba(0, 1, 255, 0.30), 0 0 26px rgba(0, 1, 255, 0.20);
+            transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+            box-shadow: 0 0 22px rgba(0, 1, 255, 0.45), 0 0 32px rgba(0, 1, 255, 0.35);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            filter: saturate(0.85);
+            cursor: not-allowed;
+        }
+
+        .text-blue-400,
+        .text-blue-300 {
+            color: var(--pm-cyan) !important;
+        }
+
+        .border-blue-500 {
+            border-color: var(--pm-cyan) !important;
+        }
+
+        .bg-\[\#0001ff\] {
+            background: #0001ff !important;
+        }
+
+        header h1.text-2xl {
+            position: static !important;
+            padding-left: 0 !important;
+            font-size: 24px !important;
+            line-height: 1.2 !important;
+            color: #ffffff !important;
+        }
+
+        header h1.text-2xl::before,
+        header h1.text-2xl::after {
+            content: none !important;
+            display: none !important;
+        }
+
+        .referral-stat-card {
+            transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .referral-stat-card:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.07);
+            box-shadow: 0 0 26px rgba(0, 217, 255, 0.42), 0 0 38px rgba(157, 78, 221, 0.28) !important;
+        }
+
+        /* Whale Tracker Styles */
+        .whale-tracker-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .whale-stats .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .whale-stats .stat-card:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 0 22px rgba(0, 217, 255, 0.35), 0 0 32px rgba(0, 217, 255, 0.25);
+        }
+
+        .whale-activity-table {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        .whale-activity-table table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .whale-activity-table th {
+            background: rgba(0, 1, 255, 0.1);
+            border-bottom: 1px solid var(--pm-cyan);
+            color: var(--pm-cyan);
+            font-weight: 600;
+        }
+
+        .whale-activity-table td {
+            border-bottom: 1px solid rgba(0, 1, 255, 0.1);
+            transition: background-color 0.2s ease;
+        }
+
+        .whale-activity-table tr:hover td {
+            background: rgba(0, 1, 255, 0.05);
+        }
+
+        .whale-wallet-address {
+            font-family: 'Courier New', monospace;
+            color: #6496ff;
+            font-size: 0.875rem;
+        }
+
+        .whale-amount {
+            font-weight: 600;
+            color: #00ff64;
+        }
+
+        .whale-amount.negative {
+            color: #ff4444;
+        }
+
+        .whale-time {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .whale-market {
+            color: #f59e0b;
+            font-weight: 500;
+        }
+
+        /* Whale Modal Styles */
+        .whale-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.90);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .whale-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .whale-modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 32px;
+            position: relative;
+        }
+
+        .whale-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .whale-modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .whale-close-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .whale-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .whale-event-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .whale-event-card:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        .whale-event-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .whale-wallets-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .whale-wallet-tag {
+            background: rgba(0, 1, 255, 0.2);
+            border: 1px solid rgba(0, 1, 255, 0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #6496ff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .whale-no-activity {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .whale-no-activity svg {
+            margin-bottom: 16px;
+        }
+
+        .whale-loading {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        /* Buy Signal Bubble Styles */
+        .buy-signal-bubble {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 100, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            min-width: 280px;
+            max-width: 400px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 255, 100, 0.2);
+        }
+
+        .buy-signal-bubble.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .buy-signal-bubble h4 {
+            color: #00ff64;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .buy-signal-event {
+            background: rgba(0, 255, 100, 0.1);
+            border: 1px solid rgba(0, 255, 100, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+        }
+
+        .buy-signal-event:last-child {
+            margin-bottom: 0;
+        }
+
+        .buy-signal-event-title {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .buy-signal-event-wallets {
+            color: #9ca3af;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .buy-signal-no-events {
+            color: #9ca3af;
+            font-size: 12px;
+            text-align: center;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <div id="startupOverlay" class="startup-overlay" aria-live="polite" aria-busy="true">
+        <div class="startup-shell">
+            <div class="startup-text">
+                <h1>Prediction Monitor</h1>
+                <p>Real-time market data</p>
+                <svg class="startup-spinner" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="pmSpin" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#0001ff"/>
+                            <stop offset="0.55" stop-color="#0001ff"/>
+                            <stop offset="1" stop-color="#0001ff"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="32" cy="32" r="24" stroke="rgba(148,163,184,0.22)" stroke-width="6" />
+                    <path d="M56 32C56 18.745 45.255 8 32 8" stroke="url(#pmSpin)" stroke-width="6" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <!-- Header -->
+    <header class="bg-gray-900 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-white">Prediction Monitor</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Existing buttons -->
+                        <button id="loginBtn" onclick="login(); beep();" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Login</button>
+                    <button id="logoutBtn" onclick="logout(); beep();" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Logout</button>
+                    <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
+                    <span id="queuedAlertsCount" class="bg-[#0001ff] text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
+                    
+                    
+                    <!-- Wallet Connection -->
+                    <div id="walletSection" class="flex items-center space-x-3">
+                        <button id="connectWalletBtn" onclick="connectWallet(); beep();" class="bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            <span>Connect Wallet</span>
+                        </button>
+                        
+                        <div id="connectedWallet" class="hidden flex items-center space-x-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-700">
+                            <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span id="walletAddress" class="text-sm font-medium text-gray-300">0x0000...0000</span>
+                            <button onclick="disconnectWallet()" class="text-red-400 hover:text-red-300 ml-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <a href="/leaderboard" target="_blank" rel="noopener noreferrer" class="bg-[#0001ff] hover:bg-[#0000cc] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span>Leaderboard</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-3 neon-glow">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-400 truncate">Total Events</dt>
+                            <dd class="text-lg font-semibold text-white" id="totalMarkets">0</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-3 neon-glow">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-400 truncate">Total Outcomes</dt>
+                            <dd class="text-lg font-semibold text-white" id="totalOutcomes">0</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-blue-700/60 cursor-pointer referral-stat-card" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);" onclick="openReferralModal()">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 stat-icon rounded-md p-4 neon-glow">
+                        <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <div class="min-w-0">
+                            <div class="text-base font-semibold text-white tracking-wide truncate">Referrals</div>
+                            <div class="text-lg font-bold text-white" id="userPoints">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Whale Tracker Button -->
+            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-gray-800 cursor-pointer hover:border-blue-700/60 transition-all" onclick="openWalletEntryModal()" onmouseover="showBuySignalBubble(event)" onmouseout="hideBuySignalBubble()" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-600 rounded-md p-4 neon-glow">
+                        <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <div class="min-w-0">
+                            <div class="text-base font-semibold text-white tracking-wide truncate">🐋 Whale Tracker</div>
+                            <div class="text-sm font-medium text-gray-400" id="whaleWalletCount">Click to configure</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Whale Alerts Section -->
+        <div id="whaleSection" class="mb-8 hidden">
+            <h2 class="text-xl font-bold text-white mb-4">🐋 Polymarket Whale Alerts</h2>
+            <div id="whaleGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Whale alerts will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Markets Section -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">🌟 All Markets</h2>
+            <p class="text-gray-400 mb-6">View all prediction markets from all platforms in one place</p>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden">
+                <div class="flex justify-center items-center py-12">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <!-- Markets Grid -->
+            <div id="marketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Market cards will be inserted here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-300">No markets found</h3>
+                <p class="mt-1 text-sm text-gray-500">Try refreshing the data or check your configuration.</p>
+            </div>
+        <!-- Events Section -->
+        <div id="eventsSection" class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">📅 Active Events</h2>
+            <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Events will be inserted here -->
+            </div>
+        </div>
+
+        <div id="leaderboard-content" class="tab-content" style="display: none;">
+            <!-- Leaderboard View Content -->
+            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                <h2 class="text-xl font-bold text-white mb-4">🏆 Leaderboard</h2>
+                <p class="text-gray-400 mb-4">Top traders and performers</p>
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-300">View Full Leaderboard</h3>
+                    <p class="mt-1 text-sm text-gray-500">Visit the dedicated leaderboard page for detailed rankings.</p>
+                    <a href="/leaderboard" target="_blank" rel="noopener noreferrer" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                        Go to Leaderboard →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    <!-- Minimal P&L Card -->
+    <div class="pnl-minimal" id="pnlMinimal">
+        <div class="pnl-header" onclick="togglePnLExpanded()">
+            <span>📊 P&L (Polymarket)</span>
+            <span class="toggle-icon" id="pnlToggleIcon">►</span>
+        </div>
+        
+        <div class="pnl-content" id="pnlContent" style="display: none;">
+            <div class="pnl-stat">
+                <span>Daily:</span>
+                <span class="positive" id="pnlDaily">+2.35% ($125.50)</span>
+            </div>
+            
+            <div class="pnl-stat">
+                <span>Weekly:</span>
+                <span class="positive" id="pnlWeekly">+8.12% ($425.30)</span>
+            </div>
+            
+            <button class="connect-wallet-btn" onclick="connectWallet()">
+                Optional: Connect Wallet for Details
+            </button>
+        </div>
+    </div>
+
+    <div id="leaderboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0" onclick="closeLeaderboardModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-950 rounded-lg shadow-xl max-w-4xl w-full relative z-10 border border-gray-800">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-white">🏆 Leaderboards</h2>
+                        <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <button id="leaderboardTabCommunity" onclick="setLeaderboardTab('community')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow">
+                            Community
+                        </button>
+                        <button id="leaderboardTabTrading" onclick="setLeaderboardTab('trading')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700">
+                            Trading
+                        </button>
+                    </div>
+                    <div id="leaderboardError" class="hidden text-sm text-red-300 mb-4"></div>
+                    <div id="leaderboardContent" class="overflow-x-auto"></div>
+                    <div class="flex space-x-3 mt-6">
+                        <button onclick="refreshLeaderboardActive()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Refresh
+                        </button>
+                        <button onclick="closeLeaderboardModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Whale Tracking Modal -->
+    <div id="whaleModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0" onclick="closeWhaleModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-950 rounded-lg shadow-xl max-w-lg w-full relative z-10 border border-gray-800">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-white">🐋 Track Polymarket Wallets</h2>
+                        <button onclick="closeWhaleModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-400 text-sm mb-4">Add up to 4 Polymarket wallets to track. Get alerts when multiple wallets trade on the same market.</p>
+                    
+                    <div id="walletInputs" class="space-y-4">
+                        <!-- Wallet inputs will be generated here -->
+                    </div>
+                    
+                    <div class="mt-6 flex space-x-3">
+                        <button onclick="saveWallets()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition">
+                            💾 Save Wallets
+                        </button>
+                        <button onclick="closeWhaleModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="referralModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0" onclick="closeReferralModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-950 rounded-lg shadow-xl max-w-5xl w-full relative z-10 border border-gray-800">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-white">🎟️ Referrals</h2>
+                        <button onclick="closeReferralModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800 mb-5">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <div class="text-base font-semibold text-white">Your Referral Link</div>
+                                <div class="text-sm text-gray-400 mt-1">Share this link to earn rewards from your referrals.</div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <input id="referralLinkInput" readonly class="w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200" value="Loading..." />
+                                    <button onclick="copyReferralLink()" class="px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-400">Total Referrals</div>
+                                <div id="refTotalReferrals" class="text-lg font-semibold text-white">0</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-400">Total Earnings</div>
+                                <div id="refTotalEarnings" class="text-lg font-semibold" style="color: var(--pm-cyan);">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="text-base font-semibold text-white mb-3">Referral Stats</div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-400">Total Referrals</span><span id="refStatsReferrals" class="text-white">0</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Total Earnings</span><span id="refStatsEarnings" style="color: var(--pm-cyan);">$0.00</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Total Volume</span><span id="refStatsVolume" class="text-white">$0.00</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                            <div class="text-base font-semibold text-white mb-3">Referral Leaders</div>
+                            <div id="refLeaders" class="text-sm" style="max-height: 200px; overflow: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P&L Modal -->
+    <div id="pnlModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0" onclick="closePnLModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-950 rounded-lg shadow-xl max-w-5xl w-full relative z-10 border border-gray-800">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-white">💰 Profit & Loss Tracking</h2>
+                        <button onclick="closePnLModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- P&L Overview -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Total P&L Card -->
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-white">Total P&L</h3>
+                                <span class="text-sm text-gray-400">Polymarket</span>
+                            </div>
+                            <div class="text-3xl font-bold mb-2" id="modalMainPnLDisplay">$0.00</div>
+                            <div class="text-sm text-gray-400" id="modalPnlStats">
+                                <span id="modalTradeCount">0</span> trades • <span id="modalGasSpent">$0.00</span> gas
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Trades -->
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                            <h3 class="text-lg font-semibold text-white mb-4">Recent Trades</h3>
+                            <div id="modalRecentTrades" class="space-y-2">
+                                <p class="text-gray-400 text-sm">No recent trades</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Market Breakdown -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                            <h4 class="text-sm font-medium text-gray-400 mb-1">Polymarket</h4>
+                            <div class="text-xl font-semibold" id="modalPolymarketPnL">$0.00</div>
+                            <div class="text-xs text-gray-500" id="modalPolymarketTrades">0 trades</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                            <h4 class="text-sm font-medium text-gray-400 mb-1">Win Rate</h4>
+                            <div class="text-xl font-semibold" id="modalWinRate">0%</div>
+                            <div class="text-xs text-gray-500" id="modalWinLoss">0W / 0L</div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics -->
+                    <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                        <h3 class="text-lg font-semibold text-white mb-4">Polymarket P&L</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Total Trades</span>
+                                <span class="text-white" id="modalTotalTrades">0</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Win Rate</span>
+                                <span class="text-green-400" id="modalWinRate">0%</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Avg Trade Size</span>
+                                <span class="text-white" id="modalAvgTradeSize">$0.00</span>
+                            </div>
+                            <div class="flex justify-between p-2 bg-gray-800 rounded">
+                                <span class="text-gray-300">Total Gas Spent</span>
+                                <span class="text-white" id="modalGasSpent">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3 mt-6">
+                        <button onclick="refreshPnLData()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Refresh
+                        </button>
+                        <button onclick="closePnLModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allMarkets = {};
+        let currentFilter = 'all';
+        let trackedWallets = [];
+        const MAX_WALLETS = 4;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMe();
+            loadTrackedWallets();
+            loadMarkets();
+            loadPnLData();
+            loadWhaleAlerts();
+            loadWhaleTracker(); // Load whale tracker data
+            checkWalletConnection();
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                if (!document.hidden) {
+                    loadMarkets();
+                    loadPnLData();
+                    loadWhaleAlerts();
+                    loadWhaleTracker(); // Refresh whale tracker
+                }
+            }, 30000);
+        });
+        
+        // Wallet Connection Functions
+        let currentWallet = null;
+        
+        async function connectWallet() {
+            const connectBtn = document.getElementById('connectWalletBtn');
+            const originalText = connectBtn.innerHTML;
+            
+            try {
+                // Check if MetaMask is installed
+                if (!window.ethereum) {
+                    showError('MetaMask is not installed. Please install MetaMask to connect your wallet.');
+                    return;
+                }
+                
+                // Update button state
+                connectBtn.innerHTML = '<div class="loading-spinner w-4 h-4 inline-block mr-2"></div> Connecting...';
+                connectBtn.disabled = true;
+                
+                // Request wallet connection
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No accounts found');
+                }
+                
+                const walletAddress = accounts[0];
+                
+                // Create challenge message
+                const challenge = await createChallenge(walletAddress);
+                
+                // Request signature
+                const signature = await signMessage(challenge.message);
+                
+                // Verify signature
+                const isValid = await verifySignature(walletAddress, challenge.message, signature);
+                
+                if (!isValid) {
+                    throw new Error('Signature verification failed');
+                }
+                
+                // Store wallet in database
+                await storeWallet(walletAddress, signature);
+                
+                // Create Alchemy webhook
+                await createAlchemyWebhook(walletAddress);
+                
+                // Update UI
+                currentWallet = walletAddress;
+                updateWalletUI(walletAddress);
+                
+                showSuccess('Wallet connected successfully!');
+                
+            } catch (error) {
+                console.error('Wallet connection error:', error);
+                
+                if (error.code === 4001) {
+                    showError('Connection rejected by user.');
+                } else if (error.code === -32002) {
+                    showError('MetaMask is already processing a request. Please check MetaMask.');
+                } else if (error.message && error.message.includes('Signature verification failed')) {
+                    showError('Signature verification failed. Please try again.');
+                } else {
+                    showError(`Connection failed: ${error.message || 'Unknown error'}`);
+                }
+            } finally {
+                // Reset button state
+                connectBtn.innerHTML = originalText;
+                connectBtn.disabled = false;
+            }
+        }
+        
+        async function disconnectWallet() {
+            try {
+                if (!currentWallet) return;
+                
+                // Remove from database
+                await removeWallet(currentWallet);
+                
+                // Reset state
+                currentWallet = null;
+                updateWalletUI(null);
+                
+                showSuccess('Wallet disconnected successfully!');
+                
+            } catch (error) {
+                console.error('Wallet disconnection error:', error);
+                showError('Failed to disconnect wallet');
+            }
+        }
+        
+        async function createChallenge(walletAddress) {
+            const response = await axios.post('/api/wallet/challenge', {
+                wallet_address: walletAddress
+            });
+            return response.data;
+        }
+        
+        async function signMessage(message) {
+            try {
+                const signature = await window.ethereum.request({
+                    method: 'personal_sign',
+                    params: [message, currentWallet]
+                });
+                return signature;
+            } catch (error) {
+                throw new Error(`Failed to sign message: ${error.message}`);
+            }
+        }
+        
+        async function verifySignature(address, message, signature) {
+            try {
+                const response = await axios.post('/api/wallet/verify', {
+                    address: address,
+                    message: message,
+                    signature: signature
+                });
+                return response.data.valid;
+            } catch (error) {
+                console.error('Signature verification error:', error);
+                return false;
+            }
+        }
+        
+        async function storeWallet(walletAddress, signature) {
+            try {
+                const response = await axios.post('/api/wallet/connect', {
+                    wallet_address: walletAddress,
+                    signature: signature
+                });
+                return response.data;
+            } catch (error) {
+                throw new Error(`Failed to store wallet: ${error.response?.data?.error || error.message}`);
+            }
+        }
+        
+        async function removeWallet(walletAddress) {
+            try {
+                await axios.post('/api/wallet/disconnect', {
+                    wallet_address: walletAddress
+                });
+            } catch (error) {
+                throw new Error(`Failed to remove wallet: ${error.response?.data?.error || error.message}`);
+            }
+        }
+        
+        async function createAlchemyWebhook(walletAddress) {
+            try {
+                const response = await axios.post('/api/webhooks/create', {
+                    user_id: walletAddress,
+                    wallet_address: walletAddress
+                });
+                return response.data;
+            } catch (error) {
+                // Don't throw error for webhook creation, just log it
+                console.warn('Failed to create Alchemy webhook:', error);
+            }
+        }
+        
+        function updateWalletUI(walletAddress) {
+            const connectBtn = document.getElementById('connectWalletBtn');
+            const connectedWallet = document.getElementById('connectedWallet');
+            const walletAddressSpan = document.getElementById('walletAddress');
+            
+            if (walletAddress) {
+                // Show connected wallet
+                const obfuscated = obfuscateAddress(walletAddress);
+                walletAddressSpan.textContent = obfuscated;
+                connectBtn.classList.add('hidden');
+                connectedWallet.classList.remove('hidden');
+                
+                // Store in localStorage
+                localStorage.setItem('connectedWallet', walletAddress);
+            } else {
+                // Show connect button
+                connectBtn.classList.remove('hidden');
+                connectedWallet.classList.add('hidden');
+                
+                // Remove from localStorage
+                localStorage.removeItem('connectedWallet');
+            }
+        }
+        
+        function obfuscateAddress(address) {
+            if (!address || address.length < 10) return address;
+            return `${address.slice(0, 6)}...${address.slice(-4)}`;
+        }
+        
+        async function checkWalletConnection() {
+            try {
+                const storedWallet = localStorage.getItem('connectedWallet');
+                if (storedWallet) {
+                    // Verify wallet is still connected
+                    if (window.ethereum) {
+                        const accounts = await window.ethereum.request({
+                            method: 'eth_accounts'
+                        });
+                        
+                        if (accounts && accounts.includes(storedWallet)) {
+                            currentWallet = storedWallet;
+                            updateWalletUI(storedWallet);
+                        } else {
+                            localStorage.removeItem('connectedWallet');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking wallet connection:', error);
+                localStorage.removeItem('connectedWallet');
+            }
+        }
+
+        async function loadMe() {
+            try {
+                const r = await axios.get('/api/me');
+                const me = r.data || {};
+                const authed = !!me.authenticated;
+                document.getElementById('loginBtn').classList.toggle('hidden', authed);
+                document.getElementById('logoutBtn').classList.toggle('hidden', !authed);
+                document.getElementById('releaseAlertsBtn').classList.toggle('hidden', !authed);
+                if (authed) {
+                    // Update points based on referrals
+                    const totalReferrals = parseInt(me.total_referrals || 0);
+                    const points = totalReferrals * 25;
+                    document.getElementById('userPoints').textContent = points;
+                }
+            } catch (e) {
+                console.error('Error loading user info:', e);
+            }
+        }
+
+        async function loadQueuedAlertsCount() {
+            try {
+                const r = await axios.get('/api/alerts/queued');
+                const count = r.data?.count ?? 0;
+                document.getElementById('queuedAlertsCount').textContent = count;
+            } catch (e) {
+                document.getElementById('queuedAlertsCount').textContent = '0';
+            }
+        }
+
+        function beep() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'sine';
+                o.frequency.value = 880;
+                g.gain.value = 0.05;
+                o.connect(g);
+                g.connect(ctx.destination);
+                o.start();
+                setTimeout(() => {
+                    o.stop();
+                    ctx.close();
+                }, 180);
+            } catch (e) {
+                return;
+            }
+        }
+
+        async function releaseAlerts() {
+            try {
+                const r = await axios.post('/api/alerts/release', {});
+                const released = r.data?.released ?? 0;
+                showSuccess(`Released ${released} alerts to Discord DM`);
+                beep();
+                loadQueuedAlertsCount();
+            } catch (e) {
+                const status = e?.response?.status;
+                if (status === 401) {
+                    showError('Please login with Discord first');
+                    loadMe();
+                    return;
+                }
+                const err = e?.response?.data?.error;
+                showError(err ? `Release failed: ${err}` : 'Release failed');
+            }
+        }
+
+        // Wallet Tracking Functions
+        function loadTrackedWallets() {
+            const saved = localStorage.getItem('trackedWallets');
+            if (saved) {
+                trackedWallets = JSON.parse(saved);
+            } else {
+                trackedWallets = [];
+            }
+        }
+
+        function openWhaleModal() {
+            document.getElementById('whaleModal').classList.remove('hidden');
+            renderWalletInputs();
+        }
+
+        function closeWhaleModal() {
+            document.getElementById('whaleModal').classList.add('hidden');
+        }
+
+        function openReferralModal() {
+            document.getElementById('referralModal').classList.remove('hidden');
+            loadReferralModal();
+        }
+
+        function closeReferralModal() {
+            document.getElementById('referralModal').classList.add('hidden');
+        }
+
+        async function loadReferralModal() {
+            const linkInput = document.getElementById('referralLinkInput');
+            if (linkInput) linkInput.value = 'Loading...';
+
+            try {
+                const res = await axios.get('/api/referral/code');
+                const link = res.data?.referral_link || '';
+                if (linkInput) linkInput.value = link || 'Unavailable';
+            } catch (e) {
+                if (linkInput) linkInput.value = 'Login required';
+            }
+
+            const leadersEl = document.getElementById('refLeaders');
+            if (leadersEl) leadersEl.innerHTML = '<div class="text-gray-400">Loading...</div>';
+            try {
+                const res = await axios.get('/api/leaderboard/community');
+                const leaders = (res.data?.leaders || []).slice(0, 8);
+                if (leadersEl) {
+                    leadersEl.innerHTML = leaders.map((r, i) => {
+                        const label = (r.wallet || r.user_id || '').toString();
+                        const short = label.length > 12 ? (label.slice(0, 6) + '...' + label.slice(-4)) : label;
+                        const pts = (r.points_earned != null) ? String(r.points_earned) : '0';
+                        const conv = (r.referrals_converted != null) ? String(r.referrals_converted) : '0';
+                        return `
+                            <div class="flex items-center justify-between py-1 border-b border-gray-800">
+                                <div class="text-gray-300">${short}</div>
+                                <div class="text-gray-400">${conv} conv</div>
+                                <div style="color: var(--pm-cyan);" class="font-semibold">${pts} pts</div>
+                            </div>
+                        `;
+                    }).join('') || '<div class="text-gray-400">No leaders yet.</div>';
+                }
+            } catch (e) {
+                if (leadersEl) leadersEl.innerHTML = '<div class="text-gray-400">Unable to load leaders.</div>';
+            }
+        }
+
+        function copyReferralLink() {
+            const el = document.getElementById('referralLinkInput');
+            const text = el ? String(el.value || '') : '';
+            if (!text || text === 'Loading...' || text === 'Login required' || text === 'Unavailable') {
+                return;
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showSuccess('Copied referral link!')).catch(() => {});
+            } else {
+                try {
+                    el.select();
+                    document.execCommand('copy');
+                    showSuccess('Copied referral link!');
+                } catch (e) {
+                }
+            }
+        }
+
+        function renderWalletInputs() {
+            const container = document.getElementById('walletInputs');
+            let html = '';
+            
+            for (let i = 0; i < MAX_WALLETS; i++) {
+                const wallet = trackedWallets[i] || { label: '', address: '', platform: 'polymarket' };
+                html += `
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="text-lg">${i + 1}.</span>
+                            <input type="text" 
+                                   id="walletLabel${i}" 
+                                   value="${wallet.label}" 
+                                   placeholder="Wallet name (e.g., Sharp Trader)" 
+                                   class="flex-1 bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="flex space-x-2">
+                            <select id="walletPlatform${i}" class="bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                                <option value="polymarket" ${wallet.platform === 'polymarket' ? 'selected' : ''}>Polymarket</option>
+                            </select>
+                            <input type="text" 
+                                   id="walletAddress${i}" 
+                                   value="${wallet.address}" 
+                                   placeholder="Polymarket wallet address (0x...)" 
+                                   class="flex-1 bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        async function saveWallets() {
+            const wallets = [];
+            for (let i = 0; i < MAX_WALLETS; i++) {
+                const label = document.getElementById(`walletLabel${i}`).value.trim();
+                const address = document.getElementById(`walletAddress${i}`).value.trim();
+                const platform = document.getElementById(`walletPlatform${i}`).value;
+                
+                if (address) {
+                    wallets.push({ label: label || `Wallet ${i + 1}`, address, platform });
+                }
+            }
+            
+            trackedWallets = wallets;
+            localStorage.setItem('trackedWallets', JSON.stringify(wallets));
+            
+            // Save to server
+            try {
+                await axios.post('/api/wallets', { wallets });
+                showSuccess('Wallets saved successfully!');
+                closeWhaleModal();
+                loadWhaleAlerts();
+            } catch (error) {
+                console.error('Error saving wallets:', error);
+                showError('Failed to save wallets to server, but saved locally.');
+                closeWhaleModal();
+            }
+        }
+
+        // P&L Functions
+        let pnlExpanded = false;
+        
+        function togglePnLExpanded() {
+            pnlExpanded = !pnlExpanded;
+            const content = document.getElementById('pnlContent');
+            const icon = document.getElementById('pnlToggleIcon');
+            
+            if (pnlExpanded) {
+                content.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                icon.textContent = '►';
+            }
+        }
+        
+        async function loadPnLData() {
+            try {
+                // For demo, use placeholder data
+                // In production, this would call your P&L API
+                const demoData = {
+                    daily_pnl: 2.35,
+                    daily_dollar: 125.50,
+                    weekly_pnl: 8.12,
+                    weekly_dollar: 425.30,
+                    total_pnl: 425.30,
+                    polymarket_pnl: 425.30,
+                    total_trades: 15,
+                    gas_spent: 0.015,
+                    polymarket_trades: 15,
+                    win_rate: 73.3,
+                    winning_trades: 11,
+                    losing_trades: 4
+                };
+                
+                // Update minimal P&L card
+                const dailyElement = document.getElementById('pnlDaily');
+                const weeklyElement = document.getElementById('pnlWeekly');
+                
+                if (dailyElement) {
+                    const dailyClass = demoData.daily_pnl >= 0 ? 'positive' : 'negative';
+                    dailyElement.className = dailyClass;
+                    dailyElement.textContent = `${demoData.daily_pnl >= 0 ? '+' : ''}${demoData.daily_pnl.toFixed(2)}% ($${demoData.daily_dollar.toFixed(2)})`;
+                }
+                
+                if (weeklyElement) {
+                    const weeklyClass = demoData.weekly_pnl >= 0 ? 'positive' : 'negative';
+                    weeklyElement.className = weeklyClass;
+                    weeklyElement.textContent = `${demoData.weekly_pnl >= 0 ? '+' : ''}${demoData.weekly_pnl.toFixed(2)}% ($${demoData.weekly_dollar.toFixed(2)})`;
+                }
+                
+                // Update old modal elements (keep for compatibility)
+                const totalElement = document.getElementById('totalPnL');
+                if (totalElement) totalElement.textContent = `$${demoData.total_pnl.toFixed(2)}`;
+                
+                const modalMainDisplay = document.getElementById('modalMainPnLDisplay');
+                if (modalMainDisplay) {
+                    modalMainDisplay.textContent = `$${demoData.total_pnl.toFixed(2)}`;
+                    modalMainDisplay.className = `text-3xl font-bold mb-2 ${demoData.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                }
+                
+                // Update modal stats
+                const modalTradeCount = document.getElementById('modalTradeCount');
+                const modalGasSpent = document.getElementById('modalGasSpent');
+                if (modalTradeCount) modalTradeCount.textContent = demoData.total_trades;
+                if (modalGasSpent) modalGasSpent.textContent = `$${demoData.gas_spent.toFixed(4)}`;
+                
+                // Update market breakdown in modal
+                const modalPolymarketPnL = document.getElementById('modalPolymarketPnL');
+                const modalPolymarketTrades = document.getElementById('modalPolymarketTrades');
+                if (modalPolymarketPnL) {
+                    modalPolymarketPnL.textContent = `$${demoData.polymarket_pnl.toFixed(2)}`;
+                    modalPolymarketPnL.className = `text-xl font-semibold ${demoData.polymarket_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                }
+                if (modalPolymarketTrades) modalPolymarketTrades.textContent = `${demoData.polymarket_trades} trades`;
+                
+                // Update win rate
+                const modalWinRate = document.getElementById('modalWinRate');
+                const modalWinLoss = document.getElementById('modalWinLoss');
+                if (modalWinRate) modalWinRate.textContent = `${demoData.win_rate.toFixed(1)}%`;
+                if (modalWinLoss) modalWinLoss.textContent = `${demoData.winning_trades}W / ${demoData.losing_trades}L`;
+                
+            } catch (error) {
+                console.error('Error loading P&L data:', error);
+            }
+        }
+        
+        function openPnLModal() {
+            document.getElementById('pnlModal').classList.remove('hidden');
+            loadPnLData(); // Load data when modal opens
+        }
+        
+        function closePnLModal() {
+            document.getElementById('pnlModal').classList.add('hidden');
+        }
+        
+        async function refreshPnLData() {
+            await loadPnLData();
+        }
+
+        // Whale Alert Functions
+        async function loadWhaleAlerts() {
+            if (trackedWallets.length === 0) {
+                document.getElementById('whaleSection').classList.add('hidden');
+                return;
+            }
+            
+            try {
+                const response = await axios.get('/api/whales');
+                const alerts = response.data.alerts || [];
+                
+                if (alerts.length > 0) {
+                    document.getElementById('whaleSection').classList.remove('hidden');
+                    renderWhaleCards(alerts);
+                } else {
+                    document.getElementById('whaleSection').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading whale alerts:', error);
+            }
+        }
+
+        // Whale Tracker Functions
+        async function loadWhaleTracker() {
+            try {
+                // Load whale statistics
+                const statsResponse = await axios.get('/api/whales/stats');
+                const stats = statsResponse.data || {};
+                
+                // Update whale stats display
+                document.getElementById('whaleVolume').textContent = `$${(stats.totalVolume || 0).toLocaleString()}`;
+                document.getElementById('largeTransactions').textContent = stats.largeTransactions || 0;
+                document.getElementById('walletMovements').textContent = stats.walletMovements || 0;
+                
+                // Load whale activity data
+                const activityResponse = await axios.get('/api/whales/activity');
+                const activities = activityResponse.data.activities || [];
+                
+                if (activities.length > 0) {
+                    renderWhaleActivityTable(activities);
+                } else {
+                    showEmptyWhaleActivity();
+                }
+                
+            } catch (error) {
+                console.error('Error loading whale tracker:', error);
+                // Show empty state on error
+                showEmptyWhaleActivity();
+            }
+        }
+
+        function renderWhaleActivityTable(activities) {
+            const tbody = document.getElementById('whaleActivityTableBody');
+            
+            tbody.innerHTML = activities.slice(0, 10).map(activity => {
+                const walletAddress = activity.wallet || '0x0000...0000';
+                const shortAddress = walletAddress.length > 10 ? 
+                    `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 
+                    walletAddress;
+                
+                const amount = activity.amount || 0;
+                const amountClass = amount > 0 ? 'whale-amount' : 'whale-amount negative';
+                const amountPrefix = amount > 0 ? '+' : '';
+                
+                const time = activity.timestamp ? new Date(activity.timestamp).toLocaleString() : 'Unknown';
+                const market = activity.market || activity.title || 'Unknown Market';
+                
+                return `
+                    <tr class="hover:bg-gray-800 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="whale-wallet-address">${shortAddress}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            ${activity.transaction_type || 'Trade'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="${amountClass}">${amountPrefix}$${Math.abs(amount).toLocaleString()}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="whale-time">${time}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="whale-market">${market}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function showEmptyWhaleActivity() {
+            const tbody = document.getElementById('whaleActivityTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <div class="flex flex-col items-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <h3 class="text-sm font-medium text-gray-300">No whale activity detected</h3>
+                            <p class="mt-1 text-sm text-gray-500">Large transactions will appear here</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function renderWhaleCards(alerts) {
+            const grid = document.getElementById('whaleGrid');
+            grid.innerHTML = alerts.slice(0, 6).map(alert => `
+                <div class="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-2xl">${alert.signal || '🐋'}</span>
+                        <span class="text-purple-400 font-bold">${alert.count} whales</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 text-sm">${alert.title || alert.market_id}</h3>
+                    <div class="text-sm text-gray-400 mb-3">${alert.action || 'Multiple tracked wallets active'}</div>
+                    <div class="flex flex-wrap gap-2">
+                        ${alert.wallets?.map(w => `<span class="bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded">${w.label || w.platform}</span>`).join('') || ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Market Functions
+        async function loadMarkets() {
+            console.log('🔍 DEBUG: Starting loadMarkets()');
+            showLoading(true);
+            try {
+                console.log('📡 DEBUG: Fetching from /api/markets...');
+                const response = await axios.get('/api/markets');
+                
+                console.log('📊 DEBUG: API Response:', response);
+                console.log('📊 DEBUG: Response data:', response.data);
+                
+                allMarkets = response.data.markets;
+                console.log('📈 DEBUG: Markets count:', allMarkets ? allMarkets.length : 'undefined');
+                
+                if (allMarkets && allMarkets.length > 0) {
+                    console.log('🔍 DEBUG: First market sample:', allMarkets[0]);
+                    
+                    // Check for demo data indicators
+                    if (allMarkets[0].id === 'demo' || allMarkets[0].name === 'Bitcoin Price #1') {
+                        console.error('❌ ERROR: STILL USING MOCK DATA!');
+                    }
+                    
+                    // Check for realistic prices
+                    const prices = allMarkets.slice(0, 10).map(m => {
+                        if (m.outcomes && m.outcomes.length > 0) {
+                            return m.outcomes[0].mid || m.outcomes[0].price || 0;
+                        }
+                        return 0;
+                    });
+                    const allSamePrice = prices.every(p => p === 0.5);
+                    if (allSamePrice) {
+                        console.error('❌ ERROR: All prices are 0.5 - likely demo data!');
+                    } else {
+                        console.log('✅ DEBUG: Prices vary - good sign of real data');
+                    }
+                    
+                    // Check volumes
+                    const volumes = allMarkets.slice(0, 10).map(m => m.volume_24h || 0);
+                    const allZeroVolume = volumes.every(v => v === 0);
+                    if (allZeroVolume) {
+                        console.error('❌ ERROR: All volumes are 0 - likely demo data!');
+                    } else {
+                        console.log('✅ DEBUG: Real volumes detected');
+                    }
+                    
+                    console.log('✅ DEBUG: Market data appears to be LIVE');
+                } else {
+                    console.error('❌ ERROR: No markets data received');
+                }
+                
+                updateStats(response.data);
+                displayMarkets();
+                updateLastRefresh();
+                
+            } catch (error) {
+                console.error('❌ ERROR: Error loading markets:', error);
+                console.error('❌ ERROR: Error details:', error.response?.data || error.message);
+                showError('Failed to load market data');
+            } finally {
+                showLoading(false);
+                if (!window.__startupOverlayDone) {
+                    window.__startupOverlayDone = true;
+                    hideStartupOverlay();
+                }
+            }
+        }
+
+        async function refreshData(evt) {
+            const e = evt || (typeof event !== 'undefined' ? event : null);
+            const button = e && e.target && e.target.closest ? e.target.closest('button') : null;
+            if (!button) {
+                await loadMarkets();
+                await loadPnLData();
+                await loadWhaleAlerts();
+                await loadWhaleTracker(); // Refresh whale tracker
+                return;
+            }
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<div class="loading-spinner w-4 h-4"></div> Refreshing...';
+            button.disabled = true;
+            
+            try {
+                await axios.get('/api/refresh');
+                await loadMarkets();
+                await loadPnLData();
+                await loadWhaleAlerts();
+                await loadWhaleTracker(); // Refresh whale tracker
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                showError('Failed to refresh data');
+            } finally {
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            }
+        }
+
+        // Force refresh function for debugging
+        function forceRefresh() {
+            console.log('🔄 DEBUG: Force refreshing - clearing cache and reloading...');
+            
+            // Clear any cached data
+            localStorage.removeItem('markets_cache');
+            localStorage.removeItem('pnl_cache');
+            localStorage.removeItem('whale_cache');
+            
+            // Clear allMarkets
+            allMarkets = {};
+            
+            // Force page reload
+            window.location.reload();
+        }
+
+        // Initialize markets on page load
+        function initializeMarkets() {
+            loadMarkets(); // Load all markets on startup
+        }
+        
+        function displayMarkets() {
+            const grid = document.getElementById('marketsGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            let marketsToShow = [];
+            // Show all markets from all 4 sources: Polymarket, Manifold, Limitless, Azuro
+            Object.values(allMarkets).forEach(sourceMarkets => {
+                marketsToShow.push(...sourceMarkets);
+            });
+            
+            if (marketsToShow.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            grid.innerHTML = marketsToShow.map(market => createMarketCard(market)).join('');
+        }
+
+        function createMarketCard(market) {
+            const yesOutcome = market.outcomes.find(o => o.name === 'YES');
+            const noOutcome = market.outcomes.find(o => o.name === 'NO');
+
+            const marketUrl = (market && typeof market.url === 'string') ? market.url.trim() : '';
+            
+            return `
+                <div class="market-card bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700">
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-white mb-1">${market.title}</h3>
+                                <span class="source-badge source-${market.source}">${market.source.toUpperCase()}</span>
+                            </div>
+                            ${marketUrl ? `
+                                <a href="${marketUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                </a>
+                            ` : `
+                                <span class="text-gray-600 cursor-not-allowed">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                </span>
+                            `}
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-green-900/30 border border-green-700/50 rounded-lg p-3">
+                                <div class="text-sm font-medium text-green-400">YES</div>
+                                <div class="text-lg font-bold text-green-300">
+                                    ${yesOutcome?.mid != null ? formatPrice(yesOutcome.mid) : 'N/A'}
+                                </div>
+                                ${(yesOutcome?.bid != null && yesOutcome?.ask != null) ? `
+                                    <div class="text-xs text-green-500 mt-1">
+                                        Bid: ${formatPrice(yesOutcome.bid)} | Ask: ${formatPrice(yesOutcome.ask)}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="bg-red-900/30 border border-red-700/50 rounded-lg p-3">
+                                <div class="text-sm font-medium text-red-400">NO</div>
+                                <div class="text-lg font-bold text-red-300">
+                                    ${noOutcome?.mid != null ? formatPrice(noOutcome.mid) : 'N/A'}
+                                </div>
+                                ${(noOutcome?.bid != null && noOutcome?.ask != null) ? `
+                                    <div class="text-xs text-red-500 mt-1">
+                                        Bid: ${formatPrice(noOutcome.bid)} | Ask: ${formatPrice(noOutcome.ask)}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        ${(yesOutcome?.mid != null && noOutcome?.mid != null) ? `
+                            <div class="mt-3 pt-3 border-t border-gray-700">
+                                <div class="flex justify-between text-sm text-gray-400">
+                                    <span>Spread: ${Math.abs(yesOutcome.mid - noOutcome.mid).toFixed(3)}</span>
+                                    <span>Updated: ${formatTime(market.last_updated)}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatPrice(price) {
+            return (price * 100).toFixed(1) + '%';
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString();
+        }
+
+        function updateStats(data) {
+            document.getElementById('totalMarkets').textContent = (data.total_events ?? data.total_markets ?? 0);
+            const sourcesEl = document.getElementById('activeSources');
+            if (sourcesEl) {
+                sourcesEl.textContent = (data.active_sources ?? (data.sources ? data.sources.length : 0));
+            }
+            
+            // Calculate total outcomes
+            let totalOutcomes = 0;
+            Object.values(data.markets).forEach(sourceMarkets => {
+                sourceMarkets.forEach(market => {
+                    totalOutcomes += market.outcomes.length;
+                });
+            });
+            document.getElementById('totalOutcomes').textContent = totalOutcomes;
+        }
+
+        function updateLastRefresh() {
+            const now = new Date();
+            const el = document.getElementById('lastUpdateTime');
+            if (el) {
+                el.textContent = now.toLocaleTimeString();
+            }
+            const el2 = document.getElementById('lastUpdate');
+            if (el2) {
+                el2.textContent = 'Last updated: ' + now.toLocaleTimeString();
+            }
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loadingIndicator');
+            const grid = document.getElementById('marketsGrid');
+            
+            if (show) {
+                loading.classList.remove('hidden');
+                grid.classList.add('hidden');
+            } else {
+                loading.classList.add('hidden');
+                grid.classList.remove('hidden');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        function hideStartupOverlay() {
+            const el = document.getElementById('startupOverlay');
+            if (!el) return;
+            el.classList.add('hidden');
+        }
+
+        function openLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.remove('hidden');
+            loadCommunityLeaderboard();
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.add('hidden');
+        }
+
+        async function refreshLeaderboardActive() {
+            loadCommunityLeaderboard();
+        }
+
+        function setLeaderboardTab(tab) {
+            // Update tab styles
+            const communityTab = document.getElementById('leaderboardTabCommunity');
+            const tradingTab = document.getElementById('leaderboardTabTrading');
+            
+            if (tab === 'community') {
+                communityTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow';
+                tradingTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700';
+                loadCommunityLeaderboard();
+            } else if (tab === 'trading') {
+                tradingTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-[#0001ff] text-white neon-glow';
+                communityTab.className = 'px-3 py-2 rounded-lg text-sm font-semibold bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700';
+                loadTradingLeaderboard();
+            }
+        }
+
+        async function loadTradingLeaderboard() {
+            const contentEl = document.getElementById('leaderboardContent');
+            const errorEl = document.getElementById('leaderboardError');
+            
+            if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Loading...</div>';
+            if (errorEl) errorEl.classList.add('hidden');
+            
+            try {
+                const res = await axios.get('/api/leaderboard/trading');
+                const leaders = (res.data?.leaders || []).slice(0, 10);
+                
+                if (contentEl) {
+                    contentEl.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                                <div class="text-base font-semibold text-white mb-3">Trading Leaders</div>
+                                <div class="space-y-2">
+                                    ${leaders.map((r, i) => {
+                                        const label = (r.wallet || r.user_id || '').toString();
+                                        const short = label.length > 12 ? (label.slice(0, 6) + '...' + label.slice(-4)) : label;
+                                        const pnl = (r.total_pnl != null) ? String(r.total_pnl) : '0';
+                                        const trades = (r.total_trades != null) ? String(r.total_trades) : '0';
+                                        return `
+                                            <div class="flex items-center justify-between py-2 border-b border-gray-800">
+                                                <div class="text-gray-300">${short}</div>
+                                                <div class="text-gray-400">${trades} trades</div>
+                                                <div style="color: var(--pm-cyan);" class="font-semibold">$${pnl}</div>
+                                            </div>
+                                        `;
+                                    }).join('') || '<div class="text-gray-400">No trading leaders yet.</div>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Error loading trading leaderboard:', e);
+                if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Unable to load trading leaders.</div>';
+                if (errorEl) {
+                    errorEl.textContent = 'Failed to load trading leaderboard';
+                    errorEl.classList.remove('hidden');
+                }
+            }
+        }
+
+        async function loadCommunityLeaderboard() {
+            const contentEl = document.getElementById('leaderboardContent');
+            const errorEl = document.getElementById('leaderboardError');
+            
+            if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Loading...</div>';
+            if (errorEl) errorEl.classList.add('hidden');
+            
+            try {
+                const res = await axios.get('/api/leaderboard/community');
+                const leaders = (res.data?.leaders || []).slice(0, 10);
+                
+                if (contentEl) {
+                    contentEl.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-900 rounded-lg shadow-lg p-5 border border-gray-800">
+                                <div class="text-base font-semibold text-white mb-3">Community Leaders</div>
+                                <div class="space-y-2">
+                                    ${leaders.map((r, i) => {
+                                        const label = (r.wallet || r.user_id || '').toString();
+                                        const short = label.length > 12 ? (label.slice(0, 6) + '...' + label.slice(-4)) : label;
+                                        const pts = (r.points_earned != null) ? String(r.points_earned) : '0';
+                                        const conv = (r.referrals_converted != null) ? String(r.referrals_converted) : '0';
+                                        return `
+                                            <div class="flex items-center justify-between py-2 border-b border-gray-800">
+                                                <div class="text-gray-300">${short}</div>
+                                                <div class="text-gray-400">${conv} conv</div>
+                                                <div style="color: var(--pm-cyan);" class="font-semibold">${pts} pts</div>
+                                            </div>
+                                        `;
+                                    }).join('') || '<div class="text-gray-400">No leaders yet.</div>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Error loading community leaderboard:', e);
+                if (contentEl) contentEl.innerHTML = '<div class="text-gray-400">Unable to load leaders.</div>';
+                if (errorEl) {
+                    errorEl.textContent = 'Failed to load leaderboard';
+                    errorEl.classList.remove('hidden');
+                }
+            }
+        }
+
+        window.addEventListener('load', function() {
+            if (!window.__startupOverlayDone) {
+                setTimeout(() => {
+                    if (!window.__startupOverlayDone) {
+                        window.__startupOverlayDone = true;
+                        hideStartupOverlay();
+                    }
+                }, 30000);
+            }
+        });
+    </script>
+
+    <!-- Whale Wallet Entry Modal -->
+    <div id="walletEntryModal" class="whale-modal">
+        <div class="whale-modal-content" style="max-width: 600px;">
+            <div class="whale-modal-header">
+                <h2 class="whale-modal-title">
+                    🐋 Configure Whale Tracker
+                    <span class="text-sm text-gray-400 ml-2">Add up to 4 wallet addresses</span>
+                </h2>
+                <button class="whale-close-btn" onclick="closeWalletEntryModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="walletEntryContent">
+                <div class="space-y-4">
+                    <div class="text-sm text-gray-300 mb-4">
+                        Enter Polygon wallet addresses to track. When 2+ tracked wallets predict on the same Polymarket event, you'll receive an alert.
+                    </div>
+                    
+                    <!-- Wallet Input Fields -->
+                    <div class="space-y-3">
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 1</label>
+                            <input type="text" id="wallet1" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 2</label>
+                            <input type="text" id="wallet2" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 3</label>
+                            <input type="text" id="wallet3" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 4</label>
+                            <input type="text" id="wallet4" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                        <button onclick="clearWallets()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition">
+                            Clear All
+                        </button>
+                        <button onclick="saveWallets()" class="px-4 py-2 bg-[#0001ff] hover:bg-[#0000cc] text-white rounded-lg transition">
+                            Save & Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Whale Wallet Entry Functions
+        let whaleWallets = [];
+
+        function openWalletEntryModal() {
+            const modal = document.getElementById('walletEntryModal');
+            modal.classList.add('active');
+            loadSavedWallets();
+        }
+
+        function closeWalletEntryModal() {
+            const modal = document.getElementById('walletEntryModal');
+            modal.classList.remove('active');
+        }
+
+        function loadSavedWallets() {
+            // Load from localStorage
+            const saved = localStorage.getItem('whaleWallets');
+            if (saved) {
+                try {
+                    whaleWallets = JSON.parse(saved);
+                } catch (e) {
+                    whaleWallets = [];
+                }
+            }
+            
+            // Populate input fields
+            for (let i = 1; i <= 4; i++) {
+                const input = document.getElementById(`wallet${i}`);
+                if (input && whaleWallets[i - 1]) {
+                    input.value = whaleWallets[i - 1];
+                }
+            }
+            
+            updateWalletCount();
+        }
+
+        function saveWallets() {
+            const wallets = [];
+            
+            // Collect wallet addresses from inputs
+            for (let i = 1; i <= 4; i++) {
+                const input = document.getElementById(`wallet${i}`);
+                const address = input.value.trim();
+                
+                if (address && isValidPolygonAddress(address)) {
+                    wallets.push(address.toLowerCase());
+                }
+            }
+            
+            // Save to localStorage
+            whaleWallets = wallets;
+            localStorage.setItem('whaleWallets', JSON.stringify(wallets));
+            
+            // Update display
+            updateWalletCount();
+            
+            // Close modal
+            closeWalletEntryModal();
+            
+            // Show success message
+            showSuccess(`Saved ${wallets.length} whale wallet(s) for tracking`);
+            
+            // Start tracking if we have wallets
+            if (wallets.length >= 2) {
+                startWhaleTracking();
+            }
+        }
+
+        function clearWallets() {
+            // Clear all input fields
+            for (let i = 1; i <= 4; i++) {
+                const input = document.getElementById(`wallet${i}`);
+                if (input) {
+                    input.value = '';
+                }
+            }
+            
+            // Clear saved data
+            whaleWallets = [];
+            localStorage.removeItem('whaleWallets');
+            
+            updateWalletCount();
+        }
+
+        function isValidPolygonAddress(address) {
+            // Basic Polygon address validation (same format as Ethereum)
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
+
+        function updateWalletCount() {
+            const countEl = document.getElementById('whaleWalletCount');
+            if (countEl) {
+                if (whaleWallets.length === 0) {
+                    countEl.textContent = 'Click to add wallets';
+                } else {
+                    countEl.textContent = `${whaleWallets.length} wallet(s) tracking`;
+                }
+            }
+        }
+
+        function updateBuySignalCount(eventCount) {
+            const countEl = document.getElementById('whaleWalletCount');
+            if (countEl) {
+                if (eventCount > 0) {
+                    countEl.textContent = 'Buy Signal';
+                    countEl.style.color = '#00ff64'; // Green color for buy signal
+                } else {
+                    updateWalletCount(); // Show normal wallet count
+                    countEl.style.color = ''; // Reset color
+                }
+            }
+        }
+
+        function startWhaleTracking() {
+            // This would integrate with your existing whale tracking system
+            console.log('Starting whale tracking for:', whaleWallets);
+            
+            // Poll for whale convergence events
+            setInterval(checkWhaleConvergence, 30000); // Every 30 seconds
+        }
+
+        async function checkWhaleConvergence() {
+            if (whaleWallets.length < 2) return;
+            
+            try {
+                // This would call your existing API to check for convergence
+                // For now, it's a placeholder that would integrate with your system
+                const response = await fetch('/api/whale/convergence', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ wallets: whaleWallets })
+                });
+                
+                if (response.ok) {
+                    const events = await response.json();
+                    if (events.length > 0) {
+                        // Update buy signal events
+                        updateBuySignalEvents(events);
+                        
+                        // Trigger alerts for convergence events
+                        events.forEach(event => {
+                            showWhaleAlert(event);
+                        });
+                    } else {
+                        // No events, reset to normal display
+                        updateBuySignalEvents([]);
+                    }
+                } else {
+                    // No events, reset to normal display
+                    updateBuySignalEvents([]);
+                }
+            } catch (error) {
+                console.error('Error checking whale convergence:', error);
+                // Reset to normal display on error
+                updateBuySignalEvents([]);
+            }
+        }
+
+        function showWhaleAlert(event) {
+            // This would integrate with your existing alert system
+            const message = `🐋 Whale Convergence: ${event.title} - ${event.wallets.length} whales predicting`;
+            showSuccess(message);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedWallets();
+            
+            // Start tracking if we have wallets
+            if (whaleWallets.length >= 2) {
+                startWhaleTracking();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('walletEntryModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWalletEntryModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeWalletEntryModal();
+            }
+        });
+    </script>
+
+    <!-- Buy Signal Bubble -->
+    <div id="buySignalBubble" class="buy-signal-bubble">
+        <h4>🐋 Buy Signal Detected</h4>
+        <div id="buySignalEvents">
+            <!-- Events will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        // Buy Signal Bubble Functions
+        let currentBuySignalEvents = [];
+
+        function showBuySignalBubble(event) {
+            const bubble = document.getElementById('buySignalBubble');
+            const eventsEl = document.getElementById('buySignalEvents');
+            
+            // Position bubble near whale tracker card
+            const whaleCard = event.target.closest('.bg-gray-900');
+            if (whaleCard) {
+                const rect = whaleCard.getBoundingClientRect();
+                bubble.style.left = rect.left + 'px';
+                bubble.style.top = (rect.bottom + 10) + 'px';
+            }
+            
+            // Populate events
+            if (currentBuySignalEvents.length > 0) {
+                eventsEl.innerHTML = currentBuySignalEvents.map(event => `
+                    <div class="buy-signal-event">
+                        <div class="buy-signal-event-title">${event.title}</div>
+                        <div class="buy-signal-event-wallets">
+                            ${event.wallets.map(w => `${w.slice(0, 6)}...${w.slice(-4)}`).join(', ')}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                eventsEl.innerHTML = '<div class="buy-signal-no-events">No buy signals detected</div>';
+            }
+            
+            bubble.classList.add('active');
+        }
+
+        function hideBuySignalBubble() {
+            const bubble = document.getElementById('buySignalBubble');
+            bubble.classList.remove('active');
+        }
+
+        function updateBuySignalEvents(events) {
+            currentBuySignalEvents = events;
+            
+            // Update display to show "Buy Signal" when events exist
+            updateBuySignalCount(events.length);
+        }
+    </script>
+</body>
+</html>

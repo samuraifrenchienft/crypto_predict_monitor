@@ -1,0 +1,21 @@
+# P&L Card Generator - Requirements
+# Dependencies for the P&L card sharing system
+
+# Core dependencies
+Pillow>=9.0.0          # Image processing and card generation
+boto3>=1.26.0          # AWS S3 integration (optional)
+aiohttp>=3.8.0         # HTTP client for API calls
+
+# Database dependencies (choose based on your setup)
+SQLAlchemy>=1.4.0     # For SQLAlchemy ORM
+asyncpg>=0.27.0        # For PostgreSQL direct connection
+pymongo>=4.0.0         # For MongoDB
+supabase>=1.0.0        # For Supabase
+
+# Web framework dependencies (already in your project)
+Flask>=2.0.0           # Or FastAPI>=0.68.0
+# React dependencies already in package.json
+
+# Development dependencies
+pytest>=7.0.0          # Testing
+pytest-asyncio>=0.21.0 # Async testing support

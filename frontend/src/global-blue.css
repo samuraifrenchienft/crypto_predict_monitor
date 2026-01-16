@@ -1,0 +1,358 @@
+/* 🎨 PURE BLUE #0001FF GLOBAL OVERRIDE */
+/* Apply pure blue to all buttons, components, and UI elements */
+
+/* Override ALL buttons to pure blue */
+button, 
+[role="button"],
+input[type="button"],
+input[type="submit"],
+a.btn,
+.btn {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 20px rgba(0, 1, 255, 0.6), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border-color: #0001ff !important;
+  transition: all 0.2s ease !important;
+}
+
+button:hover,
+[role="button"]:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+a.btn:hover,
+.btn:hover {
+  background-color: #0000cc !important;
+  box-shadow: 0 0 30px rgba(0, 1, 255, 0.8),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+button:active,
+[role="button"]:active {
+  background-color: #000099 !important;
+  box-shadow: 0 0 40px rgba(0, 1, 255, 1.0),
+              inset 0 -2px 0 rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(0) !important;
+}
+
+/* Disabled buttons */
+button:disabled,
+input:disabled {
+  background-color: #999999 !important;
+  box-shadow: none !important;
+  opacity: 0.6 !important;
+}
+
+/* Input focus states */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #0001ff !important;
+  box-shadow: 0 0 10px rgba(0, 1, 255, 0.5) !important;
+  outline: none !important;
+}
+
+/* Card/Container accents */
+.card,
+.modal,
+.popup {
+  border-color: rgba(0, 1, 255, 0.3) !important;
+}
+
+/* Override common Tailwind blue classes */
+.bg-blue-600,
+.bg-blue-700,
+.bg-blue-500,
+.bg-blue-400,
+.bg-blue-800,
+.bg-blue-900 {
+  background-color: #0001ff !important;
+}
+
+.bg-red-600,
+.bg-red-500,
+.bg-red-700,
+.bg-purple-600,
+.bg-purple-500,
+.bg-cyan-500,
+.bg-cyan-600,
+.bg-magenta,
+.bg-indigo-600,
+.bg-indigo-500 {
+  background-color: #0001ff !important;
+}
+
+/* Text colors */
+.text-blue-600,
+.text-blue-700,
+.text-blue-500,
+.text-blue-400,
+.text-blue-800,
+.text-blue-900 {
+  color: #0001ff !important;
+}
+
+.text-red-600,
+.text-red-500,
+.text-red-700,
+.text-purple-600,
+.text-purple-500,
+.text-cyan-500,
+.text-cyan-600,
+.text-indigo-600,
+.text-indigo-500 {
+  color: #0001ff !important;
+}
+
+/* Border colors */
+.border-blue-600,
+.border-blue-700,
+.border-blue-500,
+.border-blue-400,
+.border-blue-800,
+.border-blue-900 {
+  border-color: #0001ff !important;
+}
+
+.border-red-600,
+.border-red-500,
+.border-red-700,
+.border-purple-600,
+.border-purple-500,
+.border-cyan-500,
+.border-cyan-600,
+.border-indigo-600,
+.border-indigo-500 {
+  border-color: #0001ff !important;
+}
+
+/* Hover states */
+.hover\:bg-blue-600:hover,
+.hover\:bg-blue-700:hover,
+.hover\:bg-blue-500:hover,
+.hover\:bg-red-600:hover,
+.hover\:bg-red-700:hover,
+.hover\:bg-purple-600:hover,
+.hover\:bg-cyan-500:hover,
+.hover\:bg-indigo-600:hover {
+  background-color: #0000cc !important;
+}
+
+/* Ring/Focus states */
+.ring-blue-500,
+.ring-blue-600,
+.ring-blue-700,
+.ring-red-500,
+.ring-red-600,
+.ring-purple-500,
+.ring-cyan-500,
+.ring-indigo-500 {
+  --tw-ring-color: #0001ff !important;
+}
+
+/* Shadow/Glow effects */
+.shadow-blue-500\/20,
+.shadow-blue-600\/25,
+.shadow-blue-700\/30 {
+  box-shadow: 0 0 20px rgba(0, 1, 255, 0.6) !important;
+}
+
+/* Special UI components */
+.alert,
+.badge,
+.tag {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+  border-color: #0001ff !important;
+}
+
+/* Progress bars */
+.progress-bar,
+[role="progressbar"] {
+  background-color: #0001ff !important;
+}
+
+/* Checkboxes and radio buttons */
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Links that should look like buttons */
+a[class*="btn"],
+a[class*="button"],
+button[class*="primary"],
+button[class*="main"] {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+  border-color: #0001ff !important;
+}
+
+/* Navigation elements */
+.nav-link.active,
+.nav-link:hover,
+.menu-item.active,
+.menu-item:hover {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Tab active states */
+.tab.active,
+.tab:hover {
+  border-color: #0001ff !important;
+  color: #0001ff !important;
+}
+
+/* Form submit buttons */
+form button[type="submit"],
+form input[type="submit"] {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Discord-style action buttons */
+.action-btn,
+.primary-btn,
+.cta-btn {
+  background: linear-gradient(135deg, #0001ff 0%, #0000cc 100%) !important;
+  box-shadow: 0 0 20px rgba(0, 1, 255, 0.6) !important;
+}
+
+/* Loading spinners */
+.spinner::before,
+.loading::after {
+  border-color: #0001ff !important;
+  border-top-color: transparent !important;
+}
+
+/* Toggle switches */
+.toggle-switch.active,
+.switch input:checked + .slider {
+  background-color: #0001ff !important;
+}
+
+/* Dropdown arrows */
+.select-arrow::after,
+.dropdown-arrow::before {
+  border-color: #0001ff !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar-thumb {
+  background-color: #0001ff !important;
+}
+
+::-webkit-scrollbar-track {
+  background-color: rgba(0, 1, 255, 0.1) !important;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(0, 1, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+/* Highlight colors */
+mark,
+.highlight {
+  background-color: rgba(0, 1, 255, 0.2) !important;
+  color: #0001ff !important;
+}
+
+/* Glass morphism effect */
+.glass-effect,
+.glass-morphism {
+  background: rgba(0, 1, 255, 0.1) !important;
+  border: 1px solid rgba(0, 1, 255, 0.3) !important;
+  box-shadow: 0 0 20px rgba(0, 1, 255, 0.4) !important;
+}
+
+/* Glow effects for important elements */
+.glow-blue,
+.pulse-blue {
+  animation: blueGlow 2s ease-in-out infinite alternate !important;
+}
+
+@keyframes blueGlow {
+  from {
+    box-shadow: 0 0 20px rgba(0, 1, 255, 0.6) !important;
+  }
+  to {
+    box-shadow: 0 0 30px rgba(0, 1, 255, 0.9) !important;
+  }
+}
+
+/* Priority: IMPORTANT elements */
+.priority-high,
+.urgent,
+.critical {
+  background-color: #0001ff !important;
+  animation: bluePulse 1s ease-in-out infinite !important;
+}
+
+@keyframes bluePulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 1, 255, 0.6) !important;
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 1, 255, 1.0) !important;
+  }
+}
+
+/* Dashboard specific */
+.dashboard-card:hover {
+  border-color: #0001ff !important;
+  box-shadow: 0 0 20px rgba(0, 1, 255, 0.4) !important;
+}
+
+/* Status indicators */
+.status-online,
+.status-active,
+.status-connected {
+  background-color: #0001ff !important;
+  box-shadow: 0 0 10px rgba(0, 1, 255, 0.6) !important;
+}
+
+/* Notification badges */
+.notification-badge,
+.alert-badge {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Chart/graph accents */
+.chart-accent,
+.graph-primary {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  button,
+  .btn {
+    background-color: #0001ff !important;
+    box-shadow: 0 0 15px rgba(0, 1, 255, 0.6) !important;
+  }
+}
+
+/* Dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+  button,
+  .btn {
+    background-color: #0001ff !important;
+    color: #ffffff !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  button,
+  .btn {
+    background-color: #0001ff !important;
+    color: #ffffff !important;
+  }
+}

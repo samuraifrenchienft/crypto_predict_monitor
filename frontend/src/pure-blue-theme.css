@@ -1,0 +1,290 @@
+/* 🎨 PURE BLUE #0001FF THEME IMPORT */
+/* Import this file in your main App.js or index.js */
+
+@import './global-blue.css';
+
+/* Additional pure blue theme overrides */
+:root {
+  --primary-blue: #0001ff;
+  --primary-blue-dark: #0000cc;
+  --primary-blue-darker: #000099;
+  --primary-blue-light: #3264ff;
+  --primary-blue-glow: rgba(0, 1, 255, 0.6);
+}
+
+/* Force pure blue on all interactive elements */
+body {
+  --tw-ring-color: #0001ff !important;
+}
+
+/* Ensure React components use pure blue */
+.MuiButton-root,
+.MuiButton-contained,
+.MuiButton-containedPrimary {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Ant Design components */
+.ant-btn-primary {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Chakra UI */
+.chakra-button {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Material-UI */
+.MuiIconButton-root {
+  color: #0001ff !important;
+}
+
+/* Bootstrap override */
+.btn-primary {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Semantic UI */
+.ui.primary.button {
+  background-color: #0001ff !important;
+}
+
+/* Bulma override */
+.is-primary {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Foundation override */
+.button.primary {
+  background-color: #0001ff !important;
+}
+
+/* Pure CSS override for any remaining elements */
+[class*="primary"],
+[class*="main"],
+[class*="submit"],
+[class*="action"] {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Ensure all links that look like buttons use pure blue */
+a[href*="button"],
+a[role="button"],
+button:not([class*="secondary"]):not([class*="outline"]) {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Special case for arbitrage and trading interfaces */
+.arbitrage-btn,
+.trade-btn,
+.alert-btn,
+.monitor-btn {
+  background: linear-gradient(135deg, #0001ff 0%, #0000cc 100%) !important;
+  box-shadow: 0 0 20px rgba(0, 1, 255, 0.6) !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+
+.arbitrage-btn:hover,
+.trade-btn:hover,
+.alert-btn:hover,
+.monitor-btn:hover {
+  background: linear-gradient(135deg, #0000cc 0%, #000099 100%) !important;
+  box-shadow: 0 0 30px rgba(0, 1, 255, 0.8) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Dashboard specific overrides */
+.dashboard-header,
+.dashboard-nav {
+  border-bottom: 2px solid #0001ff !important;
+}
+
+.dashboard-card {
+  border: 1px solid rgba(0, 1, 255, 0.3) !important;
+}
+
+.dashboard-card:hover {
+  border-color: #0001ff !important;
+  box-shadow: 0 0 20px rgba(0, 1, 255, 0.4) !important;
+}
+
+/* Status indicators */
+.status-indicator.online,
+.status-indicator.active,
+.status-indicator.connected {
+  background-color: #0001ff !important;
+  box-shadow: 0 0 10px rgba(0, 1, 255, 0.6) !important;
+}
+
+/* Alert and notification overrides */
+.alert-info,
+.alert-primary,
+.notification.info,
+.notification.primary {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Form overrides */
+.form-control:focus,
+.input:focus,
+.textarea:focus {
+  border-color: #0001ff !important;
+  box-shadow: 0 0 10px rgba(0, 1, 255, 0.5) !important;
+}
+
+/* Table overrides */
+.table th,
+.table td {
+  border-color: rgba(0, 1, 255, 0.1) !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 1, 255, 0.05) !important;
+}
+
+/* Modal and popup overrides */
+.modal-header,
+.popup-header {
+  border-bottom: 2px solid #0001ff !important;
+}
+
+.modal-footer .btn-primary,
+.popup-footer .btn-primary {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Loading and spinner overrides */
+.spinner,
+.loading {
+  border-color: #0001ff !important;
+  border-top-color: transparent !important;
+}
+
+/* Progress bar overrides */
+.progress-bar,
+[role="progressbar"] {
+  background-color: #0001ff !important;
+}
+
+/* Tab overrides */
+.nav-tabs .nav-link.active,
+.nav-pills .nav-link.active {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Pagination overrides */
+.page-item.active .page-link {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+}
+
+/* Breadcrumb overrides */
+.breadcrumb-item.active {
+  color: #0001ff !important;
+}
+
+/* Badge overrides */
+.badge-primary {
+  background-color: #0001ff !important;
+}
+
+/* Card header overrides */
+.card-header {
+  border-bottom: 2px solid #0001ff !important;
+}
+
+/* List group overrides */
+.list-group-item.active {
+  background-color: #0001ff !important;
+  border-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Dropdown overrides */
+.dropdown-menu .dropdown-item.active,
+.dropdown-menu .dropdown-item:active {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Collapse/accordion overrides */
+.accordion-button:not(.collapsed) {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Carousel overrides */
+.carousel-indicators .active {
+  background-color: #0001ff !important;
+}
+
+/* Toast/notification overrides */
+.toast-info,
+.toast-primary {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Tooltip overrides */
+.tooltip-inner {
+  background-color: #0001ff !important;
+}
+
+/* Popover overrides */
+.popover-header {
+  background-color: #0001ff !important;
+  color: #ffffff !important;
+}
+
+/* Scrollbar overrides */
+::-webkit-scrollbar-thumb {
+  background-color: #0001ff !important;
+}
+
+::-webkit-scrollbar-track {
+  background-color: rgba(0, 1, 255, 0.1) !important;
+}
+
+/* Print styles */
+@media print {
+  .btn-primary,
+  .btn,
+  button {
+    background-color: #0001ff !important;
+    color: #ffffff !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-primary,
+  .btn,
+  button {
+    background-color: #0001ff !important;
+    color: #ffffff !important;
+    border: 2px solid #0001ff !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn,
+  button {
+    background-color: #0001ff !important;
+    transition: none !important;
+  }
+}
