@@ -41,18 +41,23 @@ class ProfessionalArbitrageAlerts:
     """Professional Discord alert system with investment-grade embeds"""
     
     def __init__(self, webhook_url: Optional[str] = None):
-        # Use provided webhook_url, then config, then environment variable
+        # Use environment variable first, then provided webhook_url, then config
         if webhook_url:
             self.webhook_url = webhook_url
         else:
-            # Try to get from config - use health webhook for dashboard changes
-            try:
-                from bot.config import load_config
-                cfg = load_config()
-                self.webhook_url = cfg.discord_health_webhook_url  # Use health webhook for dashboard changes
-            except:
-                # Fallback to hardcoded health webhook URL
-                self.webhook_url = "https://discord.com/api/webhooks/1455877944005365814/TpDNqyFu2XhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb"
+            # Try environment variable first
+            env_webhook = os.getenv("DISCORD_HEALTH_WEBHOOK_URL")
+            if env_webhook:
+                self.webhook_url = env_webhook
+            else:
+                # Fallback to config
+                try:
+                    from bot.config import load_config
+                    cfg = load_config()
+                    self.webhook_url = cfg.discord_health_webhook_url
+                except:
+                    # Final fallback
+                    self.webhook_url = "https://discord.com/api/webhooks/1455877944005365814/TpDNqyFuXhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb"
         
         self.health_webhook_url = os.getenv("DISCORD_HEALTH_WEBHOOK_URL")
         self.session = None

@@ -340,8 +340,10 @@ def _build_quotes_for_arbitrage() -> tuple[Dict[str, List[Market]], Dict[str, Di
 
 async def _arbitrage_alert_loop() -> None:
     cfg = load_config()
+    # Use environment variable for health webhook like it should be
+    health_webhook = os.getenv("DISCORD_HEALTH_WEBHOOK_URL", cfg.discord_health_webhook_url)
     alerter = DiscordAlerter(
-        webhook_url=cfg.discord_webhook_url,  # Use working main webhook
+        webhook_url=health_webhook,  # Use environment variable
         enabled=cfg.discord.enabled,
         min_seconds_between_same_alert=cfg.discord.min_seconds_between_same_alert,
     )
@@ -351,7 +353,7 @@ async def _arbitrage_alert_loop() -> None:
     while True:
         try:
             # Discord health check
-            if cfg.discord_webhook_url:
+            if health_webhook:
                 await alerter.health_check()
             
             # Refresh referrals
