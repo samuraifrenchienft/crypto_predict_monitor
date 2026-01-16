@@ -470,6 +470,133 @@
             color: #f59e0b;
             font-weight: 500;
         }
+
+        /* Whale Modal Styles */
+        .whale-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.90);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .whale-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .whale-modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 32px;
+            position: relative;
+        }
+
+        .whale-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .whale-modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .whale-close-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .whale-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .whale-event-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .whale-event-card:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        .whale-event-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .whale-wallets-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .whale-wallet-tag {
+            background: rgba(0, 1, 255, 0.2);
+            border: 1px solid rgba(0, 1, 255, 0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #6496ff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .whale-no-activity {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .whale-no-activity svg {
+            margin-bottom: 16px;
+        }
+
+        .whale-loading {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body class="bg-black text-white">
@@ -506,10 +633,6 @@
                     <button id="releaseAlertsBtn" onclick="releaseAlerts()" class="hidden bg-[#0001ff] hover:bg-[#0001ff] text-white px-4 py-2 rounded-lg font-medium transition">Release Alerts</button>
                     <span id="queuedAlertsCount" class="bg-[#0001ff] text-white px-2 py-1 rounded-full text-xs font-bold hidden">0</span>
                     
-                    <!-- Debug button for development -->
-                    <button onclick="forceRefresh()" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg font-medium transition text-sm">
-                        🔄 Debug Refresh
-                    </button>
                     
                     <!-- Wallet Connection -->
                     <div id="walletSection" class="flex items-center space-x-3">
@@ -532,20 +655,16 @@
                             </button>
                         </div>
                         
-                        {/* HEADER (Leaderboard button lives here) */}
-                        <div class="dashboard-header">
-                            <button
-                                id="header-leaderboard-btn"
-                                onclick="setActiveTab('leaderboard')"
-                                class="bg-gradient-to-r from-[#0001ff] to-purple-600 hover:from-[#0001ff] hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 neon-glow"
-                            >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm-9-1h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7H8v10h5"></path>
-                                </svg>
-                                <span>🏆 Leaderboard</span>
-                            </button>
-                        </div>
+                        <button
+                            id="header-leaderboard-btn"
+                            onclick="setActiveTab('leaderboard')"
+                            class="bg-[#0001ff] hover:bg-[#0000cc] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span>Leaderboard</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -555,7 +674,7 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 bg-[#0001ff] rounded-md p-3 neon-glow">
@@ -597,69 +716,31 @@
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <div class="min-w-0">
-                                <div class="text-base font-semibold text-white tracking-wide truncate">Referrals</div>
-                                <div class="text-lg font-bold text-white" id="userPoints">0</div>
-                            </div>
+                            <div class="text-base font-semibold text-white tracking-wide truncate">Referrals</div>
+                            <div class="text-lg font-bold text-white" id="userPoints">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Whale Tracker Button -->
+            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-gray-800 cursor-pointer hover:border-blue-700/60 transition-all" onclick="openWhaleModal()" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-600 rounded-md p-4 neon-glow">
+                        <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <div class="min-w-0">
+                            <div class="text-base font-semibold text-white tracking-wide truncate">🐋 Whale Tracker</div>
+                            <div class="text-sm font-medium text-gray-400" id="whaleAlertCount">No activity</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ✅ ADD BACK: Whale Wallet Tracker (was removed) -->
-        <div class="whale-tracker-section mb-8">
-            <h3 class="text-xl font-bold text-white mb-4">🐋 Whale Wallet Tracker</h3>
-            
-            <div class="whale-stats grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="stat-card bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
-                    <span class="label text-sm font-medium text-gray-400 block mb-1">Top Whale Activity</span>
-                    <span class="value text-lg font-semibold text-white" id="whaleVolume">$0</span>
-                </div>
-                
-                <div class="stat-card bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
-                    <span class="label text-sm font-medium text-gray-400 block mb-1">Large Transactions</span>
-                    <span class="value text-lg font-semibold text-white" id="largeTransactions">0</span>
-                </div>
-                
-                <div class="stat-card bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
-                    <span class="label text-sm font-medium text-gray-400 block mb-1">Wallet Movements</span>
-                    <span class="value text-lg font-semibold text-white" id="walletMovements">0</span>
-                </div>
-            </div>
-            
-            <!-- Whale Activity Table -->
-            <div class="whale-activity-table bg-gray-900 rounded-lg shadow-lg border border-gray-800 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-800">
-                    <h4 class="text-lg font-semibold text-white">Recent Whale Activity</h4>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-800">
-                        <thead class="bg-gray-800">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Wallet</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Market</th>
-                            </tr>
-                        </thead>
-                        <tbody id="whaleActivityTableBody" class="bg-gray-900 divide-y divide-gray-800">
-                            <!-- Whale activity data will be inserted here -->
-                            <tr>
-                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                                    <div class="flex flex-col items-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                        </svg>
-                                        <h3 class="text-sm font-medium text-gray-300">No whale activity detected</h3>
-                                        <p class="mt-1 text-sm text-gray-500">Large transactions will appear here</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
         <!-- Whale Alerts Section -->
         <div id="whaleSection" class="mb-8 hidden">
@@ -2194,6 +2275,161 @@
                         hideStartupOverlay();
                     }
                 }, 30000);
+            }
+        });
+    </script>
+
+    <!-- Whale Tracker Modal -->
+    <div id="whaleModal" class="whale-modal">
+        <div class="whale-modal-content">
+            <div class="whale-modal-header">
+                <h2 class="whale-modal-title">
+                    🐋 Whale Tracker
+                    <span class="text-sm text-gray-400 ml-2">Polymarket Only</span>
+                </h2>
+                <button class="whale-close-btn" onclick="closeWhaleModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="whaleModalContent">
+                <div class="whale-loading">
+                    <div class="loading-spinner mx-auto mb-4"></div>
+                    <p>Loading whale data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Whale Tracker Functions
+        const WHALE_WALLETS = [
+            '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b',
+            '0x8d298e9b995d5500c7517e6c487e0c53e4ef0f3d', 
+            '0x3f5ce5bbfe8f4b6d8e0c8e0c8e0c8e0c8e0c8e0c',
+            '0x2b3a342d2b3a342d2b3a342d2b3a342d2b3a342d'
+        ];
+
+        let whaleData = [];
+        let whalePollingInterval = null;
+
+        function openWhaleModal() {
+            const modal = document.getElementById('whaleModal');
+            modal.classList.add('active');
+            loadWhaleData();
+            // Start polling for updates
+            if (whalePollingInterval) clearInterval(whalePollingInterval);
+            whalePollingInterval = setInterval(loadWhaleData, 30000); // Poll every 30 seconds
+        }
+
+        function closeWhaleModal() {
+            const modal = document.getElementById('whaleModal');
+            modal.classList.remove('active');
+            // Stop polling
+            if (whalePollingInterval) {
+                clearInterval(whalePollingInterval);
+                whalePollingInterval = null;
+            }
+        }
+
+        async function loadWhaleData() {
+            const contentEl = document.getElementById('whaleModalContent');
+            
+            try {
+                // Mock data for now - replace with actual API call
+                const mockEvents = [
+                    {
+                        title: "Will Bitcoin reach $100k by end of 2024?",
+                        marketId: "bitcoin-100k-2024",
+                        wallets: [
+                            WHALE_WALLETS[0],
+                            WHALE_WALLETS[1]
+                        ],
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        title: "Will Trump win 2024 election?",
+                        marketId: "trump-2024-win",
+                        wallets: [
+                            WHALE_WALLETS[0],
+                            WHALE_WALLETS[2],
+                            WHALE_WALLETS[3]
+                        ],
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+
+                // Filter for events with 2+ whale wallets
+                const qualifyingEvents = mockEvents.filter(event => event.wallets.length >= 2);
+                
+                if (qualifyingEvents.length === 0) {
+                    contentEl.innerHTML = `
+                        <div class="whale-no-activity">
+                            <svg class="w-16 h-16 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <h3 class="text-lg font-medium text-gray-300 mb-2">No whale convergence detected</h3>
+                            <p class="text-sm text-gray-500">Events will appear when 2+ tracked wallets predict on the same market</p>
+                        </div>
+                    `;
+                    updateWhaleAlertCount('No activity');
+                } else {
+                    contentEl.innerHTML = qualifyingEvents.map(event => `
+                        <div class="whale-event-card">
+                            <div class="whale-event-title">${event.title}</div>
+                            <div class="text-sm text-gray-400 mb-2">
+                                Market ID: ${event.marketId}
+                            </div>
+                            <div class="text-sm text-gray-400 mb-2">
+                                Detected: ${new Date(event.timestamp).toLocaleString()}
+                            </div>
+                            <div class="whale-wallets-list">
+                                ${event.wallets.map(wallet => `
+                                    <div class="whale-wallet-tag">
+                                        ${wallet.slice(0, 6)}...${wallet.slice(-4)}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                    updateWhaleAlertCount(`${qualifyingEvents.length} events`);
+                }
+                
+            } catch (error) {
+                console.error('Error loading whale data:', error);
+                contentEl.innerHTML = `
+                    <div class="whale-no-activity">
+                        <svg class="w-16 h-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-lg font-medium text-gray-300 mb-2">Error loading whale data</h3>
+                        <p class="text-sm text-gray-500">Please try again later</p>
+                    </div>
+                `;
+                updateWhaleAlertCount('Error');
+            }
+        }
+
+        function updateWhaleAlertCount(count) {
+            const alertEl = document.getElementById('whaleAlertCount');
+            if (alertEl) {
+                alertEl.textContent = count;
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('whaleModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWhaleModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeWhaleModal();
             }
         });
     </script>
