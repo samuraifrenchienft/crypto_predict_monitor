@@ -416,6 +416,62 @@ class ProfessionalArbitrageAlerts:
         except Exception as e:
             logger.error(f"❌ Error sending health alert: {e}")
             return False
+    
+    async def send_config_change_alert(self, changes: list, updated_by: str = "System") -> bool:
+        """Send configuration change alert to arbitrage webhook"""
+        if not self.webhook_url:
+            logger.error("❌ No CPM_WEBHOOK_URL configured for config alerts")
+            return False
+        
+        if not self.session:
+            logger.error("❌ Session not initialized. Use async context manager.")
+            return False
+        
+        # Create config change embed
+        embed = {
+            "title": "⚙️ CONFIGURATION CHANGED",
+            "description": f"System configuration updated by {updated_by}",
+            "color": 0xff9900,  # Orange for config changes
+            "fields": [
+                {
+                    "name": "📋 Changes Made",
+                    "value": "\n".join(f"• {change}" for change in changes),
+                    "inline": False
+                },
+                {
+                    "name": "🕐 Timestamp",
+                    "value": f"<t:{int(asyncio.get_event_loop().time())}:R>",
+                    "inline": True
+                },
+                {
+                    "name": "🔄 Impact",
+                    "value": "Arbitrage detection and alerting system updated",
+                    "inline": True
+                }
+            ],
+            "footer": {
+                "text": f"{self.brand_name} | Configuration Monitor"
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        payload = {
+            "content": f"🔧 **CONFIGURATION UPDATE**\n\n{len(changes)} changes made to arbitrage system configuration.",
+            "username": "CPM Config Monitor",
+            "embeds": [embed]
+        }
+        
+        try:
+            async with self.session.post(self.webhook_url, json=payload) as response:
+                if response.status == 204:
+                    logger.info(f"✅ Sent config change alert with {len(changes)} changes")
+                    return True
+                else:
+                    logger.error(f"❌ Failed to send config change alert: {response.status}")
+                    return False
+        except Exception as e:
+            logger.error(f"❌ Error sending config change alert: {e}")
+            return False
 
 # Example usage and testing
 async def test_professional_alerts():
