@@ -1051,19 +1051,42 @@ def get_markets():
         snapshot = json.loads(json.dumps(market_cache))
         latest2 = max(last_update.values()) if last_update else None
 
-    sources = sorted(snapshot.keys())
-    active_sources = [k for k in sources if snapshot.get(k)]
-    total_markets = sum(len(v) if isinstance(v, list) else 0 for v in snapshot.values())
+    # Apply 1.5% strategy filtering to all markets
+    filtered_snapshot = {}
+    qualifying_count = 0
+    
+    for source, markets in snapshot.items():
+        filtered_markets = []
+        for market in markets:
+            market_spread = 0
+            if market.get("outcomes"):
+                outcome = market["outcomes"][0]
+                if outcome.get("bid") and outcome.get("ask"):
+                    market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
+            
+            # Only include markets that meet 1.5% strategy
+            if market_spread >= 1.5:
+                filtered_markets.append(market)
+                qualifying_count += 1
+        
+        if filtered_markets:
+            filtered_snapshot[source] = filtered_markets
+
+    sources = sorted(filtered_snapshot.keys())
+    active_sources = [k for k in sources if filtered_snapshot.get(k)]
+    total_markets = qualifying_count
     total_events = total_markets
 
     return jsonify(
         {
-            "markets": snapshot,
+            "markets": filtered_snapshot,
             "sources": sources,
             "active_sources": active_sources,
             "last_update": latest2.isoformat() if latest2 else None,
             "total_markets": total_markets,
             "total_events": total_events,
+            "filtered": True,
+            "min_spread": "1.5%"
         }
     )
 
@@ -1490,14 +1513,29 @@ def admin_set_tier():
 
 @app.route("/api/markets/<source>")
 def get_markets_by_source(source: str):
-    """Get market data from a specific source."""
+    """Get market data from a specific source - filtered by 1.5% strategy."""
     if source not in market_cache:
         return jsonify({"error": f"Source '{source}' not found"}), 404
     
+    # Apply 1.5% strategy filtering
+    qualifying_markets = []
+    for market in market_cache[source]:
+        market_spread = 0
+        if market["outcomes"]:
+            outcome = market["outcomes"][0]
+            if outcome.get("bid") and outcome.get("ask"):
+                market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
+        
+        # Only include markets that meet 1.5% strategy
+        if market_spread >= 1.5:
+            qualifying_markets.append(market)
+    
     return jsonify({
-        "markets": market_cache[source],
+        "markets": qualifying_markets,
         "last_update": last_update[source].isoformat() if source in last_update else None,
-        "total": len(market_cache[source]),
+        "total": len(qualifying_markets),
+        "filtered": True,
+        "min_spread": "1.5%"
     })
 
 
