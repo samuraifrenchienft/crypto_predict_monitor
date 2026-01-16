@@ -41,7 +41,19 @@ class ProfessionalArbitrageAlerts:
     """Professional Discord alert system with investment-grade embeds"""
     
     def __init__(self, webhook_url: Optional[str] = None):
-        self.webhook_url = webhook_url or os.getenv("CPM_WEBHOOK_URL")
+        # Use provided webhook_url, then config, then environment variable
+        if webhook_url:
+            self.webhook_url = webhook_url
+        else:
+            # Try to get from config
+            try:
+                from bot.config import load_config
+                cfg = load_config()
+                self.webhook_url = cfg.discord.cpm_webhook_url
+            except:
+                # Fallback to environment variable
+                self.webhook_url = os.getenv("CPM_WEBHOOK_URL")
+        
         self.health_webhook_url = os.getenv("DISCORD_HEALTH_WEBHOOK_URL")
         self.session = None
         

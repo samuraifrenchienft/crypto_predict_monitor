@@ -55,6 +55,9 @@ class DiscordAlertConfig:
     enabled: bool
     online_message: bool
     min_seconds_between_same_alert: int
+    webhook_url: Optional[str] = None
+    health_webhook_url: Optional[str] = None
+    cpm_webhook_url: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -167,6 +170,9 @@ def load_config() -> AppConfig:
         enabled=bool(_must_get(alerts_raw, "enabled")),
         online_message=bool(_must_get(alerts_raw, "online_message")),
         min_seconds_between_same_alert=int(_must_get(alerts_raw, "min_seconds_between_same_alert")),
+        webhook_url=str(alerts_raw.get("webhook_url")),
+        health_webhook_url=str(alerts_raw.get("health_webhook_url")),
+        cpm_webhook_url=str(alerts_raw.get("cpm_webhook_url")),
     )
 
     thresholds = Thresholds(

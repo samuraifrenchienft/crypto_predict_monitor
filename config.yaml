@@ -16,10 +16,11 @@ bot:
 alerts:
   discord:
     enabled: true
-
+    webhook_url: "https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV"
+    health_webhook_url: "https://discord.com/api/webhooks/1455877944005365814/TpDNqyFu6XhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb"
+    cpm_webhook_url: "https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV"
     # Send one "ONLINE" message when the bot starts (once per run)
     online_message: true
-
     # Dedupe/cooldown: minimum seconds between identical alerts
     min_seconds_between_same_alert: 600
 
