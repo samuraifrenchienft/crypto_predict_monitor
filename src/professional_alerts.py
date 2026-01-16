@@ -45,14 +45,14 @@ class ProfessionalArbitrageAlerts:
         if webhook_url:
             self.webhook_url = webhook_url
         else:
-            # Try to get from config
+            # Try to get from config - use health webhook for dashboard changes
             try:
                 from bot.config import load_config
                 cfg = load_config()
-                self.webhook_url = cfg.alerts.discord.cpm_webhook_url
+                self.webhook_url = cfg.discord_health_webhook_url  # Use health webhook for dashboard changes
             except:
-                # Fallback to hardcoded webhook URL
-                self.webhook_url = "https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV"
+                # Fallback to hardcoded health webhook URL
+                self.webhook_url = "https://discord.com/api/webhooks/1455877944005365814/TpDNqyFu2XhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb"
         
         self.health_webhook_url = os.getenv("DISCORD_HEALTH_WEBHOOK_URL")
         self.session = None
