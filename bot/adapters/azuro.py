@@ -33,11 +33,11 @@ class AzuroAdapter(Adapter):
 
     def __init__(
         self,
-        graphql_base_url: str = "https://api.onchainfeed.org/api/v1/public/gateway",
-        subgraph_base_url: str = "https://thegraph.onchainfeed.org/subgraphs/name/azuro-protocol/azuro-api-polygon-v3",
-        rest_base_url: str = "https://api.onchainfeed.org/api/v1/public/gateway",
+        graphql_base_url: str = "https://api.azuro.org/graphql",
+        subgraph_base_url: str = "https://subgraph.azuro.org",
+        rest_base_url: str = "https://api.azuro.org/api/v1",
         markets_limit: int = 50,
-        use_fallback: bool = True,  # Use fallback data if APIs are not available
+        use_fallback: bool = False,  # Disable fallback to force real data
     ) -> None:
         self.graphql_base_url = graphql_base_url.rstrip("/")
         self.subgraph_base_url = subgraph_base_url.rstrip("/")
@@ -91,26 +91,30 @@ class AzuroAdapter(Adapter):
     async def _fetch_from_graphql(self) -> list[Market]:
         """Try to fetch from GraphQL API"""
         query = """
-        query GetActiveMarkets($first: Int!) {
+        query getActiveMarkets($first: Int!) {
             markets(
                 first: $first,
                 where: {
-                    active: true,
-                    resolved: false
-                }
+                    status: "Created"
+                },
+                orderBy: createdAt,
+                orderDirection: desc
             ) {
                 id
                 title
                 slug
+                conditionId
                 outcomes {
                     id
                     title
-                    probability
+                    odds
                     liquidity
                 }
                 totalVolume
                 liquidity
                 deadline
+                createdAt
+                status
             }
         }
         """
@@ -261,40 +265,62 @@ class AzuroAdapter(Adapter):
         return markets
 
     def _get_fallback_markets(self) -> list[Market]:
-        """Get fallback markets for testing when APIs are not available"""
+        """Get fallback markets with current events when APIs are not available"""
         fallback_markets = [
             {
-                "id": "azuro-btc-price-2024",
-                "title": "Bitcoin Price Above $100,000 by End of 2024",
-                "slug": "bitcoin-price-2024",
+                "id": "azuro-btc-price-2025",
+                "title": "Bitcoin Price Above $150,000 by End of 2025",
+                "slug": "bitcoin-price-2025",
                 "outcomes": [
-                    {"id": "yes", "title": "YES", "probability": 0.35, "liquidity": 50000},
-                    {"id": "no", "title": "NO", "probability": 0.65, "liquidity": 75000}
+                    {"id": "yes", "title": "YES", "probability": 0.42, "liquidity": 85000},
+                    {"id": "no", "title": "NO", "probability": 0.58, "liquidity": 115000}
                 ],
-                "totalVolume": 125000,
-                "liquidity": 125000
+                "totalVolume": 200000,
+                "liquidity": 200000
             },
             {
-                "id": "azuro-us-election-2024",
-                "title": "US Presidential Election 2024 Winner",
-                "slug": "us-election-2024",
+                "id": "azuro-eth-price-2025",
+                "title": "Ethereum Price Above $8,000 by Q2 2025",
+                "slug": "ethereum-price-2025",
                 "outcomes": [
-                    {"id": "trump", "title": "Donald Trump", "probability": 0.48, "liquidity": 85000},
-                    {"id": "biden", "title": "Joe Biden", "probability": 0.52, "liquidity": 92000}
+                    {"id": "yes", "title": "YES", "probability": 0.38, "liquidity": 72000},
+                    {"id": "no", "title": "NO", "probability": 0.62, "liquidity": 98000}
                 ],
-                "totalVolume": 177000,
-                "liquidity": 177000
+                "totalVolume": 170000,
+                "liquidity": 170000
             },
             {
-                "id": "azuro-eth-price-q1-2024",
-                "title": "Ethereum Price Above $4,000 by Q1 2024",
-                "slug": "ethereum-price-q1-2024",
+                "id": "azuro-trump-inauguration",
+                "title": "Trump Inauguration Market Cap Above $5T",
+                "slug": "trump-inauguration-2025",
                 "outcomes": [
-                    {"id": "yes", "title": "YES", "probability": 0.42, "liquidity": 63000},
-                    {"id": "no", "title": "NO", "probability": 0.58, "liquidity": 71000}
+                    {"id": "yes", "title": "YES", "probability": 0.45, "liquidity": 93000},
+                    {"id": "no", "title": "NO", "probability": 0.55, "liquidity": 107000}
                 ],
-                "totalVolume": 134000,
-                "liquidity": 134000
+                "totalVolume": 200000,
+                "liquidity": 200000
+            },
+            {
+                "id": "azuro-solana-price",
+                "title": "Solana Price Above $500 by End of 2025",
+                "slug": "solana-price-2025",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.35, "liquidity": 68000},
+                    {"id": "no", "title": "NO", "probability": 0.65, "liquidity": 92000}
+                ],
+                "totalVolume": 160000,
+                "liquidity": 160000
+            },
+            {
+                "id": "azuro-fed-rate-cut",
+                "title": "Federal Reserve Cuts Rates by March 2025",
+                "slug": "fed-rate-cut-2025",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.52, "liquidity": 88000},
+                    {"id": "no", "title": "NO", "probability": 0.48, "liquidity": 82000}
+                ],
+                "totalVolume": 170000,
+                "liquidity": 170000
             }
         ]
 
