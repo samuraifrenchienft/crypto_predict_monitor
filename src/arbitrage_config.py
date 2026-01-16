@@ -26,12 +26,12 @@ class ArbitrageConfig:
     
     # Color coding for quality levels
     QUALITY_COLORS = {
-        "exceptional": 0x00ff64,  # Green (#00ff64)
-        "excellent": 0x00ff64,     # Green
-        "very_good": 0x00ff64,     # Green
-        "good": 0xffff00,          # Yellow (#ffff00)
-        "fair": 0x0001ff,          # Blue (#0001ff)
-        "poor": 0x808080           # Gray
+        "exceptional": 0x0066ff,  # Blue (#0066ff) - 3%+ spread
+        "excellent": 0x00ff00,    # Green (#00ff00) - 2.51-3% spread
+        "very_good": 0xffff00,    # Yellow (#ffff00) - 2.01-2.5% spread
+        "good": 0xffa500,        # Orange (#ffa500) - 1.5-2% spread
+        "fair": 0x808080,         # Gray
+        "poor": 0x808080          # Gray
     }
     
     # Quality score ranges
@@ -92,11 +92,12 @@ class ArbitrageConfig:
     
     # Spread thresholds
     SPREAD_THRESHOLDS = {
-        "excellent": 3.0,    # 3%+ spread
-        "very_good": 2.0,    # 2-3% spread
-        "good": 1.5,         # 1.5-2% spread
-        "fair": 1.0,         # 1-1.5% spread
-        "poor": 0.5          # <1% spread
+        "exceptional": 3.0,    # 3%+ spread - Blue
+        "excellent": 2.51,    # 2.51-3% spread - Green
+        "very_good": 2.01,    # 2.01-2.5% spread - Yellow
+        "good": 1.5,          # 1.5-2% spread - Orange
+        "fair": 1.0,          # 1-1.5% spread
+        "poor": 0.5           # <1% spread
     }
     
     # Branding

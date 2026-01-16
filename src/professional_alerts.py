@@ -75,22 +75,26 @@ class ProfessionalArbitrageAlerts:
             await self.session.close()
     
     def get_embed_color(self, confidence_score: float) -> int:
-        """Return hex color based on confidence score"""
+        """Get Discord embed color based on confidence score using your tier system"""
         if confidence_score >= 8.5:
-            return 0x00FF64  # Green for HIGH confidence (TRADE THIS)
+            return 0x0066ff  # Blue for EXCEPTIONAL (3%+ spread)
+        elif confidence_score >= 7.5:
+            return 0x00ff00  # Green for EXCELLENT (2.51-3% spread)
         elif confidence_score >= 6.5:
-            return 0xFFFF00  # Yellow for MEDIUM confidence (GOOD OPPORTUNITY)
+            return 0xffff00  # Yellow for VERY GOOD (2.01-2.5% spread)
         else:
-            return 0xFF8800  # Orange for LOW confidence (MONITOR/RESEARCH)
+            return 0xffa500  # Orange for GOOD (1.5-2% spread)
     
     def get_confidence_tier(self, confidence_score: float) -> str:
-        """Get confidence tier description"""
+        """Get confidence tier description using your spread-based tiers"""
         if confidence_score >= 8.5:
-            return "HIGH 🟢 (TRADE THIS)"
+            return "EXCEPTIONAL 🔵 (3%+ spread)"
+        elif confidence_score >= 7.5:
+            return "EXCELLENT 🟢 (2.51-3% spread)"
         elif confidence_score >= 6.5:
-            return "MEDIUM 🟡 (GOOD OPPORTUNITY)"
+            return "VERY GOOD 🟡 (2.01-2.5% spread)"
         else:
-            return "LOW 🟠 (MONITOR/RESEARCH)"
+            return "GOOD 🟠 (1.5-2% spread)"
     
     def get_quality_level(self, quality_score: float) -> str:
         """Get quality level description"""

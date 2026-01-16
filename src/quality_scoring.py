@@ -13,11 +13,12 @@ class QualityScorer:
     def __init__(self):
         # Quality thresholds (configurable)
         self.spread_weights = {
-            "excellent": 3.0,    # 3%+ spread
-            "very_good": 2.0,    # 2-3% spread
-            "good": 1.5,         # 1.5-2% spread
-            "fair": 1.0,         # 1-1.5% spread
-            "poor": 0.5          # <1% spread
+            "exceptional": 3.0,    # 3%+ spread - Blue
+            "excellent": 2.51,      # 2.51-3% spread - Green  
+            "very_good": 2.01,      # 2.01-2.5% spread - Yellow
+            "good": 1.5,            # 1.5-2% spread - Orange
+            "fair": 1.0,            # 1-1.5% spread
+            "poor": 0.5             # <1% spread
         }
         
         self.liquidity_thresholds = {
@@ -38,18 +39,20 @@ class QualityScorer:
     
     def calculate_spread_score(self, spread_percentage: float) -> float:
         """Calculate spread quality score (0-3 points)"""
-        if spread_percentage >= self.spread_weights["excellent"]:
-            return 3.0
+        if spread_percentage >= self.spread_weights["exceptional"]:
+            return 3.0  # Blue tier - 3%+ spread
+        elif spread_percentage >= self.spread_weights["excellent"]:
+            return 2.8  # Green tier - 2.51-3% spread
         elif spread_percentage >= self.spread_weights["very_good"]:
-            return 2.5
+            return 2.5  # Yellow tier - 2.01-2.5% spread
         elif spread_percentage >= self.spread_weights["good"]:
-            return 2.0
+            return 2.0  # Orange tier - 1.5-2% spread
         elif spread_percentage >= self.spread_weights["fair"]:
-            return 1.5
+            return 1.5  # Fair tier - 1-1.5% spread
         elif spread_percentage >= self.spread_weights["poor"]:
-            return 1.0
+            return 1.0  # Poor tier - <1% spread
         else:
-            return 0.5
+            return 0.0  # No score
     
     def calculate_liquidity_score(self, yes_liquidity: float, no_liquidity: float) -> float:
         """Calculate liquidity quality score (0-2 points)"""
