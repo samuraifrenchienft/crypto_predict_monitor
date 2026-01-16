@@ -66,7 +66,7 @@ def is_new_event(market: Market, hours: int = 24) -> bool:
 def score_arbitrage_opportunity(
     markets: List[Tuple[str, Market]],
     quotes_by_source: Dict[str, Dict[str, List[Quote]]],
-    min_spread: float = 0.08,
+    min_spread: float = 0.015,  # Default to 1.5% strategy
     prioritize_new: bool = True,
     new_event_hours: int = 24,
 ) -> List[Dict[str, Any]]:
@@ -141,7 +141,7 @@ def score_arbitrage_opportunity(
 def detect_cross_market_arbitrage(
     markets_by_source: Dict[str, List[Market]],
     quotes_by_source: Dict[str, Dict[str, List[Quote]]],
-    min_spread: float = 0.08,
+    min_spread: float = 0.015,  # Default to 1.5% strategy
     prioritize_new: bool = True,
     new_event_hours: int = 24,
 ) -> List[Dict[str, Any]]:

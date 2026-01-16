@@ -33,9 +33,9 @@ class AzuroAdapter(Adapter):
 
     def __init__(
         self,
-        graphql_base_url: str = "https://api.azuro.org/graphql",
-        subgraph_base_url: str = "https://subgraph.azuro.org",
-        rest_base_url: str = "https://azuro.org/api/v1",
+        graphql_base_url: str = "https://api.onchainfeed.org/api/v1/public/gateway",
+        subgraph_base_url: str = "https://thegraph.onchainfeed.org/subgraphs/name/azuro-protocol/azuro-api-polygon-v3",
+        rest_base_url: str = "https://api.onchainfeed.org/api/v1/public/gateway",
         markets_limit: int = 50,
         use_fallback: bool = True,  # Use fallback data if APIs are not available
     ) -> None:
@@ -212,8 +212,8 @@ class AzuroAdapter(Adapter):
             if not condition_id:
                 continue
 
-            # Create frontend URL
-            url = f"https://azuro.org/conditions/{condition_id}"
+            # Create frontend URL (using working Azuro domain)
+            url = f"https://azuro.bet/conditions/{condition_id}"
 
             # Cache condition data
             self._market_cache[condition_id] = condition_data
@@ -244,8 +244,8 @@ class AzuroAdapter(Adapter):
             if not market_id or not title:
                 continue
 
-            # Create frontend URL
-            url = f"https://azuro.org/markets/{slug}" if slug else f"https://azuro.org/markets/{market_id}"
+            # Create frontend URL (using working Azuro domain)
+            url = f"https://azuro.bet/markets/{slug}" if slug else f"https://azuro.bet/markets/{market_id}"
 
             # Cache market data
             self._market_cache[market_id] = market_data
@@ -305,7 +305,7 @@ class AzuroAdapter(Adapter):
             market_id = market_data["id"]
             title = market_data["title"]
             slug = market_data["slug"]
-            url = f"https://azuro.org/markets/{slug}"
+            url = f"https://azuro.bet/markets/{slug}"
 
             # Cache market data
             self._market_cache[market_id] = market_data
