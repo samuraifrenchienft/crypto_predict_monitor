@@ -1042,10 +1042,100 @@ def test():
     })
 
 
+def _categorize_event(title: str) -> str:
+    """Categorize arbitrage event based on title keywords"""
+    title_lower = title.lower()
+    
+    category_keywords = {
+        'crypto': ['bitcoin', 'ethereum', 'eth', 'btc', 'solana', 'doge', 'crypto', 'blockchain'],
+        'politics': ['trump', 'biden', 'election', 'president', 'congress', 'fed chair', 'nominate'],
+        'economy': ['fed', 'interest rates', 'inflation', 'recession', 'gdp'],
+        'geopolitics': ['iran', 'war', 'strikes', 'conflict', 'saudi', 'aramco'],
+        'business': ['company', 'market cap', 'stock', 'business'],
+        'sports': ['nfl', 'nba', 'game', 'team', 'match', 'season'],
+        'weather': ['hurricane', 'temperature', 'snow', 'rain', 'weather']
+    }
+    
+    for category, keywords in category_keywords.items():
+        if any(keyword in title_lower for keyword in keywords):
+            return category
+    
+    return 'other'
+
+
+def _calculate_confidence(opportunity: dict) -> float:
+    """Calculate confidence score for arbitrage opportunity"""
+    confidence = 0.5  # Base confidence
+    
+    # Boost for higher spreads
+    spread = opportunity.get('spread', 0)
+    if spread >= 0.05:  # 5%+ spread
+        confidence += 0.3
+    elif spread >= 0.03:  # 3%+ spread
+        confidence += 0.2
+    elif spread >= 0.02:  # 2%+ spread
+        confidence += 0.1
+    
+    # Boost for multiple markets
+    markets = opportunity.get('markets', [])
+    if len(markets) >= 3:
+        confidence += 0.2
+    elif len(markets) >= 2:
+        confidence += 0.1
+    
+    # Boost for high priority
+    if opportunity.get('priority') == 'high':
+        confidence += 0.1
+    
+    return min(confidence, 1.0)
+
+
+def _ensure_working_link(source: str, market_id: str) -> str:
+    """Ensure working links for each platform"""
+    if source == 'polymarket':
+        return f"https://polymarket.com/event/{market_id}"
+    elif source == 'azuro':
+        # Use the working azuro.com domain
+        return f"https://azuro.com/markets/{market_id}"
+    elif source == 'manifold':
+        return f"https://manifold.markets/{market_id}"
+    elif source == 'limitless':
+        return f"https://limitless.exchange/events/{market_id}"
+    else:
+        return f"https://{source}.com/markets/{market_id}"
+
+
+def _get_market_prices(source: str, market_id: str, quotes_by_source: dict) -> dict:
+    """Get current prices for a market"""
+    try:
+        source_quotes = quotes_by_source.get(source, {})
+        market_quotes = source_quotes.get(market_id, [])
+        
+        if market_quotes:
+            quote = market_quotes[0]  # Use first quote
+            return {
+                "bid": quote.bid,
+                "ask": quote.ask,
+                "mid": quote.mid,
+                "spread": quote.spread
+            }
+    except Exception as e:
+        print(f"Error getting prices for {source}:{market_id}: {e}")
+    
+    return {
+        "bid": None,
+        "ask": None, 
+        "mid": None,
+        "spread": None
+    }
+
+
 @app.route("/api/markets")
-def get_markets():
-    """Get all market data."""
+def get_all_markets():
+    """Get ARBITRAGE EVENTS from all sources - completely reworked for arbitrage focus"""
     now = datetime.now(timezone.utc)
+    
+    # Refresh data if needed
     with _cache_lock:
         latest = max(last_update.values()) if last_update else None
 
@@ -1063,48 +1153,87 @@ def get_markets():
         except Exception as e:
             print(f"Error updating markets in /api/markets: {type(e).__name__}")
 
-    with _cache_lock:
-        snapshot = json.loads(json.dumps(market_cache))
-        latest2 = max(last_update.values()) if last_update else None
-
-    # Apply 1.5% strategy filtering to all markets
-    filtered_snapshot = {}
-    qualifying_count = 0
-    
-    for source, markets in snapshot.items():
-        filtered_markets = []
-        for market in markets:
-            market_spread = 0
-            if market.get("outcomes"):
-                outcome = market["outcomes"][0]
-                if outcome.get("bid") and outcome.get("ask"):
-                    market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
-            
-            # Only include markets that meet 1.5% strategy
-            if market_spread >= 1.5:
-                filtered_markets.append(market)
-                qualifying_count += 1
+    # BUILD ARBITRAGE EVENTS - NOT RAW MARKETS
+    try:
+        cfg = load_config()
+        markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
         
-        if filtered_markets:
-            filtered_snapshot[source] = filtered_markets
-
-    sources = sorted(filtered_snapshot.keys())
-    active_sources = [k for k in sources if filtered_snapshot.get(k)]
-    total_markets = qualifying_count
-    total_events = total_markets
-
-    return jsonify(
-        {
-            "markets": filtered_snapshot,
-            "sources": sources,
-            "active_sources": active_sources,
-            "last_update": latest2.isoformat() if latest2 else None,
-            "total_markets": total_markets,
-            "total_events": total_events,
-            "filtered": True,
-            "min_spread": "1.5%"
-        }
-    )
+        # Detect actual arbitrage opportunities
+        opportunities = detect_cross_market_arbitrage(
+            markets_by_source,
+            quotes_by_source,
+            min_spread=cfg.thresholds.min_spread,  # 1.5% strategy
+            prioritize_new=cfg.arbitrage.prioritize_new_events,
+            new_event_hours=cfg.arbitrage.new_event_hours,
+        )
+        
+        print(f"[DASHBOARD] Found {len(opportunities)} arbitrage opportunities")
+        
+        # Convert opportunities to arbitrage events for dashboard
+        arbitrage_events = []
+        for opp in opportunities:
+            # Calculate actual spread percentage
+            spread_percentage = opp.get('spread_percentage', opp.get('spread', 0) * 100)
+            
+            # Only include solid arbitrage opportunities (2%+ spread for better quality)
+            if spread_percentage >= 2.0:
+                event = {
+                    "id": f"arb_{len(arbitrage_events)}",
+                    "title": opp.get('normalized_title', 'Unknown Event'),
+                    "category": _categorize_event(opp.get('normalized_title', '')),
+                    "spread_percentage": round(spread_percentage, 2),
+                    "confidence": _calculate_confidence(opp),
+                    "priority": opp.get('priority', 'normal'),
+                    "markets": [],
+                    "action": opp.get('action', {}),
+                    "created_at": now.isoformat()
+                }
+                
+                # Add market details with working links
+                for market_info in opp.get('markets', []):
+                    market_data = {
+                        "source": market_info.get('source', 'unknown'),
+                        "title": market_info.get('title', ''),
+                        "url": _ensure_working_link(market_info.get('source', ''), market_info.get('market_id', '')),
+                        "market_id": market_info.get('market_id', ''),
+                        "prices": _get_market_prices(market_info.get('source', ''), market_info.get('market_id', ''), quotes_by_source)
+                    }
+                    event["markets"].append(market_data)
+                
+                # Only add if we have at least 2 working markets
+                if len(event["markets"]) >= 2:
+                    arbitrage_events.append(event)
+        
+        print(f"[DASHBOARD] Returning {len(arbitrage_events)} solid arbitrage events")
+        
+        # Sort by spread percentage (best opportunities first)
+        arbitrage_events.sort(key=lambda x: x['spread_percentage'], reverse=True)
+        
+        return jsonify({
+            "arbitrage_events": arbitrage_events,
+            "total_events": len(arbitrage_events),
+            "categories": list(set(event['category'] for event in arbitrage_events)),
+            "average_spread": round(sum(e['spread_percentage'] for e in arbitrage_events) / len(arbitrage_events), 2) if arbitrage_events else 0,
+            "last_update": latest.isoformat() if latest else None,
+            "data_type": "arbitrage_events",  # Clear this is arbitrage data, not raw markets
+            "min_spread_filter": f"{cfg.thresholds.min_spread * 100}%"  # Show current filter
+        })
+        
+    except Exception as e:
+        print(f"[DASHBOARD] Error building arbitrage events: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return empty arbitrage events on error
+        return jsonify({
+            "arbitrage_events": [],
+            "total_events": 0,
+            "categories": [],
+            "average_spread": 0,
+            "last_update": latest.isoformat() if latest else None,
+            "data_type": "arbitrage_events",
+            "error": str(e)
+        })
 
 
 @app.route("/api/alerts/queued")
@@ -1548,227 +1677,100 @@ def get_comprehensive_matches():
                 "created_at": match.created_at.isoformat(),
                 "markets": [
                     {
-                        "source": source,
-                        "title": market.title,
-                        "url": market.url,
-                        "market_id": market.market_id
-                    }
-                    for source, market in match.markets
-                ]
-            })
-        
-        return jsonify({
-            "total_matches": len(matches),
-            "categories": list(matches_by_category.keys()),
-            "matches_by_category": matches_by_category,
-            "last_scan": matcher.last_scan_time.isoformat() if matcher.last_scan_time else None
-        })
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/scan-matches", methods=["POST"])
-def trigger_match_scan():
-    """Trigger immediate comprehensive match scan"""
-    try:
-        matcher = _run_async(get_event_matcher())
-        matches = _run_async(matcher.find_comprehensive_matches())
-        
-        return jsonify({
-            "status": "completed",
-            "matches_found": len(matches),
-            "high_confidence": len([m for m in matches if m.confidence_score >= 0.7]),
-            "categories": list(set(m.category for m in matches))
-        })
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/matches/<category>", methods=["GET"])
-def get_matches_by_category(category):
-    """Get matches filtered by category"""
-    try:
-        matcher = _run_async(get_event_matcher())
-        matches = matcher.get_matches_by_category(category)
-        
-        return jsonify({
-            "category": category,
-            "matches": [
-                {
-                    "normalized_title": match.normalized_title,
-                    "platforms": list(match.platforms),
-                    "confidence_score": match.confidence_score,
-                    "market_count": len(match.markets),
-                    "created_at": match.created_at.isoformat()
-                }
-                for match in matches
-            ]
-        })
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 @app.route("/api/markets/<source>")
 def get_markets_by_source(source: str):
-    """Get market data from a specific source - filtered by 1.5% strategy."""
-    if source not in market_cache:
-        return jsonify({"error": f"Source '{source}' not found"}), 404
+    """Get ARBITRAGE EVENTS involving a specific source - reworked for arbitrage focus"""
+    if source not in ['polymarket', 'azuro', 'manifold', 'limitless']:
+        return jsonify({"error": f"Source '{source}' not supported"}), 404
     
-    # Apply 1.5% strategy filtering
-    qualifying_markets = []
-    for market in market_cache[source]:
-        market_spread = 0
-        if market["outcomes"]:
-            outcome = market["outcomes"][0]
-            if outcome.get("bid") and outcome.get("ask"):
-                market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
-        
-        # Only include markets that meet 1.5% strategy
-        if market_spread >= 1.5:
-            qualifying_markets.append(market)
-    
-    return jsonify({
-        "markets": qualifying_markets,
-        "last_update": last_update[source].isoformat() if source in last_update else None,
-        "total": len(qualifying_markets),
-        "filtered": True,
-        "min_spread": "1.5%"
-    })
-
-
-@app.route("/api/refresh")
-def refresh_markets():
-    """Force refresh of all market data."""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     try:
-        loop.run_until_complete(update_all_markets())
-        return jsonify({
-            "status": "success",
-            "message": "Market data refreshed",
-            "total_markets": sum(len(markets) for markets in market_cache.values()),
-        })
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e),
-        }), 500
-    finally:
-        loop.close()
-
-
-@app.route("/api/stats")
-def get_stats():
-    """Get statistics about the markets."""
-    cfg = load_config()
-    stats = {
-        "total_markets": sum(len(markets) for markets in market_cache.values()),
-        "sources": list(market_cache.keys()),
-        "last_updates": {
-            source: time.isoformat() if time else None
-            for source, time in last_update.items()
-        },
-    }
-    
-    # Calculate additional stats - apply strategy filters
-    all_quotes = []
-    qualifying_markets = 0
-    
-    for markets in market_cache.values():
-        for market in markets:
-            # Apply strategy filters (1.5% minimum spread)
-            market_spread = 0
-            if market["outcomes"]:
-                # Calculate spread from first outcome
-                outcome = market["outcomes"][0]
-                if outcome.get("bid") and outcome.get("ask"):
-                    market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
-            
-            # Only count markets that meet 1.5% strategy
-            if market_spread >= 1.5:
-                qualifying_markets += 1
-                all_quotes.extend(market["outcomes"])
-    
-    stats["total_markets"] = qualifying_markets  # Only show qualifying markets
-    stats["sources"] = list(market_cache.keys())
-    
-    stats["total_outcomes"] = len(all_quotes)
-    stats["markets_with_quotes"] = sum(
-        1 for markets in market_cache.values()
-        for market in markets
-        if any(outcome["mid"] is not None for outcome in market["outcomes"])
-        and market["outcomes"]  # Has outcomes
-        and market["outcomes"][0].get("bid") and market["outcomes"][0].get("ask")  # Has bid/ask
-        and (abs(market["outcomes"][0]["ask"] - market["outcomes"][0]["bid"]) / market["outcomes"][0]["mid"] * 100 if market["outcomes"][0].get("mid") else 0) >= 1.5  # Meets 1.5% strategy
-    )
-    
-    # Cross-market arbitrage summary
-    if cfg.arbitrage.mode == "cross_market" and len(market_cache) > 1:
-        # Convert cached dicts back to Market/Quote models for detection
-        markets_by_source: Dict[str, List[Market]] = {}
-        quotes_by_source: Dict[str, Dict[str, List[Quote]]] = {}
-        for source, markets in market_cache.items():
-            markets_by_source[source] = []
-            quotes_by_source[source] = {}
-            for m in markets:
-                # Apply strategy filters (1.5% minimum spread)
-                market_spread = 0
-                if m["outcomes"]:
-                    outcome = m["outcomes"][0]
-                    if outcome.get("bid") and outcome.get("ask"):
-                        market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
-                
-                # Only process markets that meet 1.5% strategy
-                if market_spread >= 1.5:
-                    market = Market(source=source, market_id=m["market_id"], title=m["title"], url=m.get("url"), outcomes=[])
-                    markets_by_source[source].append(market)
-                    quotes_by_source[source][m["market_id"]] = [
-                        Quote(
-                            outcome_id=o["outcome_id"],
-                            bid=o["bid"],
-                            ask=o["ask"],
-                            mid=o["mid"],
-                            spread=o["spread"],
-                            bid_size=o["bid_size"],
-                            ask_size=o["ask_size"],
-                            ts=datetime.fromisoformat(o["timestamp"]) if o.get("timestamp") else None,
-                        )
-                        for o in m["outcomes"]
-                    ]
+        cfg = load_config()
+        markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
+        
+        # Detect arbitrage opportunities
         opportunities = detect_cross_market_arbitrage(
             markets_by_source,
             quotes_by_source,
-            min_spread=cfg.thresholds.min_spread,  # Now uses updated config (1.5%)
+            min_spread=cfg.thresholds.min_spread,  # 1.5% strategy
             prioritize_new=cfg.arbitrage.prioritize_new_events,
             new_event_hours=cfg.arbitrage.new_event_hours,
         )
         
-        # DEBUG: Log arbitrage detection results
-        print(f"[ARBITRAGE DEBUG] Detected {len(opportunities)} opportunities")
-        for i, opp in enumerate(opportunities[:3]):  # Log first 3
-            print(f"  {i+1}. Spread: {opp.get('spread_percentage', 'N/A')}% | Markets: {len(opp.get('markets', []))}")
+        # Filter opportunities that involve the requested source
+        source_opportunities = []
+        for opp in opportunities:
+            spread_percentage = opp.get('spread_percentage', opp.get('spread', 0) * 100)
+            
+            # Only include solid arbitrage opportunities (2%+ spread)
+            if spread_percentage >= 2.0:
+                # Check if this opportunity involves the requested source
+                involved_sources = [m.get('source', '') for m in opp.get('markets', [])]
+                if source in involved_sources:
+                    event = {
+                        "id": f"arb_{source}_{len(source_opportunities)}",
+                        "title": opp.get('normalized_title', 'Unknown Event'),
+                        "category": _categorize_event(opp.get('normalized_title', '')),
+                        "spread_percentage": round(spread_percentage, 2),
+                        "confidence": _calculate_confidence(opp),
+                        "priority": opp.get('priority', 'normal'),
+                        "markets": [],
+                        "action": opp.get('action', {}),
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    
+                    # Add market details with working links
+                    for market_info in opp.get('markets', []):
+                        market_data = {
+                            "source": market_info.get('source', 'unknown'),
+                            "title": market_info.get('title', ''),
+                            "url": _ensure_working_link(market_info.get('source', ''), market_info.get('market_id', '')),
+                            "market_id": market_info.get('market_id', ''),
+                            "prices": _get_market_prices(market_info.get('source', ''), market_info.get('market_id', ''), quotes_by_source)
+                        }
+                        event["markets"].append(market_data)
+                    
+                    # Only add if we have at least 2 working markets
+                    if len(event["markets"]) >= 2:
+                        source_opportunities.append(event)
         
-        stats["arbitrage"] = {
-            "mode": cfg.arbitrage.mode,
-            "opportunities": len(opportunities),
-            "high_priority": sum(1 for o in opportunities if o.get("priority") == "high"),
-            "top_spreads": [o["spread"] for o in opportunities[:5]],
-        }
-    else:
-        stats["arbitrage"] = {"mode": cfg.arbitrage.mode, "opportunities": 0}
-    
-    return jsonify(stats)
+        print(f"[DASHBOARD] {source}: Found {len(source_opportunities)} arbitrage events")
+        
+        # Sort by spread percentage (best opportunities first)
+        source_opportunities.sort(key=lambda x: x['spread_percentage'], reverse=True)
+        
+        return jsonify({
+            "source": source,
+            "arbitrage_events": source_opportunities,
+            "total_events": len(source_opportunities),
+            "categories": list(set(event['category'] for event in source_opportunities)),
+            "average_spread": round(sum(e['spread_percentage'] for e in source_opportunities) / len(source_opportunities), 2) if source_opportunities else 0,
+            "data_type": "arbitrage_events",
+            "min_spread_filter": f"{cfg.thresholds.min_spread * 100}%"
+        })
+        
+    except Exception as e:
+        print(f"[DASHBOARD] Error building {source} arbitrage events: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "source": source,
+            "arbitrage_events": [],
+            "total_events": 0,
+            "categories": [],
+            "average_spread": 0,
+            "data_type": "arbitrage_events",
+            "error": str(e)
+        })
 
 
-@app.route("/api/arbitrage")
+@app.route("/api/stats")
 @require_tier(UserTier.premium)
 def get_arbitrage():
     """Get cross-market arbitrage opportunities."""
     cfg = load_config()
     if cfg.arbitrage.mode != "cross_market":
+        return jsonify({"error": "Arbitrage mode not set to cross_market"}), 400
         return jsonify({"error": "Arbitrage mode not set to cross_market"}, 400)
     if len(market_cache) < 2:
         return jsonify({"opportunities": []})
