@@ -258,15 +258,12 @@ async def update_all_markets():
 
         if cfg.azuro.enabled:
             print("DEBUG: Adding Azuro adapter")
-            from bot.rate_limit import RateLimitConfig
             adapters.append(("azuro", AzuroAdapter(
-                base_url=cfg.azuro.base_url,
+                graphql_base_url=cfg.azuro.graphql_base_url,
+                subgraph_base_url=cfg.azuro.subgraph_base_url,
+                rest_base_url=cfg.azuro.rest_base_url,
                 markets_limit=cfg.azuro.markets_limit,
-                rate_limit_config=RateLimitConfig(
-                    requests_per_second=cfg.azuro.requests_per_second,
-                    requests_per_minute=cfg.azuro.requests_per_minute,
-                    burst_size=cfg.azuro.burst_size,
-                ),
+                use_fallback=cfg.azuro.use_fallback,
             )))
         else:
             print("DEBUG: Azuro not enabled in config")

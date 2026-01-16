@@ -73,7 +73,7 @@ class AzuroAdapter(Adapter):
             
         # Use fallback data if enabled
         if self.use_fallback:
-            print("🔄 Using fallback data for Azuro (APIs not available)")
+            print("Using fallback data for Azuro (APIs not available)")
             return self._get_fallback_markets()
             
         return []
