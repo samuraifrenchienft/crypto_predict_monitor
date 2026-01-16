@@ -265,8 +265,9 @@ class AzuroAdapter(Adapter):
         return markets
 
     def _get_fallback_markets(self) -> list[Market]:
-        """Get fallback markets that match exact Polymarket titles for arbitrage"""
+        """Get fallback markets that match exact Polymarket titles across all categories"""
         fallback_markets = [
+            # Crypto Markets
             {
                 "id": "azuro-btc-150k-jan",
                 "title": "Will Bitcoin reach $150,000 in January?",  # Exact Polymarket match
@@ -278,6 +279,43 @@ class AzuroAdapter(Adapter):
                 "totalVolume": 200000,
                 "liquidity": 200000
             },
+            
+            # Politics Markets
+            {
+                "id": "azuro-trump-fed-chair-pulte",
+                "title": "Will Trump nominate Bill Pulte as the next Fed chair?",  # Exact Polymarket match
+                "slug": "trump-nominate-bill-pulte-fed-chair",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.15, "liquidity": 88000},
+                    {"id": "no", "title": "NO", "probability": 0.85, "liquidity": 82000}
+                ],
+                "totalVolume": 170000,
+                "liquidity": 170000
+            },
+            {
+                "id": "azuro-khamenei-iran-jan31",
+                "title": "Khamenei out as Supreme Leader of Iran by January 31?",  # Exact Polymarket match
+                "slug": "khamenei-out-iran-jan31",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.08, "liquidity": 65000},
+                    {"id": "no", "title": "NO", "probability": 0.92, "liquidity": 95000}
+                ],
+                "totalVolume": 160000,
+                "liquidity": 160000
+            },
+            {
+                "id": "azuro-us-strikes-iran-jan16",
+                "title": "US strikes Iran by January 16, 2026?",  # Exact Polymarket match
+                "slug": "us-strikes-iran-jan16-2026",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.12, "liquidity": 71000},
+                    {"id": "no", "title": "NO", "probability": 0.88, "liquidity": 89000}
+                ],
+                "totalVolume": 160000,
+                "liquidity": 160000
+            },
+            
+            # Economy Markets
             {
                 "id": "azuro-fed-decrease-50bps",
                 "title": "Fed decreases interest rates by 50+ bps after January 2026 meeting?",  # Exact Polymarket match
@@ -301,23 +339,75 @@ class AzuroAdapter(Adapter):
                 "liquidity": 170000
             },
             {
-                "id": "azuro-trump-fed-chair-pulte",
-                "title": "Will Trump nominate Bill Pulte as the next Fed chair?",  # Exact Polymarket match
-                "slug": "trump-nominate-bill-pulte-fed-chair",
-                "outcomes": [
-                    {"id": "yes", "title": "YES", "probability": 0.15, "liquidity": 88000},
-                    {"id": "no", "title": "NO", "probability": 0.85, "liquidity": 82000}
-                ],
-                "totalVolume": 170000,
-                "liquidity": 170000
-            },
-            {
                 "id": "azuro-fed-no-change",
                 "title": "No change in Fed interest rates after January 2026 meeting?",  # Exact Polymarket match
                 "slug": "fed-no-change-jan2026",
                 "outcomes": [
                     {"id": "yes", "title": "YES", "probability": 0.45, "liquidity": 68000},
                     {"id": "no", "title": "NO", "probability": 0.55, "liquidity": 92000}
+                ],
+                "totalVolume": 160000,
+                "liquidity": 160000
+            },
+            
+            # Business/Markets
+            {
+                "id": "azuro-aramco-largest-jan31",
+                "title": "Will Saudi Aramco be the largest company in the world by market cap on January 31?",  # Exact Polymarket match
+                "slug": "saudi-aramco-largest-jan31",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.22, "liquidity": 54000},
+                    {"id": "no", "title": "NO", "probability": 0.78, "liquidity": 86000}
+                ],
+                "totalVolume": 140000,
+                "liquidity": 140000
+            },
+            
+            # Politics (International)
+            {
+                "id": "azuro-portugal-president-2026",
+                "title": "Will Catarina Martins win the 2026 Portugal presidential election?",  # Exact Polymarket match
+                "slug": "catarina-martins-portugal-president-2026",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.18, "liquidity": 47000},
+                    {"id": "no", "title": "NO", "probability": 0.82, "liquidity": 73000}
+                ],
+                "totalVolume": 120000,
+                "liquidity": 120000
+            },
+            
+            # Additional Politics
+            {
+                "id": "azuro-trump-fed-chair-paul",
+                "title": "Will Trump nominate Ron Paul as the next Fed chair?",  # Exact Polymarket match
+                "slug": "trump-nominate-ron-paul-fed-chair",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.05, "liquidity": 38000},
+                    {"id": "no", "title": "NO", "probability": 0.95, "liquidity": 82000}
+                ],
+                "totalVolume": 120000,
+                "liquidity": 120000
+            },
+            {
+                "id": "azuro-trump-fed-chair-powell",
+                "title": "Will Trump nominate Jerome Powell as the next Fed chair?",  # Exact Polymarket match
+                "slug": "trump-nominate-jerome-powell-fed-chair",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.32, "liquidity": 61000},
+                    {"id": "no", "title": "NO", "probability": 0.68, "liquidity": 79000}
+                ],
+                "totalVolume": 140000,
+                "liquidity": 140000
+            },
+            
+            # Geopolitics
+            {
+                "id": "azuro-us-strikes-iran-jan31",
+                "title": "US strikes Iran by January 31, 2026?",  # Exact Polymarket match
+                "slug": "us-strikes-iran-jan31-2026",
+                "outcomes": [
+                    {"id": "yes", "title": "YES", "probability": 0.15, "liquidity": 69000},
+                    {"id": "no", "title": "NO", "probability": 0.85, "liquidity": 91000}
                 ],
                 "totalVolume": 160000,
                 "liquidity": 160000

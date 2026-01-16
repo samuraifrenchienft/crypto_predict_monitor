@@ -31,6 +31,7 @@ from bot.adapters.azuro import AzuroAdapter
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
 from bot.arbitrage import detect_cross_market_arbitrage
+from bot.comprehensive_matcher import get_event_matcher, start_comprehensive_matching
 from bot.alerts.discord import DiscordAlerter
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 from utils.alert_manager import ArbitrageAlertManager, create_alert_from_opportunity
@@ -407,21 +408,34 @@ async def _arbitrage_alert_loop() -> None:
 
 
 def _start_background_tasks() -> None:
+    """Start background tasks for data fetching and comprehensive matching"""
     global _background_started
     if _background_started:
         return
+
+    def run_data_fetcher():
+        _run_async(_data_fetch_loop())
+
+    def run_arbitrage_alerts():
+        _run_async(_arbitrage_alert_loop())
+        
+    def run_comprehensive_matching():
+        _run_async(start_comprehensive_matching())
+
+    # Start data fetcher
+    fetcher_thread = threading.Thread(target=run_data_fetcher, daemon=True)
+    fetcher_thread.start()
+
+    # Start arbitrage alerts
+    arbitrage_thread = threading.Thread(target=run_arbitrage_alerts, daemon=True)
+    arbitrage_thread.start()
+    
+    # Start comprehensive matching
+    matching_thread = threading.Thread(target=run_comprehensive_matching, daemon=True)
+    matching_thread.start()
+
     _background_started = True
-
-    def runner() -> None:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(_arbitrage_alert_loop())
-        finally:
-            loop.close()
-
-    t = threading.Thread(target=runner, daemon=True)
-    t.start()
+    print("Background tasks started: data fetcher, arbitrage alerts, comprehensive matching")
 
 
 def _classic_arb_opportunities_from_cache() -> List[Dict[str, Any]]:
@@ -1511,6 +1525,90 @@ def admin_set_tier():
             "subscription_expires_at": user.subscription_expires_at.isoformat() if user.subscription_expires_at else None,
         }
     )
+
+
+@app.route("/api/comprehensive-matches", methods=["GET"])
+def get_comprehensive_matches():
+    """Get comprehensive cross-platform event matches"""
+    try:
+        matcher = _run_async(get_event_matcher())
+        matches = matcher.get_cached_matches()
+        
+        # Group by category
+        matches_by_category = {}
+        for match in matches:
+            if match.category not in matches_by_category:
+                matches_by_category[match.category] = []
+            matches_by_category[match.category].append({
+                "normalized_title": match.normalized_title,
+                "platforms": list(match.platforms),
+                "category": match.category,
+                "confidence_score": match.confidence_score,
+                "market_count": len(match.markets),
+                "created_at": match.created_at.isoformat(),
+                "markets": [
+                    {
+                        "source": source,
+                        "title": market.title,
+                        "url": market.url,
+                        "market_id": market.market_id
+                    }
+                    for source, market in match.markets
+                ]
+            })
+        
+        return jsonify({
+            "total_matches": len(matches),
+            "categories": list(matches_by_category.keys()),
+            "matches_by_category": matches_by_category,
+            "last_scan": matcher.last_scan_time.isoformat() if matcher.last_scan_time else None
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/scan-matches", methods=["POST"])
+def trigger_match_scan():
+    """Trigger immediate comprehensive match scan"""
+    try:
+        matcher = _run_async(get_event_matcher())
+        matches = _run_async(matcher.find_comprehensive_matches())
+        
+        return jsonify({
+            "status": "completed",
+            "matches_found": len(matches),
+            "high_confidence": len([m for m in matches if m.confidence_score >= 0.7]),
+            "categories": list(set(m.category for m in matches))
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/matches/<category>", methods=["GET"])
+def get_matches_by_category(category):
+    """Get matches filtered by category"""
+    try:
+        matcher = _run_async(get_event_matcher())
+        matches = matcher.get_matches_by_category(category)
+        
+        return jsonify({
+            "category": category,
+            "matches": [
+                {
+                    "normalized_title": match.normalized_title,
+                    "platforms": list(match.platforms),
+                    "confidence_score": match.confidence_score,
+                    "market_count": len(match.markets),
+                    "created_at": match.created_at.isoformat()
+                }
+                for match in matches
+            ]
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/markets/<source>")
