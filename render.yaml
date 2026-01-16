@@ -5,12 +5,13 @@ services:
     plan: free
     rootDir: .
     buildCommand: |
-      pip install -r requirements.txt
+      pip install --upgrade pip
+      pip install --no-cache-dir -r requirements.txt
+      python -c "import yaml; import pydantic; print('Dependencies verified: yaml and pydantic available')"
     startCommand: |
       echo "Starting dashboard..."
-      python -c "import dashboard.app; print('App imported successfully')" || exit 1
-      gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --access-logfile - --error-logfile - --reload dashboard.app:app
-    healthCheckPath: /api/stats
+      python scripts/render_startup.py
+    healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
@@ -24,9 +25,23 @@ services:
           name: crypto-prediction-db
           property: connectionString
       - key: SUPABASE_URL
-        value: your-supabase-url-here
+        value: https://your-project-id.supabase.co
       - key: SUPABASE_KEY
-        value: your-supabase-anon-key-here
+        value: your-supabase-anon-key
+      - key: SUPABASE_SERVICE_KEY
+        value: your-supabase-service-key
+      - key: DB_ECHO
+        value: "false"
+      - key: DB_POOL_SIZE
+        value: "5"
+      - key: DB_MAX_OVERFLOW
+        value: "10"
+      - key: DB_POOL_TIMEOUT
+        value: "30"
+      - key: DB_POOL_RECYCLE
+        value: "3600"
+      - key: DB_CONNECT_TIMEOUT
+        value: "10"
     domains:
       - crypto-prediction-dashboard.onrender.com
   - type: pserv

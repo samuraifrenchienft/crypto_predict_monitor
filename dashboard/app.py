@@ -39,7 +39,8 @@ import hashlib
 from datetime import datetime, timezone
 from web3 import Web3
 
-from dashboard.db import close_session, get_session, engine
+from dashboard.db import close_session, get_session, engine, test_connection, get_connection_info
+from dashboard.db_logging import get_database_health, logged_database_session
 from dashboard.models import (
     Alert,
     AlertStatus,
@@ -67,17 +68,38 @@ from dashboard.auth import (
 )
 
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 
+# Initialize database with proper error handling
 try:
-    print("[db] Creating database tables...")
+    logger.info("Initializing database...")
+    
+    # Test database connection
+    if test_connection():
+        logger.info("Database connection test passed")
+    else:
+        logger.error("Database connection test failed")
+    
+    # Log connection info
+    conn_info = get_connection_info()
+    logger.info(f"Database connection info: {conn_info}")
+    
+    # Create tables
+    logger.info("Creating database tables...")
     Base.metadata.create_all(bind=engine)
-    print("[db] Database tables created successfully")
+    logger.info("Database tables created successfully")
+    
 except Exception as e:
-    print(f"[db] failed to create tables: {e}")
+    logger.error(f"Database initialization failed: {e}")
     import traceback
     traceback.print_exc()
 
@@ -114,7 +136,7 @@ _cache_lock = threading.Lock()
 _background_started = False
 
 # Clear cache on startup for fresh data
-print("🔄 Clearing market cache for fresh restart...")
+print("Clearing market cache for fresh restart...")
 market_cache.clear()
 last_update.clear()
 
@@ -2011,6 +2033,43 @@ def set_wallets():
         return jsonify({"success": True, "wallets": wallets})
     else:
         return jsonify({"error": "Failed to save wallets"}), 500
+
+
+@app.route("/api/health")
+def health_check():
+    """Health check endpoint with database status"""
+    try:
+        db_health = get_database_health()
+        
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "version": "1.0.0",
+            "database": db_health
+        })
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return jsonify({
+            "status": "unhealthy",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error": str(e)
+        }), 500
+
+
+@app.route("/api/database/metrics")
+def database_metrics():
+    """Get database performance metrics"""
+    try:
+        from dashboard.db_logging import get_database_metrics
+        metrics = get_database_metrics()
+        
+        return jsonify({
+            "metrics": metrics,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Failed to get database metrics: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

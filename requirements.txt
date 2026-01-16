@@ -11,3 +11,10 @@ gunicorn>=20.1.0
 sqlalchemy>=1.4.0
 httpx>=0.24.0
 web3>=6.0.0
+psycopg2-binary>=2.9.0
+asyncpg>=0.28.0
+pyyaml>=6.0
+pydantic>=2.0.0
+
+# Render deployment fix - v2.0
+# Added missing yaml and pydantic dependencies

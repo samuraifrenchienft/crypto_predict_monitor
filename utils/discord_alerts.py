@@ -30,6 +30,8 @@ class AlertData:
     expires_at: datetime
     liquidity: str
     market_source: str
+    image_url: Optional[str] = None  # Event image URL
+    category: Optional[str] = None  # Market category for fallback images
 
 class DiscordAlerter:
     """Handles Discord alert embeds for arbitrage opportunities"""
@@ -46,6 +48,17 @@ class DiscordAlerter:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             await self.session.close()
+    
+    def get_platform_thumbnail(self, market_source: str) -> str:
+        """Get platform-specific thumbnail image"""
+        thumbnails = {
+            'polymarket': 'https://polymarket.com/favicon.ico',
+            'manifold': 'https://manifold.markets/favicon.ico',
+            'limitless': 'https://limitless.exchange/favicon.ico',
+            'azuro': 'https://gem.azuro.org/favicon.ico',
+            'default': 'https://your-hosting.com/cpm_samurai_bulldog.png'
+        }
+        return thumbnails.get(market_source.lower(), thumbnails['default'])
     
     def get_color_by_margin(self, profit_margin: float) -> int:
         """Get Discord embed color based on profit margin"""
@@ -98,11 +111,29 @@ class DiscordAlerter:
         yes_mid = (alert_data.yes_bid + alert_data.yes_ask) / 2
         no_mid = (alert_data.no_bid + alert_data.no_ask) / 2
         
+        # Make event name clickable
+        clickable_event = f"[{alert_data.market_question}]({alert_data.market_link})"
+        
+        # Get event image using EventImageExtractor
+        from .event_image_extractor import EventImageExtractor
+        event_thumbnail = EventImageExtractor.get_fallback_image('default')
+        
+        # Try to extract image from additional data if available
+        if hasattr(alert_data, 'image_url') and alert_data.image_url:
+            event_thumbnail = alert_data.image_url
+        elif hasattr(alert_data, 'category') and alert_data.category:
+            event_thumbnail = EventImageExtractor.get_fallback_image(alert_data.category)
+        
         embed = {
             "title": f"{rating} Arbitrage Opportunity",
-            "description": f"**{alert_data.market_question}**",
+            "description": f"**{clickable_event}**",
             "color": color,
             "timestamp": datetime.utcnow().isoformat(),
+            "thumbnail": {
+                "url": event_thumbnail,
+                "height": 200,
+                "width": 200
+            },
             "fields": [
                 {
                     "name": "🎯 Rating",
@@ -110,7 +141,7 @@ class DiscordAlerter:
                     "inline": True
                 },
                 {
-                    "name": "📊 Market",
+                    "name": "📊 Platform",
                     "value": f"[{alert_data.market_source.upper()}]({alert_data.market_link})",
                     "inline": True
                 },
@@ -145,13 +176,13 @@ class DiscordAlerter:
                     "inline": True
                 },
                 {
-                    "name": "⚖️ Action",
-                    "value": f"[Trade on {alert_data.market_source}]({alert_data.market_link})",
+                    "name": "⚖️ Quick Actions",
+                    "value": f"[🔗 Trade on {alert_data.market_source}]({alert_data.market_link})",
                     "inline": True
                 }
             ],
             "footer": {
-                "text": f"⚡ Arbitrage Alert System • Generated at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}",
+                "text": f"⚡ Arbitrage Alert System • Click event name or trade button to execute",
                 "icon_url": "https://your-hosting.com/cpm_samurai_bulldog.png"  # Samurai bulldog icon
             }
         }
@@ -217,8 +248,30 @@ class DiscordAlerter:
         try:
             embed = self.create_detailed_embed(alert_data) if detailed else self.create_compact_embed(alert_data)
             
+            # Create action buttons
+            components = [
+                {
+                    "type": 1,  # Action Row
+                    "components": [
+                        {
+                            "type": 2,  # Button
+                            "style": 5,  # Link style
+                            "label": "🔗 Trade Now",
+                            "url": alert_data.market_link
+                        },
+                        {
+                            "type": 2,  # Button
+                            "style": 5,  # Link style
+                            "label": f"📊 {alert_data.market_source.upper()}",
+                            "url": alert_data.market_link
+                        }
+                    ]
+                }
+            ]
+            
             payload = {
                 "embeds": [embed],
+                "components": components,
                 "username": "Arbitrage Alerts",
                 "avatar_url": "https://your-hosting.com/cpm_samurai_bulldog.png"
             }
@@ -305,6 +358,15 @@ class DiscordAlerter:
 # Utility functions
 def create_alert_from_opportunity(opportunity: Dict[str, Any]) -> AlertData:
     """Create AlertData from opportunity dictionary"""
+    
+    # Generate proper market link using EventLinkGenerator
+    from .event_link_generator import EventLinkGenerator
+    market_link = EventLinkGenerator.generate_url_from_opportunity(opportunity)
+    
+    # Extract image and category data
+    image_url = opportunity.get("image_url", opportunity.get("image", None))
+    category = opportunity.get("category", opportunity.get("market_category", "default"))
+    
     return AlertData(
         market_question=opportunity.get("question", "Unknown Market"),
         yes_bid=opportunity.get("yes_bid", opportunity.get("yes_price", 0.0)),
@@ -314,10 +376,12 @@ def create_alert_from_opportunity(opportunity: Dict[str, Any]) -> AlertData:
         spread=opportunity.get("spread", 0.0),
         est_profit=opportunity.get("profit_est", opportunity.get("est_profit", 0.0)),
         profit_margin=opportunity.get("profit_margin", 0.0),
-        market_link=opportunity.get("market_link", opportunity.get("url", "")),
+        market_link=market_link,
         expires_at=datetime.fromisoformat(opportunity.get("expires_at", datetime.utcnow().isoformat())),
         liquidity=opportunity.get("liquidity", opportunity.get("volume", "Unknown")),
-        market_source=opportunity.get("source", opportunity.get("platform", "unknown"))
+        market_source=opportunity.get("source", opportunity.get("platform", "unknown")),
+        image_url=image_url,
+        category=category
     )
 
 # Example usage
