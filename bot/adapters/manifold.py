@@ -49,7 +49,7 @@ class ManifoldAdapter(Adapter):
         Fetch active binary markets from Manifold.
         Uses /v0/search-markets for filtering.
         """
-        url = f"{self.base_url}/v0/search-markets"
+        url = f"{self.base_url}/search-markets"
         params = {
             "term": "",
             "sort": "liquidity",
@@ -111,7 +111,7 @@ class ManifoldAdapter(Adapter):
         Fetch current probability from /v0/market/[marketId]/prob endpoint.
         Manifold doesn't have traditional bid/ask, so we use probability as mid.
         """
-        url = f"{self.base_url}/v0/market/{quote(market.market_id, safe='')}/prob"
+        url = f"{self.base_url}/market/{quote(market.market_id, safe='')}/prob"
 
         client = self._get_client()
         r = await retry_with_backoff(
@@ -123,26 +123,6 @@ class ManifoldAdapter(Adapter):
         data = r.json()
 
         prob = data.get("prob")
-        if prob is None:
-            # Fallback: try to get from full market endpoint
-            market_url = f"{self.base_url}/v0/market/{quote(market.market_id, safe='')}"
-            try:
-                r = await retry_with_backoff(
-                    client.get, self.name, market_url,
-                    max_retries=2,
-                    adapter_name=self.name,
-                    market_id=market.market_id
-                )
-                market_data = r.json()
-                prob = market_data.get("probability")
-            except Exception as e:
-                # Log fallback failure but continue
-                log_error_metrics(ErrorInfo(
-                    error_type=ErrorType.NETWORK,
-                    message=f"Fallback endpoint failed: {e}",
-                    adapter_name=self.name,
-                    market_id=market.market_id
-                ))
 
         quotes: list[Quote] = []
         
@@ -193,5 +173,5 @@ class ManifoldAdapter(Adapter):
                     bid_size=None,
                     ask_size=None,
                 ))
-
+        
         return quotes
