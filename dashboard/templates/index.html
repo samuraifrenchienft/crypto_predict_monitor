@@ -303,48 +303,6 @@
             cursor: not-allowed;
         }
 
-        /* Dashboard Tabs Styles */
-        .dashboard-tabs {
-            display: flex;
-            gap: 12px;
-            border-bottom: 1px solid rgba(0, 1, 255, 0.2);
-            padding-bottom: 16px;
-            margin-bottom: 24px;
-        }
-
-        .dashboard-tabs button {
-            padding: 10px 16px;
-            background-color: transparent;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: #c8c8e6;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .dashboard-tabs button:hover {
-            color: #6496ff;
-            border-bottom-color: rgba(0, 1, 255, 0.3);
-        }
-
-        .dashboard-tabs button.active {
-            color: #0001ff;
-            border-bottom-color: #0001ff;
-            box-shadow: 0 4px 0 -2px #0001ff;
-            font-weight: 600;
-        }
-
-        /* Tab Content Styles */
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content:first-child {
-            display: block;
-        }
-
         .text-blue-400,
         .text-blue-300 {
             color: var(--pm-cyan) !important;
@@ -798,53 +756,10 @@
             </div>
         </div>
 
-        <!-- Dashboard Tab Navigation -->
-        <div class="dashboard-tabs">
-            <button 
-                id="tab-polymarket"
-                class="active"
-                onclick="setActiveTab('polymarket')"
-            >
-                📊 Polymarket
-            </button>
-            
-            <button 
-                id="tab-manifold"
-                onclick="setActiveTab('manifold')"
-            >
-                🎯 Manifold
-            </button>
-            
-            <button 
-                id="tab-limitless"
-                onclick="setActiveTab('limitless')"
-            >
-                ∞ Limitless
-            </button>
-            
-            <button 
-                id="tab-azuro"
-                onclick="setActiveTab('azuro')"
-            >
-                🌐 Azuro
-            </button>
-        </div>
-
-        <!-- Tab Content -->
-        <div id="polymarket-content" class="tab-content">
-            <!-- Filter Tabs (Polymarket View) -->
-            <div class="bg-gray-900 rounded-lg shadow-lg mb-6 border border-gray-800">
-                <div class="border-b border-gray-700">
-                    <nav class="flex -mb-px">
-                        <button onclick="filterMarkets('all', this)" class="filter-tab active border-b-2 border-blue-500 py-2 px-6 text-sm font-medium text-blue-400">
-                            All Markets
-                        </button>
-                        <button onclick="filterMarkets('polymarket', this)" class="filter-tab border-b-2 border-transparent py-2 px-6 text-sm font-medium text-gray-400 hover:text-gray-200 hover:border-gray-500">
-                            Polymarket
-                        </button>
-                    </nav>
-                </div>
-            </div>
+        <!-- Markets Section -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">🌟 All Markets</h2>
+            <p class="text-gray-400 mb-6">View all prediction markets from all platforms in one place</p>
 
             <!-- Loading Indicator -->
             <div id="loadingIndicator" class="hidden">
@@ -866,50 +781,11 @@
                 <h3 class="mt-2 text-sm font-medium text-gray-300">No markets found</h3>
                 <p class="mt-1 text-sm text-gray-500">Try refreshing the data or check your configuration.</p>
             </div>
-        </div>
-
-        <div id="manifold-content" class="tab-content" style="display: none;">
-            <!-- Manifold View Content -->
-            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
-                <h2 class="text-xl font-bold text-white mb-4">🎯 Manifold Markets</h2>
-                <p class="text-gray-400 mb-4">Real-money prediction markets with community-driven outcomes</p>
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-300">Manifold Integration Coming Soon</h3>
-                    <p class="mt-1 text-sm text-gray-500">Community prediction markets will be available here.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="limitless-content" class="tab-content" style="display: none;">
-            <!-- Limitless View Content -->
-            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
-                <h2 class="text-xl font-bold text-white mb-4">∞ Limitless Markets</h2>
-                <p class="text-gray-400 mb-4">Decentralized prediction markets on Ethereum</p>
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-300">Limitless Integration Coming Soon</h3>
-                    <p class="mt-1 text-sm text-gray-500">Decentralized markets will be available here.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="azuro-content" class="tab-content" style="display: none;">
-            <!-- Azuro View Content -->
-            <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
-                <h2 class="text-xl font-bold text-white mb-4">🌐 Azuro Multi-Chain Markets</h2>
-                <p class="text-gray-400 mb-4">Decentralized prediction markets across multiple chains</p>
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-300">Azuro Integration Coming Soon</h3>
-                    <p class="mt-1 text-sm text-gray-500">Multi-chain prediction markets will be available here.</p>
-                </div>
+        <!-- Events Section -->
+        <div id="eventsSection" class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">📅 Active Events</h2>
+            <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Events will be inserted here -->
             </div>
         </div>
 
@@ -1963,52 +1839,9 @@
             window.location.reload();
         }
 
-        // Dashboard Tab Functions
-        let activeTab = 'all-markets';
-        
-        function setActiveTab(tab) {
-            activeTab = tab;
-            
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-            
-            // Remove active class from all dashboard tabs
-            document.querySelectorAll('.dashboard-tabs button').forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            // Update header leaderboard button styling
-            const headerLeaderboardBtn = document.getElementById('header-leaderboard-btn');
-            if (headerLeaderboardBtn) {
-                if (tab === 'leaderboard') {
-                    headerLeaderboardBtn.style.opacity = '1';
-                    headerLeaderboardBtn.style.transform = 'scale(1.05)';
-                    headerLeaderboardBtn.style.boxShadow = '0 0 20px rgba(0, 1, 255, 0.6)';
-                } else {
-                    headerLeaderboardBtn.style.opacity = '0.8';
-                    headerLeaderboardBtn.style.transform = 'scale(1)';
-                    headerLeaderboardBtn.style.boxShadow = '0 0 15px rgba(0, 1, 255, 0.3)';
-                }
-            }
-            
-            // Show selected tab content
-            const contentElement = document.getElementById(`${tab}-content`);
-            if (contentElement) {
-                contentElement.style.display = 'block';
-            }
-            
-            // Add active class to selected tab (if it exists in dashboard tabs)
-            const tabButton = document.getElementById(`tab-${tab}`);
-            if (tabButton) {
-                tabButton.classList.add('active');
-            }
-            
-            // Load all markets for the all-markets tab
-            if (tab === 'all-markets') {
-                loadMarkets(); // Load all markets
-            }
+        // Initialize markets on page load
+        function initializeMarkets() {
+            loadMarkets(); // Load all markets on startup
         }
         
         function displayMarkets() {
