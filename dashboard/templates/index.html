@@ -333,6 +333,7 @@
             color: #0001ff;
             border-bottom-color: #0001ff;
             box-shadow: 0 4px 0 -2px #0001ff;
+            font-weight: 600;
         }
 
         .filter-tab {
@@ -597,6 +598,67 @@
             padding: 40px;
             color: #9ca3af;
         }
+
+        /* Buy Signal Bubble Styles */
+        .buy-signal-bubble {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 100, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            min-width: 280px;
+            max-width: 400px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 255, 100, 0.2);
+        }
+
+        .buy-signal-bubble.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .buy-signal-bubble h4 {
+            color: #00ff64;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .buy-signal-event {
+            background: rgba(0, 255, 100, 0.1);
+            border: 1px solid rgba(0, 255, 100, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+        }
+
+        .buy-signal-event:last-child {
+            margin-bottom: 0;
+        }
+
+        .buy-signal-event-title {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .buy-signal-event-wallets {
+            color: #9ca3af;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .buy-signal-no-events {
+            color: #9ca3af;
+            font-size: 12px;
+            text-align: center;
+            padding: 8px;
+        }
     </style>
 </head>
 <body class="bg-black text-white">
@@ -655,16 +717,12 @@
                             </button>
                         </div>
                         
-                        <button
-                            id="header-leaderboard-btn"
-                            onclick="setActiveTab('leaderboard')"
-                            class="bg-[#0001ff] hover:bg-[#0000cc] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2"
-                        >
+                        <a href="/leaderboard" target="_blank" rel="noopener noreferrer" class="bg-[#0001ff] hover:bg-[#0000cc] text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                             <span>Leaderboard</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -724,7 +782,7 @@
             </div>
             
             <!-- Whale Tracker Button -->
-            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-gray-800 cursor-pointer hover:border-blue-700/60 transition-all" onclick="openWhaleModal()" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);">
+            <div class="bg-gray-900 rounded-lg shadow-lg p-7 border border-gray-800 cursor-pointer hover:border-blue-700/60 transition-all" onclick="openWalletEntryModal()" onmouseover="showBuySignalBubble(event)" onmouseout="hideBuySignalBubble()" style="box-shadow: 0 0 14px rgba(0, 217, 255, 0.22), 0 0 26px rgba(157, 78, 221, 0.14);">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 bg-blue-600 rounded-md p-4 neon-glow">
                         <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -734,7 +792,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <div class="min-w-0">
                             <div class="text-base font-semibold text-white tracking-wide truncate">🐋 Whale Tracker</div>
-                            <div class="text-sm font-medium text-gray-400" id="whaleAlertCount">No activity</div>
+                            <div class="text-sm font-medium text-gray-400" id="whaleWalletCount">Click to configure</div>
                         </div>
                     </div>
                 </div>
@@ -750,11 +808,11 @@
             </div>
         </div>
 
-        {/* UPDATE Dashboard Tab Navigation (NO Leaderboard tab button) */}
+        <!-- Dashboard Tab Navigation -->
         <div class="dashboard-tabs">
             <button 
                 id="tab-polymarket"
-                className="active"
+                class="active"
                 onclick="setActiveTab('polymarket')"
             >
                 📊 Polymarket
@@ -876,7 +934,7 @@
                     </svg>
                     <h3 class="mt-2 text-sm font-medium text-gray-300">View Full Leaderboard</h3>
                     <p class="mt-1 text-sm text-gray-500">Visit the dedicated leaderboard page for detailed rankings.</p>
-                    <a href="/leaderboard" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                    <a href="/leaderboard" target="_blank" rel="noopener noreferrer" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
                         Go to Leaderboard →
                     </a>
                 </div>
@@ -2279,159 +2337,312 @@
         });
     </script>
 
-    <!-- Whale Tracker Modal -->
-    <div id="whaleModal" class="whale-modal">
-        <div class="whale-modal-content">
+    <!-- Whale Wallet Entry Modal -->
+    <div id="walletEntryModal" class="whale-modal">
+        <div class="whale-modal-content" style="max-width: 600px;">
             <div class="whale-modal-header">
                 <h2 class="whale-modal-title">
-                    🐋 Whale Tracker
-                    <span class="text-sm text-gray-400 ml-2">Polymarket Only</span>
+                    🐋 Configure Whale Tracker
+                    <span class="text-sm text-gray-400 ml-2">Add up to 4 wallet addresses</span>
                 </h2>
-                <button class="whale-close-btn" onclick="closeWhaleModal()">
+                <button class="whale-close-btn" onclick="closeWalletEntryModal()">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
             
-            <div id="whaleModalContent">
-                <div class="whale-loading">
-                    <div class="loading-spinner mx-auto mb-4"></div>
-                    <p>Loading whale data...</p>
+            <div id="walletEntryContent">
+                <div class="space-y-4">
+                    <div class="text-sm text-gray-300 mb-4">
+                        Enter Polygon wallet addresses to track. When 2+ tracked wallets predict on the same Polymarket event, you'll receive an alert.
+                    </div>
+                    
+                    <!-- Wallet Input Fields -->
+                    <div class="space-y-3">
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 1</label>
+                            <input type="text" id="wallet1" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 2</label>
+                            <input type="text" id="wallet2" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 3</label>
+                            <input type="text" id="wallet3" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        
+                        <div class="wallet-input-group">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Wallet 4</label>
+                            <input type="text" id="wallet4" placeholder="0x..." maxlength="42" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                        <button onclick="clearWallets()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition">
+                            Clear All
+                        </button>
+                        <button onclick="saveWallets()" class="px-4 py-2 bg-[#0001ff] hover:bg-[#0000cc] text-white rounded-lg transition">
+                            Save & Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Whale Tracker Functions
-        const WHALE_WALLETS = [
-            '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b',
-            '0x8d298e9b995d5500c7517e6c487e0c53e4ef0f3d', 
-            '0x3f5ce5bbfe8f4b6d8e0c8e0c8e0c8e0c8e0c8e0c',
-            '0x2b3a342d2b3a342d2b3a342d2b3a342d2b3a342d'
-        ];
+        // Whale Wallet Entry Functions
+        let whaleWallets = [];
 
-        let whaleData = [];
-        let whalePollingInterval = null;
-
-        function openWhaleModal() {
-            const modal = document.getElementById('whaleModal');
+        function openWalletEntryModal() {
+            const modal = document.getElementById('walletEntryModal');
             modal.classList.add('active');
-            loadWhaleData();
-            // Start polling for updates
-            if (whalePollingInterval) clearInterval(whalePollingInterval);
-            whalePollingInterval = setInterval(loadWhaleData, 30000); // Poll every 30 seconds
+            loadSavedWallets();
         }
 
-        function closeWhaleModal() {
-            const modal = document.getElementById('whaleModal');
+        function closeWalletEntryModal() {
+            const modal = document.getElementById('walletEntryModal');
             modal.classList.remove('active');
-            // Stop polling
-            if (whalePollingInterval) {
-                clearInterval(whalePollingInterval);
-                whalePollingInterval = null;
+        }
+
+        function loadSavedWallets() {
+            // Load from localStorage
+            const saved = localStorage.getItem('whaleWallets');
+            if (saved) {
+                try {
+                    whaleWallets = JSON.parse(saved);
+                } catch (e) {
+                    whaleWallets = [];
+                }
+            }
+            
+            // Populate input fields
+            for (let i = 1; i <= 4; i++) {
+                const input = document.getElementById(`wallet${i}`);
+                if (input && whaleWallets[i - 1]) {
+                    input.value = whaleWallets[i - 1];
+                }
+            }
+            
+            updateWalletCount();
+        }
+
+        function saveWallets() {
+            const wallets = [];
+            
+            // Collect wallet addresses from inputs
+            for (let i = 1; i <= 4; i++) {
+                const input = document.getElementById(`wallet${i}`);
+                const address = input.value.trim();
+                
+                if (address && isValidPolygonAddress(address)) {
+                    wallets.push(address.toLowerCase());
+                }
+            }
+            
+            // Save to localStorage
+            whaleWallets = wallets;
+            localStorage.setItem('whaleWallets', JSON.stringify(wallets));
+            
+            // Update display
+            updateWalletCount();
+            
+            // Close modal
+            closeWalletEntryModal();
+            
+            // Show success message
+            showSuccess(`Saved ${wallets.length} whale wallet(s) for tracking`);
+            
+            // Start tracking if we have wallets
+            if (wallets.length >= 2) {
+                startWhaleTracking();
             }
         }
 
-        async function loadWhaleData() {
-            const contentEl = document.getElementById('whaleModalContent');
+        function clearWallets() {
+            // Clear all input fields
+            for (let i = 1; i <= 4; i++) {
+                const input = document.getElementById(`wallet${i}`);
+                if (input) {
+                    input.value = '';
+                }
+            }
+            
+            // Clear saved data
+            whaleWallets = [];
+            localStorage.removeItem('whaleWallets');
+            
+            updateWalletCount();
+        }
+
+        function isValidPolygonAddress(address) {
+            // Basic Polygon address validation (same format as Ethereum)
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
+
+        function updateWalletCount() {
+            const countEl = document.getElementById('whaleWalletCount');
+            if (countEl) {
+                if (whaleWallets.length === 0) {
+                    countEl.textContent = 'Click to add wallets';
+                } else {
+                    countEl.textContent = `${whaleWallets.length} wallet(s) tracking`;
+                }
+            }
+        }
+
+        function updateBuySignalCount(eventCount) {
+            const countEl = document.getElementById('whaleWalletCount');
+            if (countEl) {
+                if (eventCount > 0) {
+                    countEl.textContent = 'Buy Signal';
+                    countEl.style.color = '#00ff64'; // Green color for buy signal
+                } else {
+                    updateWalletCount(); // Show normal wallet count
+                    countEl.style.color = ''; // Reset color
+                }
+            }
+        }
+
+        function startWhaleTracking() {
+            // This would integrate with your existing whale tracking system
+            console.log('Starting whale tracking for:', whaleWallets);
+            
+            // Poll for whale convergence events
+            setInterval(checkWhaleConvergence, 30000); // Every 30 seconds
+        }
+
+        async function checkWhaleConvergence() {
+            if (whaleWallets.length < 2) return;
             
             try {
-                // Mock data for now - replace with actual API call
-                const mockEvents = [
-                    {
-                        title: "Will Bitcoin reach $100k by end of 2024?",
-                        marketId: "bitcoin-100k-2024",
-                        wallets: [
-                            WHALE_WALLETS[0],
-                            WHALE_WALLETS[1]
-                        ],
-                        timestamp: new Date().toISOString()
+                // This would call your existing API to check for convergence
+                // For now, it's a placeholder that would integrate with your system
+                const response = await fetch('/api/whale/convergence', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     },
-                    {
-                        title: "Will Trump win 2024 election?",
-                        marketId: "trump-2024-win",
-                        wallets: [
-                            WHALE_WALLETS[0],
-                            WHALE_WALLETS[2],
-                            WHALE_WALLETS[3]
-                        ],
-                        timestamp: new Date().toISOString()
+                    body: JSON.stringify({ wallets: whaleWallets })
+                });
+                
+                if (response.ok) {
+                    const events = await response.json();
+                    if (events.length > 0) {
+                        // Update buy signal events
+                        updateBuySignalEvents(events);
+                        
+                        // Trigger alerts for convergence events
+                        events.forEach(event => {
+                            showWhaleAlert(event);
+                        });
+                    } else {
+                        // No events, reset to normal display
+                        updateBuySignalEvents([]);
                     }
-                ];
-
-                // Filter for events with 2+ whale wallets
-                const qualifyingEvents = mockEvents.filter(event => event.wallets.length >= 2);
-                
-                if (qualifyingEvents.length === 0) {
-                    contentEl.innerHTML = `
-                        <div class="whale-no-activity">
-                            <svg class="w-16 h-16 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                            <h3 class="text-lg font-medium text-gray-300 mb-2">No whale convergence detected</h3>
-                            <p class="text-sm text-gray-500">Events will appear when 2+ tracked wallets predict on the same market</p>
-                        </div>
-                    `;
-                    updateWhaleAlertCount('No activity');
                 } else {
-                    contentEl.innerHTML = qualifyingEvents.map(event => `
-                        <div class="whale-event-card">
-                            <div class="whale-event-title">${event.title}</div>
-                            <div class="text-sm text-gray-400 mb-2">
-                                Market ID: ${event.marketId}
-                            </div>
-                            <div class="text-sm text-gray-400 mb-2">
-                                Detected: ${new Date(event.timestamp).toLocaleString()}
-                            </div>
-                            <div class="whale-wallets-list">
-                                ${event.wallets.map(wallet => `
-                                    <div class="whale-wallet-tag">
-                                        ${wallet.slice(0, 6)}...${wallet.slice(-4)}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `).join('');
-                    updateWhaleAlertCount(`${qualifyingEvents.length} events`);
+                    // No events, reset to normal display
+                    updateBuySignalEvents([]);
                 }
-                
             } catch (error) {
-                console.error('Error loading whale data:', error);
-                contentEl.innerHTML = `
-                    <div class="whale-no-activity">
-                        <svg class="w-16 h-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <h3 class="text-lg font-medium text-gray-300 mb-2">Error loading whale data</h3>
-                        <p class="text-sm text-gray-500">Please try again later</p>
-                    </div>
-                `;
-                updateWhaleAlertCount('Error');
+                console.error('Error checking whale convergence:', error);
+                // Reset to normal display on error
+                updateBuySignalEvents([]);
             }
         }
 
-        function updateWhaleAlertCount(count) {
-            const alertEl = document.getElementById('whaleAlertCount');
-            if (alertEl) {
-                alertEl.textContent = count;
-            }
+        function showWhaleAlert(event) {
+            // This would integrate with your existing alert system
+            const message = `🐋 Whale Convergence: ${event.title} - ${event.wallets.length} whales predicting`;
+            showSuccess(message);
         }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedWallets();
+            
+            // Start tracking if we have wallets
+            if (whaleWallets.length >= 2) {
+                startWhaleTracking();
+            }
+        });
 
         // Close modal when clicking outside
-        document.getElementById('whaleModal').addEventListener('click', function(e) {
+        document.getElementById('walletEntryModal').addEventListener('click', function(e) {
             if (e.target === this) {
-                closeWhaleModal();
+                closeWalletEntryModal();
             }
         });
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closeWhaleModal();
+                closeWalletEntryModal();
             }
         });
+    </script>
+
+    <!-- Buy Signal Bubble -->
+    <div id="buySignalBubble" class="buy-signal-bubble">
+        <h4>🐋 Buy Signal Detected</h4>
+        <div id="buySignalEvents">
+            <!-- Events will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        // Buy Signal Bubble Functions
+        let currentBuySignalEvents = [];
+
+        function showBuySignalBubble(event) {
+            const bubble = document.getElementById('buySignalBubble');
+            const eventsEl = document.getElementById('buySignalEvents');
+            
+            // Position bubble near whale tracker card
+            const whaleCard = event.target.closest('.bg-gray-900');
+            if (whaleCard) {
+                const rect = whaleCard.getBoundingClientRect();
+                bubble.style.left = rect.left + 'px';
+                bubble.style.top = (rect.bottom + 10) + 'px';
+            }
+            
+            // Populate events
+            if (currentBuySignalEvents.length > 0) {
+                eventsEl.innerHTML = currentBuySignalEvents.map(event => `
+                    <div class="buy-signal-event">
+                        <div class="buy-signal-event-title">${event.title}</div>
+                        <div class="buy-signal-event-wallets">
+                            ${event.wallets.map(w => `${w.slice(0, 6)}...${w.slice(-4)}`).join(', ')}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                eventsEl.innerHTML = '<div class="buy-signal-no-events">No buy signals detected</div>';
+            }
+            
+            bubble.classList.add('active');
+        }
+
+        function hideBuySignalBubble() {
+            const bubble = document.getElementById('buySignalBubble');
+            bubble.classList.remove('active');
+        }
+
+        function updateBuySignalEvents(events) {
+            currentBuySignalEvents = events;
+            
+            // Update display to show "Buy Signal" when events exist
+            updateBuySignalCount(events.length);
+        }
     </script>
 </body>
 </html>
