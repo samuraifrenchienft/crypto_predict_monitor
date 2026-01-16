@@ -336,23 +336,13 @@
             font-weight: 600;
         }
 
-        .filter-tab {
-            background: transparent !important;
-            box-shadow: none !important;
-            border-left: 0 !important;
-            border-right: 0 !important;
-            border-top: 0 !important;
-            transition: color 0.3s ease, border-color 0.3s ease, filter 0.3s ease;
+        /* Tab Content Styles */
+        .tab-content {
+            display: none;
         }
-
-        .filter-tab:hover {
-            filter: drop-shadow(0 0 12px rgba(0, 1, 255, 0.35));
-        }
-
-        .filter-tab.active {
-            border-bottom-color: var(--pm-cyan) !important;
-            color: var(--pm-cyan) !important;
-            filter: drop-shadow(0 0 12px rgba(0, 1, 255, 0.40));
+        
+        .tab-content:first-child {
+            display: block;
         }
 
         .text-blue-400,
