@@ -1535,17 +1535,36 @@ def get_stats():
         },
     }
     
-    # Calculate additional stats
+    # Calculate additional stats - apply strategy filters
     all_quotes = []
+    qualifying_markets = 0
+    
     for markets in market_cache.values():
         for market in markets:
-            all_quotes.extend(market["outcomes"])
+            # Apply strategy filters (1.5% minimum spread)
+            market_spread = 0
+            if market["outcomes"]:
+                # Calculate spread from first outcome
+                outcome = market["outcomes"][0]
+                if outcome.get("bid") and outcome.get("ask"):
+                    market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
+            
+            # Only count markets that meet 1.5% strategy
+            if market_spread >= 1.5:
+                qualifying_markets += 1
+                all_quotes.extend(market["outcomes"])
+    
+    stats["total_markets"] = qualifying_markets  # Only show qualifying markets
+    stats["sources"] = list(market_cache.keys())
     
     stats["total_outcomes"] = len(all_quotes)
     stats["markets_with_quotes"] = sum(
         1 for markets in market_cache.values()
         for market in markets
         if any(outcome["mid"] is not None for outcome in market["outcomes"])
+        and market["outcomes"]  # Has outcomes
+        and market["outcomes"][0].get("bid") and market["outcomes"][0].get("ask")  # Has bid/ask
+        and (abs(market["outcomes"][0]["ask"] - market["outcomes"][0]["bid"]) / market["outcomes"][0]["mid"] * 100 if market["outcomes"][0].get("mid") else 0) >= 1.5  # Meets 1.5% strategy
     )
     
     # Cross-market arbitrage summary
@@ -1557,21 +1576,30 @@ def get_stats():
             markets_by_source[source] = []
             quotes_by_source[source] = {}
             for m in markets:
-                market = Market(source=source, market_id=m["market_id"], title=m["title"], url=m.get("url"), outcomes=[])
-                markets_by_source[source].append(market)
-                quotes_by_source[source][m["market_id"]] = [
-                    Quote(
-                        outcome_id=o["outcome_id"],
-                        bid=o["bid"],
-                        ask=o["ask"],
-                        mid=o["mid"],
-                        spread=o["spread"],
-                        bid_size=o["bid_size"],
-                        ask_size=o["ask_size"],
-                        ts=datetime.fromisoformat(o["timestamp"]) if o.get("timestamp") else None,
-                    )
-                    for o in m["outcomes"]
-                ]
+                # Apply strategy filters (1.5% minimum spread)
+                market_spread = 0
+                if m["outcomes"]:
+                    outcome = m["outcomes"][0]
+                    if outcome.get("bid") and outcome.get("ask"):
+                        market_spread = abs(outcome["ask"] - outcome["bid"]) / outcome["mid"] * 100 if outcome.get("mid") else 0
+                
+                # Only process markets that meet 1.5% strategy
+                if market_spread >= 1.5:
+                    market = Market(source=source, market_id=m["market_id"], title=m["title"], url=m.get("url"), outcomes=[])
+                    markets_by_source[source].append(market)
+                    quotes_by_source[source][m["market_id"]] = [
+                        Quote(
+                            outcome_id=o["outcome_id"],
+                            bid=o["bid"],
+                            ask=o["ask"],
+                            mid=o["mid"],
+                            spread=o["spread"],
+                            bid_size=o["bid_size"],
+                            ask_size=o["ask_size"],
+                            ts=datetime.fromisoformat(o["timestamp"]) if o.get("timestamp") else None,
+                        )
+                        for o in m["outcomes"]
+                    ]
         opportunities = detect_cross_market_arbitrage(
             markets_by_source,
             quotes_by_source,
