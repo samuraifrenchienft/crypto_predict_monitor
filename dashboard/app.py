@@ -1095,8 +1095,8 @@ def _ensure_working_link(source: str, market_id: str) -> str:
     if source == 'polymarket':
         return f"https://polymarket.com/event/{market_id}"
     elif source == 'azuro':
-        # Use the working azuro.com domain
-        return f"https://azuro.com/markets/{market_id}"
+        # Use the working bookmaker.xyz app
+        return f"https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral"
     elif source == 'manifold':
         return f"https://manifold.markets/{market_id}"
     elif source == 'limitless':
@@ -1677,6 +1677,20 @@ def get_comprehensive_matches():
                 "created_at": match.created_at.isoformat(),
                 "markets": [
                     {
+                        "source": market.source,
+                        "market_id": market.market_id,
+                        "title": market.title,
+                        "url": market.url
+                    } for market in match.markets
+                ]
+            })
+    
+        return jsonify(matches_by_category)
+    
+    except Exception as e:
+        return jsonify({"error": f"Failed to get comprehensive matches: {str(e)}"}), 500
+
+
 @app.route("/api/markets/<source>")
 def get_markets_by_source(source: str):
     """Get ARBITRAGE EVENTS involving a specific source - reworked for arbitrage focus"""
