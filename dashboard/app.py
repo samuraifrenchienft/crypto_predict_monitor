@@ -1701,8 +1701,8 @@ def get_markets_by_source(source: str):
         for opp in opportunities:
             spread_percentage = opp.get('spread_percentage', opp.get('spread', 0) * 100)
             
-            # Only include solid arbitrage opportunities (2%+ spread)
-            if spread_percentage >= 2.0:
+            # Only include arbitrage opportunities that meet config minimum spread (1.5%)
+            if spread_percentage >= (cfg.thresholds.min_spread * 100):
                 # Check if this opportunity involves the requested source
                 involved_sources = [m.get('source', '') for m in opp.get('markets', [])]
                 if source in involved_sources:
