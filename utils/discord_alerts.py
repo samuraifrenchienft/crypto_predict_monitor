@@ -62,20 +62,30 @@ class DiscordAlerter:
     
     def get_color_by_margin(self, profit_margin: float) -> int:
         """Get Discord embed color based on profit margin"""
-        if profit_margin >= 2.0:  # 2% or more - Green
+        # Load config to get user's 1.5% minimum spread
+        from bot.config import load_config
+        cfg = load_config()
+        min_spread_pct = cfg.thresholds.min_spread * 100  # Convert to percentage (1.5%)
+        
+        if profit_margin >= min_spread_pct:  # 1.5% or more (user's minimum) - Green
             return 0x00FF00  # Green
-        elif profit_margin >= 1.0:  # 1-2% - Yellow  
+        elif profit_margin >= 1.0:  # 1-1.5% - Yellow  
             return 0xFFFF00  # Yellow
         else:  # Less than 1% - Red
             return 0xFF0000  # Red
     
     def get_rating_emoji(self, profit_margin: float) -> str:
         """Get rating emoji based on profit margin"""
+        # Load config to get user's 1.5% minimum spread
+        from bot.config import load_config
+        cfg = load_config()
+        min_spread_pct = cfg.thresholds.min_spread * 100  # Convert to percentage (1.5%)
+        
         if profit_margin >= 5.0:
             return "🎯🎯🎯🎯🎯"  # Excellent
         elif profit_margin >= 3.0:
             return "🎯🎯🎯🎯"    # Great
-        elif profit_margin >= 2.0:
+        elif profit_margin >= min_spread_pct:  # 1.5%+ (user's minimum) - Very Good
             return "🎯🎯🎯"      # Very Good
         elif profit_margin >= 1.0:
             return "🎯🎯"        # Good
@@ -84,7 +94,12 @@ class DiscordAlerter:
     
     def get_profit_emoji(self, profit_margin: float) -> str:
         """Get profit emoji based on margin"""
-        if profit_margin >= 2.0:
+        # Load config to get user's 1.5% minimum spread
+        from bot.config import load_config
+        cfg = load_config()
+        min_spread_pct = cfg.thresholds.min_spread * 100  # Convert to percentage (1.5%)
+        
+        if profit_margin >= min_spread_pct:  # 1.5%+ (user's minimum) - High profit
             return "💰💰💰"  # High profit
         elif profit_margin >= 1.0:
             return "💰💰"     # Medium profit
