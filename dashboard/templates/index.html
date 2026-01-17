@@ -1165,7 +1165,7 @@
         
         async function createChallenge(walletAddress) {
             const response = await axios.post('/api/wallet/challenge', {
-                wallet_address: walletAddress
+                address: walletAddress
             });
             return response.data;
         }
@@ -1174,7 +1174,7 @@
             try {
                 const signature = await window.ethereum.request({
                     method: 'personal_sign',
-                    params: [message, currentWallet]
+                    params: [message, window.ethereum.selectedAddress]
                 });
                 return signature;
             } catch (error) {
@@ -1186,10 +1186,9 @@
             try {
                 const response = await axios.post('/api/wallet/verify', {
                     address: address,
-                    message: message,
                     signature: signature
                 });
-                return response.data.valid;
+                return response.data.verified;
             } catch (error) {
                 console.error('Signature verification error:', error);
                 return false;

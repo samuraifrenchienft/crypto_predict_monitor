@@ -2056,9 +2056,11 @@ def verify_wallet_signature():
 
 
 @app.route("/api/wallet/connect", methods=["POST"])
+@require_tier(UserTier.free)
 def connect_wallet():
     """Connect and store wallet"""
     try:
+        user = g.current_user
         data = request.get_json()
         wallet_address = data.get("wallet_address")
         signature = data.get("signature")
@@ -2070,29 +2072,23 @@ def connect_wallet():
         if not wallet_address.startswith("0x") or len(wallet_address) != 42:
             return jsonify({"error": "Invalid wallet address format"}), 400
         
-        # Store wallet in database
-        user = User(
-            discord_id=user_id,
-            wallet_address=wallet_address,
-            connected_at=datetime.now(timezone.utc)
-        )
+        # Use the existing wallet verification system
+        try:
+            verified = wallet_verify(g.db, user, wallet_address, signature)
+        except Exception as e:
+            logger.error(f"Wallet verification error: {e}")
+            verified = False
         
-        # Check if user already exists
-        existing_user = db.query(User).filter(User.discord_id == user_id).first()
-        if existing_user:
-            existing_user.wallet_address = wallet_address
-            existing_user.connected_at = datetime.now(timezone.utc)
-            db.commit()
-        else:
-            db.add(user)
-            db.commit()
+        if not verified:
+            return jsonify({"error": "Wallet signature verification failed"}), 400
         
-        logger.info(f"Wallet connected: {wallet_address}")
+        logger.info(f"Wallet connected: {wallet_address} for user {user.discord_id}")
         
         return jsonify({
             "status": "success",
             "wallet_address": wallet_address,
-            "connected_at": datetime.now(timezone.utc).isoformat()
+            "connected_at": datetime.now(timezone.utc).isoformat(),
+            "wallet_connected": True
         })
         
     except Exception as e:
@@ -2101,26 +2097,33 @@ def connect_wallet():
 
 
 @app.route("/api/wallet/disconnect", methods=["POST"])
+@require_tier(UserTier.free)
 def disconnect_wallet():
     """Disconnect wallet"""
     try:
+        user = g.current_user
         data = request.get_json()
         wallet_address = data.get("wallet_address")
         
         if not wallet_address:
             return jsonify({"error": "Wallet address required"}), 400
         
-        # Remove wallet from database
-        user = db.query(User).filter(User.wallet_address == wallet_address).first()
-        if user:
-            user.wallet_address = None
-            db.commit()
+        # Verify the wallet belongs to the current user
+        if user.wallet_address != wallet_address:
+            return jsonify({"error": "Wallet address does not match connected wallet"}), 400
         
-        logger.info(f"Wallet disconnected: {wallet_address}")
+        # Disconnect wallet
+        user.wallet_address = None
+        user.wallet_connected = False
+        user.wallet_nonce = None
+        db.commit()
+        
+        logger.info(f"Wallet disconnected: {wallet_address} for user {user.discord_id}")
         
         return jsonify({
             "status": "success",
-            "disconnected_at": datetime.now(timezone.utc).isoformat()
+            "disconnected_at": datetime.now(timezone.utc).isoformat(),
+            "wallet_connected": False
         })
         
     except Exception as e:
