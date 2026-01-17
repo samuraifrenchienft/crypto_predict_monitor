@@ -11,14 +11,19 @@ class QualityScorer:
     """Investment-grade quality scoring for arbitrage opportunities"""
     
     def __init__(self):
-        # Quality thresholds (configurable)
+        # Load config to get user's actual 1.5% minimum spread
+        from bot.config import load_config
+        cfg = load_config()
+        min_spread_pct = cfg.thresholds.min_spread * 100  # Convert to percentage (1.5%)
+        
+        # Quality thresholds based on user's 1.5% minimum strategy
         self.spread_weights = {
-            "exceptional": 3.0,    # 3%+ spread - Blue
-            "excellent": 2.51,      # 2.51-3% spread - Green  
-            "very_good": 2.01,      # 2.01-2.5% spread - Yellow
-            "good": 1.5,            # 1.5-2% spread - Orange
-            "fair": 1.0,            # 1-1.5% spread
-            "poor": 0.5             # <1% spread
+            "exceptional": min_spread_pct * 2.0,    # 3%+ spread (2x minimum) - Blue
+            "excellent": min_spread_pct * 1.67,    # 2.5%+ spread (1.67x minimum) - Green  
+            "very_good": min_spread_pct * 1.34,    # 2%+ spread (1.34x minimum) - Yellow
+            "good": min_spread_pct,                # 1.5%+ spread (user's minimum) - Orange
+            "fair": min_spread_pct * 0.67,        # 1%+ spread (below minimum) - Gray
+            "poor": 0.0                            # <1% spread - Red
         }
         
         self.liquidity_thresholds = {

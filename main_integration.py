@@ -18,6 +18,7 @@ from contextlib import asynccontextmanager
 from utils.fallback_poller import start_fallback_polling
 from utils.alert_manager import start_alert_system, create_alert_from_opportunity
 from bot.arbitrage import detect_cross_market_arbitrage
+from bot.config import load_config
 from bot.adapters import polymarket, azuro, limitless, manifold
 
 # Configure logging
@@ -359,11 +360,12 @@ async def enhanced_arbitrage_detection():
         "manifold": manifold_quotes
     }
     
-    # Detect arbitrage opportunities
+    # Detect arbitrage opportunities using config (1.5% from user's strategy)
+    cfg = load_config()
     opportunities = detect_cross_market_arbitrage(
         markets_by_source,
         quotes_by_source,
-        min_spread=0.08
+        min_spread=cfg.thresholds.min_spread  # Use 1.5% from config, not hardcoded 8%
     )
     
     # Update market snapshot for API endpoint
