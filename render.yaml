@@ -9,8 +9,8 @@ services:
       pip install --no-cache-dir -r requirements.txt
       python -c "import yaml; import pydantic; print('Dependencies verified: yaml and pydantic available')"
     startCommand: |
-      echo "Starting arbitrage detection system..."
-      python src/arbitrage_main.py
+      echo "Starting dashboard with arbitrage detection..."
+      python scripts/render_startup.py
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
