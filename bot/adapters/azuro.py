@@ -421,7 +421,7 @@ class AzuroAdapter(Adapter):
             market_id = market_data["id"]
             title = market_data["title"]
             slug = market_data["slug"]
-            url = f"https://azuro.org/app"
+            url = f"https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral"
 
             # Cache market data
             self._market_cache[market_id] = market_data
