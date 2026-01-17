@@ -44,7 +44,7 @@
 - [ ] Database persistence for trades
 
 ### Future Enhancements
-- [ ] Web dashboard for monitoring
+- [ ]
 - [ ] Historical data storage
 - [ ] Backtesting framework
 - [ ] Multi-user support
