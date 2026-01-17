@@ -216,8 +216,8 @@ class AzuroAdapter(Adapter):
             if not condition_id:
                 continue
 
-            # Create frontend URL (using working Azuro domain)
-            url = f"https://azuro.com/conditions/{condition_id}"
+            # Create frontend URL (using working Azuro app)
+            url = f"https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral"
 
             # Cache condition data
             self._market_cache[condition_id] = condition_data
@@ -248,8 +248,8 @@ class AzuroAdapter(Adapter):
             if not market_id or not title:
                 continue
 
-            # Create frontend URL (using working Azuro domain)
-            url = f"https://azuro.com/markets/{slug}" if slug else f"https://azuro.com/markets/{market_id}"
+            # Create frontend URL (using working Azuro app)
+            url = f"https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral"
 
             # Cache market data
             self._market_cache[market_id] = market_data
@@ -421,7 +421,7 @@ class AzuroAdapter(Adapter):
             market_id = market_data["id"]
             title = market_data["title"]
             slug = market_data["slug"]
-            url = f"https://azuro.com/markets/{slug}"
+            url = f"https://azuro.org/app"
 
             # Cache market data
             self._market_cache[market_id] = market_data
