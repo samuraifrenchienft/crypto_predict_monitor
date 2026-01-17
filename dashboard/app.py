@@ -1153,13 +1153,14 @@ def get_all_markets():
         except Exception as e:
             print(f"Error updating markets in /api/markets: {type(e).__name__}")
 
-    # BUILD ARBITRAGE EVENTS - NOT RAW MARKETS
+    # BUILD ARBITRAGE EVENTS - TIERED SYSTEM
     try:
         cfg = load_config()
         markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
         
-        # Detect actual arbitrage opportunities
-        opportunities = detect_cross_market_arbitrage(
+        # Detect tiered arbitrage opportunities with filtering and scoring
+        from bot.arbitrage import detect_tiered_arbitrage
+        tiered_opportunities = detect_tiered_arbitrage(
             markets_by_source,
             quotes_by_source,
             min_spread=cfg.thresholds.min_spread,  # 1.5% strategy
@@ -1167,42 +1168,57 @@ def get_all_markets():
             new_event_hours=cfg.arbitrage.new_event_hours,
         )
         
-        print(f"[DASHBOARD] Found {len(opportunities)} arbitrage opportunities")
+        print(f"[DASHBOARD] Found {len(tiered_opportunities)} tiered arbitrage opportunities")
         
-        # Convert opportunities to arbitrage events for dashboard
+        # Get tier breakdown for statistics
+        from bot.tiered_arbitrage_filter import get_tier_breakdown
+        tier_breakdown = get_tier_breakdown()
+        
+        # Convert tiered opportunities to arbitrage events for dashboard
         arbitrage_events = []
-        for opp in opportunities:
+        for opp in tiered_opportunities:
+            # Extract tier information
+            tier = opp.get('tier', 'unknown')
+            tier_emoji = opp.get('tier_emoji', '❓')
+            tier_color = opp.get('tier_color', '#808080')
+            tier_action = opp.get('tier_action', 'UNKNOWN')
+            quality_score = opp.get('quality_score', 0)
+            
             # Calculate actual spread percentage
             spread_percentage = opp.get('spread_percentage', opp.get('spread', 0) * 100)
             
-            # Only include arbitrage opportunities that meet config minimum spread (1.5%)
-            if spread_percentage >= (cfg.thresholds.min_spread * 100):
-                event = {
-                    "id": f"arb_{len(arbitrage_events)}",
-                    "title": opp.get('normalized_title', 'Unknown Event'),
-                    "category": _categorize_event(opp.get('normalized_title', '')),
-                    "spread_percentage": round(spread_percentage, 2),
-                    "confidence": _calculate_confidence(opp),
-                    "priority": opp.get('priority', 'normal'),
-                    "markets": [],
-                    "action": opp.get('action', {}),
-                    "created_at": now.isoformat()
+            # Create event with tier information
+            event = {
+                "id": f"arb_{len(arbitrage_events)}",
+                "title": opp.get('normalized_title', 'Unknown Event'),
+                "category": _categorize_event(opp.get('normalized_title', '')),
+                "spread_percentage": round(spread_percentage, 2),
+                "tier": tier,
+                "tier_emoji": tier_emoji,
+                "tier_color": tier_color,
+                "tier_action": tier_action,
+                "quality_score": round(quality_score, 1),
+                "confidence": _calculate_confidence(opp),
+                "priority": opp.get('priority', 'normal'),
+                "markets": [],
+                "action": opp.get('action', {}),
+                "created_at": now.isoformat()
+            }
+            
+            # Add market details with working links
+            for market_info in opp.get('markets', []):
+                market_data = {
+                    "source": market_info.get('source', 'unknown'),
+                    "title": market_info.get('title', ''),
+                    "url": _ensure_working_link(market_info.get('source', ''), market_info.get('market_id', '')),
+                    "market_id": market_info.get('market_id', ''),
+                    "prices": _get_market_prices(market_info.get('source', ''), market_info.get('market_id', ''), quotes_by_source)
                 }
-                
-                # Add market details with working links
-                for market_info in opp.get('markets', []):
-                    market_data = {
-                        "source": market_info.get('source', 'unknown'),
-                        "title": market_info.get('title', ''),
-                        "url": _ensure_working_link(market_info.get('source', ''), market_info.get('market_id', '')),
-                        "market_id": market_info.get('market_id', ''),
-                        "prices": _get_market_prices(market_info.get('source', ''), market_info.get('market_id', ''), quotes_by_source)
-                    }
-                    event["markets"].append(market_data)
-                
-                # Only add if we have at least 2 working markets
-                if len(event["markets"]) >= 2:
-                    arbitrage_events.append(event)
+                event["markets"].append(market_data)
+            
+            # Only add if we have at least 2 working markets
+            if len(event["markets"]) >= 2:
+                arbitrage_events.append(event)
         
         print(f"[DASHBOARD] Returning {len(arbitrage_events)} solid arbitrage events")
         
@@ -1213,6 +1229,7 @@ def get_all_markets():
             "arbitrage_events": arbitrage_events,
             "total_events": len(arbitrage_events),
             "categories": list(set(event['category'] for event in arbitrage_events)),
+            "tier_breakdown": tier_breakdown,
             "average_spread": round(sum(e['spread_percentage'] for e in arbitrage_events) / len(arbitrage_events), 2) if arbitrage_events else 0,
             "last_update": latest.isoformat() if latest else None,
             "data_type": "arbitrage_events",  # Clear this is arbitrage data, not raw markets

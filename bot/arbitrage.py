@@ -162,6 +162,38 @@ def detect_cross_market_arbitrage(
     return all_opportunities
 
 
+def detect_tiered_arbitrage(
+    markets_by_source: Dict[str, List[Market]],
+    quotes_by_source: Dict[str, Dict[str, List[Quote]]],
+    min_spread: float = 0.015,  # Default to 1.5% strategy
+    prioritize_new: bool = True,
+    new_event_hours: int = 24,
+) -> List[Dict[str, Any]]:
+    """
+    Detect cross-market arbitrage opportunities with tiered filtering.
+    Returns opportunities with tier information and quality scores.
+    """
+    # Import tiered filter
+    from bot.tiered_arbitrage_filter import filter_and_tier_opportunities
+    
+    # Detect raw opportunities
+    raw_opportunities = detect_cross_market_arbitrage(
+        markets_by_source,
+        quotes_by_source,
+        min_spread,
+        prioritize_new,
+        new_event_hours
+    )
+    
+    # Apply tiered filtering and scoring
+    tiered_opportunities = filter_and_tier_opportunities(
+        raw_opportunities,
+        min_spread
+    )
+    
+    return tiered_opportunities
+
+
 # Whale-watching utilities (placeholder for now; will require platform-specific APIs)
 def detect_whale_convergence(
     markets_by_source: Dict[str, List[Market]],

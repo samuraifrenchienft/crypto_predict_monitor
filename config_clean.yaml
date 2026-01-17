@@ -1,0 +1,224 @@
+# Crypto Predict Monitor - Spread-Only Configuration
+# Clean tier-based arbitrage system - no volume, no liquidity, just spread
+
+# Discord webhook URLs
+discord:
+  # Main arbitrage alerts webhook
+  webhook_url: "https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV"
+  
+  # Health alerts webhook (separate from arbitrage alerts)
+  health_webhook_url: "https://discord.com/api/webhooks/1455877944005365814/TpDNqyFu6XhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb"
+
+# Alert settings
+alerts:
+  enabled: true
+  # Minimum time between same alerts (seconds)
+  min_seconds_between_same_alert: 600
+
+# Thresholds - SPREAD-ONLY SYSTEM
+thresholds:
+  # Alert if spread >= this (1.5% minimum from user's strategy)
+  min_spread: 0.015
+
+  # Alert if mid price moves by this fraction vs last seen (0.05 = 5%)
+  price_move_pct: 0.05
+
+  # Alert if best bid size or best ask size changes by this fraction
+  top_of_book_size_move_pct: 0.50
+
+# Arbitrage configuration - SPREAD-ONLY
+arbitrage:
+  # Strategy mode: "cross_market" (same event across platforms) or "any_market" (any wide spread)
+  mode: cross_market
+
+  # Minimum spread to consider arbitrage (1.5% from user's strategy) - MUST MATCH thresholds.min_spread
+  min_spread: 0.015
+
+  # Prioritize new events (hours since market creation)
+  prioritize_new_events: true
+  new_event_hours: 24  # only consider markets newer than this hours for "high priority"
+
+  # Tier system configuration
+  tier_system:
+    enabled: true
+    tiers:
+      exceptional:
+        min_spread: 3.0      # 3.0%+ spread
+        emoji: "🔵"
+        color: "#0066ff"
+        priority: 1
+        action: "IMMEDIATE ATTENTION REQUIRED"
+      excellent:
+        min_spread: 2.51     # 2.51-3.0% spread
+        emoji: "🟢"
+        color: "#00ff00"
+        priority: 2
+        action: "ACT QUICKLY"
+      very_good:
+        min_spread: 2.01     # 2.01-2.5% spread
+        emoji: "💛"
+        color: "#ffff00"
+        priority: 3
+        action: "STRONG YES"
+      good:
+        min_spread: 1.5      # 1.5-2.0% spread
+        emoji: "🟠"
+        color: "#ffa500"
+        priority: 4
+        action: "YOUR STRATEGY"
+      fair:
+        min_spread: 1.0      # 1.0-1.5% spread (filtered out)
+        emoji: "⚪"
+        color: "#808080"
+        priority: 5
+        action: "FILTERED OUT"
+      poor:
+        min_spread: 0.0      # <1.0% spread (filtered out)
+        emoji: "⚫"
+        color: "#808080"
+        priority: 6
+        action: "FILTERED OUT"
+
+# Whale watch configuration
+whale_watch:
+  enabled: true
+  # List of Polymarket wallet addresses to track
+  wallets:
+    - address: "0xabc123..."  # example: Polymarket wallet
+      platform: "polymarket"
+      label: "WhaleA"
+    - address: "0xdef456..."  # example: Polymarket wallet
+      platform: "polymarket"
+      label: "WhaleB"
+    # Add up to 4 Polymarket wallets
+  # Alert if N of these wallets invest in the same new market within time window
+  convergence_threshold: 2  # how many wallets must agree
+  time_window_hours: 6      # time window to detect convergence
+  # Only consider markets newer than this for whale alerts
+  max_market_age_hours: 24
+
+# Data source adapters
+adapters:
+  polymarket:
+    enabled: true
+    # LIVE PRODUCTION endpoints (NO DEV/DEMO)
+    gamma_base_url: "https://gamma-api.polymarket.com"
+    clob_base_url: "https://clob.polymarket.com"
+    data_base_url: "https://data-api.polymarket.com"
+    events_limit: 50
+    # CRITICAL: Use WebSocket for real-time data
+    use_websocket: false
+    # WebSocket settings
+    websocket_url: "wss://ws.ws.eosio.io"
+    reconnect_delay: 5
+    max_reconnect_attempts: 10
+
+  azuro:
+    enabled: true
+    # Azuro endpoints
+    base_url: "https://api.azuro.org"
+    # Azuro app URL for market links
+    app_url: "https://bookmaker.xyz"
+    # Subgraph URL
+    subgraph_url: "https://api.azuro.org/graphql"
+    # Market filtering
+    min_liquidity: 1000  # Minimum liquidity in USD
+    exclude_suspended: true
+
+  manifold:
+    enabled: true
+    # Manifold endpoints
+    base_url: "https://manifold.markets/api"
+    # Market filtering
+    min_liquidity: 100  # Minimum liquidity in M$
+    exclude_closed: true
+
+  limitless:
+    enabled: true
+    # Limitless endpoints
+    base_url: "https://limitless.exchange/api"
+    # Market filtering
+    min_liquidity: 1000  # Minimum liquidity in USD
+    exclude_suspended: true
+
+# Database configuration
+database:
+  url: "sqlite:///crypto_predict_monitor.db"
+  # For production, consider PostgreSQL:
+  # url: "postgresql://user:password@localhost/crypto_predict_monitor"
+  
+  # Connection settings
+  pool_size: 5
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 3600
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log to file
+  file_logging: true
+  log_file: "logs/crypto_predict_monitor.log"
+  max_file_size: "10MB"
+  backup_count: 5
+  
+  # Log to console
+  console_logging: true
+
+# API configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  
+  # Rate limiting
+  rate_limit: "100/minute"
+  
+  # CORS settings
+  cors_origins: ["http://localhost:3000", "http://localhost:8080"]
+
+# Dashboard configuration
+dashboard:
+  # Update intervals (seconds)
+  market_update_interval: 30
+  arbitrage_update_interval: 60
+  stats_update_interval: 300
+  
+  # Display settings
+  max_markets_displayed: 100
+  default_spread_threshold: 1.5
+  
+  # Chart settings
+  chart_history_hours: 24
+  max_chart_points: 100
+
+# Performance monitoring
+monitoring:
+  enabled: true
+  metrics_interval: 60  # seconds
+  
+  # Alert thresholds
+  cpu_threshold: 80.0
+  memory_threshold: 85.0
+  disk_threshold: 90.0
+  
+  # Health check settings
+  health_check_interval: 30  # seconds
+  health_check_timeout: 10   # seconds
+
+# Security settings
+security:
+  # API key settings
+  api_key_enabled: false
+  api_key_header: "X-API-Key"
+  
+  # JWT settings (if using authentication)
+  jwt_secret: "your-secret-key-here"
+  jwt_expiration_hours: 24
+  
+  # Rate limiting
+  rate_limit_enabled: true
+  rate_limit_requests: 100
+  rate_limit_window: 60  # seconds
