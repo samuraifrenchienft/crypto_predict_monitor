@@ -1175,8 +1175,8 @@ def get_all_markets():
             # Calculate actual spread percentage
             spread_percentage = opp.get('spread_percentage', opp.get('spread', 0) * 100)
             
-            # Only include solid arbitrage opportunities (2%+ spread for better quality)
-            if spread_percentage >= 2.0:
+            # Only include arbitrage opportunities that meet config minimum spread (1.5%)
+            if spread_percentage >= (cfg.thresholds.min_spread * 100):
                 event = {
                     "id": f"arb_{len(arbitrage_events)}",
                     "title": opp.get('normalized_title', 'Unknown Event'),
