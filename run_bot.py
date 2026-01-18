@@ -146,15 +146,15 @@ def find_cross_market_opportunities(all_markets: Dict[str, List[Dict]]) -> List[
                 spread = max(prices) - min(prices)
                 spread_pct = spread * 100  # Convert to percentage
                 
-                if spread_pct >= MIN_SPREAD * 100:  # Apply minimum spread filter
-                    opportunities.append({
-                        'normalized_title': norm_title,
-                        'platforms': list(platforms),
-                        'markets': market_list,
-                        'spread_percentage': spread_pct,
-                        'yes_prices': yes_prices,
-                        'no_prices': no_prices,
-                    })
+                # Don't filter here - let tiered filter handle it
+                opportunities.append({
+                    'normalized_title': norm_title,
+                    'platforms': list(platforms),
+                    'markets': market_list,
+                    'spread_percentage': spread_pct,
+                    'yes_prices': yes_prices,
+                    'no_prices': no_prices,
+                })
     
     return opportunities
 
@@ -233,7 +233,7 @@ async def main():
     adapters = []
     
     # Polymarket
-    console.print("[cyan]Initializing Polymarket adapter...[/cyan]")
+    console.print(f"[cyan]Initializing Polymarket adapter (limit: {MAX_MARKETS})...[/cyan]")
     adapters.append(PolymarketAdapter(
         gamma_base_url="https://gamma-api.polymarket.com",
         clob_base_url="https://clob.polymarket.com",
@@ -248,7 +248,7 @@ async def main():
     ))
     
     # Azuro
-    console.print("[cyan]Initializing Azuro adapter...[/cyan]")
+    console.print(f"[cyan]Initializing Azuro adapter (limit: {MAX_MARKETS})...[/cyan]")
     adapters.append(AzuroAdapter(
         graphql_base_url="https://api.onchainfeed.org/api/v1/public/gateway",
         subgraph_base_url="https://thegraph.onchainfeed.org/subgraphs/name/azuro-protocol/azuro-api-polygon-v3",
@@ -258,7 +258,7 @@ async def main():
     ))
     
     # Manifold
-    console.print("[cyan]Initializing Manifold adapter...[/cyan]")
+    console.print(f"[cyan]Initializing Manifold adapter (limit: {MAX_MARKETS})...[/cyan]")
     adapters.append(ManifoldAdapter(
         base_url="https://api.manifold.markets/v0",
         markets_limit=MAX_MARKETS,
@@ -341,12 +341,11 @@ async def main():
                 console.print(f"[bold green]✓ {len(filtered_opportunities)} opportunities passed filter (≥{MIN_SPREAD*100:.1f}% spread)[/bold green]")
                 render_arbitrage_table(filtered_opportunities)
                 
-                # Send Discord alerts for alertable tiers
+                # Send Discord alerts for all opportunities that passed the filter
                 for opp in filtered_opportunities:
-                    if opp.get('tier_priority', 99) <= 4:  # GOOD tier and above
-                        success = await send_discord_alert(opp, opp)
-                        if success:
-                            console.print(f"[green]  📢 Alert sent: {opp['normalized_title'][:30]}[/green]")
+                    success = await send_discord_alert(opp, opp)
+                    if success:
+                        console.print(f"[green]  📢 Alert sent: {opp['normalized_title'][:30]}[/green]")
                 
                 # Show tier breakdown
                 breakdown = tiered_filter.get_tier_breakdown()

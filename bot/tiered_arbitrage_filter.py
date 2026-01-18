@@ -68,7 +68,7 @@ class TieredArbitrageFilter:
             ),
             "fair": TierConfig(
                 name="fair",
-                min_spread=1.0,      # 1.0-1.5%
+                min_spread=0.75,     # 0.75-1.0%
                 emoji="⚪",
                 color="#808080",
                 priority=5,
@@ -250,9 +250,9 @@ class TieredArbitrageFilter:
         elif tier_name == "very_good":
             return "2.01-2.5%"
         elif tier_name == "good":
-            return "1.5-2.0%"
+            return "1.0-2.0%"
         elif tier_name == "fair":
-            return "1.0-1.5%"
+            return "0.75-1.0%"
         else:
             return "<1.0%"
     
