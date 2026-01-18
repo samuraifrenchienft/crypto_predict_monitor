@@ -10,10 +10,8 @@ from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 import json
 import os
-from dotenv import load_dotenv
 
-# Load environment variables (don't override existing env vars from Render)
-load_dotenv('.env', override=False)
+# Note: Environment variables should be loaded by the calling script before importing this module
 
 @dataclass
 class ArbitrageOpportunity:
