@@ -1,19 +1,28 @@
 """
-Professional Arbitrage System - Main Integration
-Ties together quality scoring, detection, and Discord alerts
+Professional Arbitrage System - Cross-Platform Integration
+Complete arbitrage detection with contract matching and fee calculation
 """
 
 import asyncio
 import logging
 import os
+import sys
+from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
 
-from arbitrage_detector import ArbitrageDetector, MarketData, create_test_market_data
+# Add src/arbitrage to path
+sys.path.insert(0, str(Path(__file__).parent / 'arbitrage'))
+
+from arbitrage.complete_system import CompleteArbitrageSystem, MarketData as UnifiedMarketData
+from arbitrage.adapter_converters import (
+    convert_polymarket_to_unified,
+    convert_manifold_to_unified,
+    convert_azuro_to_unified,
+    convert_limitless_to_unified
+)
+from arbitrage.discord_alerts import send_multiple_arbitrage_alerts
 from arbitrage_alerts import ArbitrageAlert
-from quality_scoring import QualityScorer
-from arbitrage_config import ArbitrageConfig, validate_arbitrage_config
 
 # Configure logging
 logging.basicConfig(
@@ -23,12 +32,10 @@ logging.basicConfig(
 logger = logging.getLogger("arbitrage_main")
 
 class ProfessionalArbitrageSystem:
-    """Main arbitrage system orchestrator"""
+    """Cross-platform arbitrage system orchestrator"""
     
-    def __init__(self, config_path: Optional[str] = None):
-        self.config = ArbitrageConfig()
-        self.detector = ArbitrageDetector(min_quality_threshold=self.config.MIN_QUALITY_THRESHOLD)
-        self.quality_scorer = QualityScorer()
+    def __init__(self):
+        self.arb_system = CompleteArbitrageSystem()
         self.alert_system = ArbitrageAlert()
         
         # System state
@@ -37,14 +44,12 @@ class ProfessionalArbitrageSystem:
         self.total_alerts_sent = 0
         self.scan_count = 0
         
-    async def initialize(self) -> bool:
-        """Initialize the arbitrage system"""
-        logger.info("🚀 Initializing Professional Arbitrage System...")
+        # Configuration
+        self.min_roi = 0.5  # 0.5% minimum ROI after fees
         
-        # Validate configuration
-        if not validate_arbitrage_config():
-            logger.error("❌ Configuration validation failed")
-            return False
+    async def initialize(self) -> bool:
+        """Initialize the cross-platform arbitrage system"""
+        logger.info("🚀 Initializing Cross-Platform Arbitrage System...")
         
         # Check environment variables
         required_env_vars = ["CPM_WEBHOOK_URL"]
@@ -57,62 +62,69 @@ class ProfessionalArbitrageSystem:
         logger.info("✅ System initialized successfully")
         return True
     
-    async def scan_markets(self, market_data: List[MarketData]) -> Dict[str, Any]:
-        """Scan markets for arbitrage opportunities"""
+    async def scan_markets(self, unified_markets: List[UnifiedMarketData]) -> Dict[str, Any]:
+        """Scan markets for cross-platform arbitrage opportunities"""
         self.scan_count += 1
         self.last_scan_time = datetime.utcnow()
         
-        logger.info(f"🔍 Scan #{self.scan_count}: Analyzing {len(market_data)} markets")
+        logger.info(f"🔍 Scan #{self.scan_count}: Analyzing {len(unified_markets)} markets across platforms")
         
-        # Detect opportunities
-        opportunities = await self.detector.analyze_markets(market_data)
+        # Detect cross-platform arbitrage
+        opportunities = await self.arb_system.run_complete_scan(
+            unified_markets,
+            min_roi=self.min_roi
+        )
         
         # Update counters
         self.total_opportunities_detected += len(opportunities)
         
         # Log results
         if opportunities:
-            logger.info(f"🎯 Found {len(opportunities)} quality opportunities")
+            logger.info(f"🎯 Found {len(opportunities)} cross-platform arbitrage opportunities")
             for i, opp in enumerate(opportunities[:3]):  # Log top 3
-                level = self.config.get_quality_level(opp.quality_score)
-                logger.info(f"  {i+1}. {opp.market_name} ({opp.quality_score:.1f}/10) - {level}")
+                logger.info(
+                    f"  {i+1}. {opp.matched_pair.normalized_title[:50]} - "
+                    f"Buy {opp.buy_platform.value} @ ${opp.buy_price:.4f} → "
+                    f"Sell {opp.sell_platform.value} @ ${opp.sell_price:.4f} = "
+                    f"{opp.roi_percent:.2f}% ROI"
+                )
         else:
-            logger.info("📊 No quality opportunities detected in this scan")
+            logger.info("📊 No viable cross-platform arbitrage detected")
         
         return {
             "scan_id": self.scan_count,
             "scan_time": self.last_scan_time.isoformat(),
-            "markets_analyzed": len(market_data),
+            "markets_analyzed": len(unified_markets),
             "opportunities_detected": len(opportunities),
             "opportunities": opportunities
         }
     
-    async def send_alerts(self, opportunities: List[MarketData], detailed: bool = True) -> int:
-        """Send Discord alerts for opportunities"""
+    async def send_alerts(self, opportunities: List) -> int:
+        """Send Discord alerts for cross-platform arbitrage opportunities"""
         if not opportunities:
             return 0
         
-        logger.info(f"📢 Sending {len(opportunities)} Discord alerts...")
+        logger.info(f"📢 Sending {len(opportunities)} cross-platform arbitrage alerts...")
         
-        async with self.alert_system as alerter:
-            success_count = await alerter.send_multiple_alerts(opportunities, detailed)
-            self.total_alerts_sent += success_count
-            
-            logger.info(f"✅ Sent {success_count}/{len(opportunities)} alerts successfully")
-            return success_count
+        # Send using new cross-platform alert system
+        success_count = await send_multiple_arbitrage_alerts(opportunities, max_alerts=10)
+        self.total_alerts_sent += success_count
+        
+        logger.info(f"✅ Sent {success_count}/{len(opportunities)} alerts successfully")
+        return success_count
     
-    async def run_full_scan_and_alert(self, market_data: List[MarketData]) -> Dict[str, Any]:
-        """Complete scan and alert workflow"""
-        logger.info("🔄 Starting full scan and alert workflow...")
+    async def run_full_scan_and_alert(self, unified_markets: List[UnifiedMarketData]) -> Dict[str, Any]:
+        """Complete cross-platform arbitrage scan and alert workflow"""
+        logger.info("🔄 Starting cross-platform arbitrage scan...")
         
-        # Scan markets
-        scan_results = await self.scan_markets(market_data)
+        # Scan for cross-platform arbitrage
+        scan_results = await self.scan_markets(unified_markets)
         opportunities = scan_results["opportunities"]
         
         # Send alerts
         alerts_sent = 0
         if opportunities:
-            alerts_sent = await self.send_alerts(opportunities, detailed=self.config.DETAILED_ALERTS)
+            alerts_sent = await self.send_alerts(opportunities)
         
         # Return comprehensive results
         results = {
@@ -126,7 +138,7 @@ class ProfessionalArbitrageSystem:
             }
         }
         
-        logger.info(f"✅ Full workflow complete: {len(opportunities)} opportunities, {alerts_sent} alerts")
+        logger.info(f"✅ Cross-platform scan complete: {len(opportunities)} opportunities, {alerts_sent} alerts")
         return results
     
     async def send_health_alert(self, message: str, level: str = "info") -> bool:
@@ -240,10 +252,11 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
     
     # Send startup alert
     await system.send_health_alert(
-        "🚀 ARBITRAGE BOT ONLINE - Real Market Monitoring\n"
-        "✅ Live data filtering active\n"
+        "🚀 CROSS-PLATFORM ARBITRAGE BOT ONLINE\n"
+        "✅ Contract matching enabled\n"
+        "✅ Fee calculation active\n"
         "✅ Discord alerts enabled\n"
-        "✅ Quality scoring system ready",
+        "✅ Multi-platform scanning ready",
         "success"
     )
     
@@ -251,11 +264,9 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
         try:
             logger.info(f"\n📍 Scan {scan_num + 1}/{max_scans}")
             
-            # Fetch real market data from adapters
-            market_data = []
+            # Fetch real market data from all platforms
+            unified_markets = []
             try:
-                import sys
-                from pathlib import Path
                 sys.path.insert(0, str(Path(__file__).parent.parent))
                 
                 from bot.adapters.polymarket import PolymarketAdapter
@@ -265,104 +276,64 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
                 
                 config = Config.load()
                 
-                # Initialize adapters
-                adapters = []
-                
-                # Polymarket
+                # POLYMARKET
                 try:
+                    logger.info("📊 Fetching Polymarket markets...")
                     poly_adapter = PolymarketAdapter(
                         gamma_base_url=config.get_platform_config("polymarket", "gamma_base_url"),
                         clob_base_url=config.get_platform_config("polymarket", "clob_base_url"),
                         data_base_url=config.get_platform_config("polymarket", "data_base_url"),
-                        events_limit=100
+                        events_limit=50
                     )
-                    adapters.append(("Polymarket", poly_adapter))
+                    poly_markets = poly_adapter.fetch_markets()
+                    poly_unified = convert_polymarket_to_unified(poly_markets)
+                    unified_markets.extend(poly_unified)
+                    logger.info(f"✅ Polymarket: {len(poly_unified)} markets converted")
                 except Exception as e:
-                    logger.error(f"Failed to init Polymarket: {e}")
+                    logger.error(f"❌ Polymarket fetch failed: {e}")
                 
-                # Manifold
+                # MANIFOLD
                 try:
-                    manifold_adapter = ManifoldAdapter(markets_limit=100)
-                    adapters.append(("Manifold", manifold_adapter))
+                    logger.info("📊 Fetching Manifold markets...")
+                    manifold_adapter = ManifoldAdapter(markets_limit=50)
+                    manifold_markets = manifold_adapter.fetch_markets()
+                    manifold_unified = convert_manifold_to_unified(manifold_markets)
+                    unified_markets.extend(manifold_unified)
+                    logger.info(f"✅ Manifold: {len(manifold_unified)} markets converted")
                 except Exception as e:
-                    logger.error(f"Failed to init Manifold: {e}")
+                    logger.error(f"❌ Manifold fetch failed: {e}")
                 
-                # Azuro
+                # AZURO
                 try:
-                    azuro_adapter = AzuroAdapter(markets_limit=100)
-                    adapters.append(("Azuro", azuro_adapter))
+                    logger.info("📊 Fetching Azuro markets...")
+                    azuro_adapter = AzuroAdapter(markets_limit=50)
+                    azuro_markets = azuro_adapter.fetch_markets()
+                    azuro_unified = convert_azuro_to_unified(azuro_markets)
+                    unified_markets.extend(azuro_unified)
+                    logger.info(f"✅ Azuro: {len(azuro_unified)} markets converted")
                 except Exception as e:
-                    logger.error(f"Failed to init Azuro: {e}")
+                    logger.error(f"❌ Azuro fetch failed: {e}")
                 
-                # Fetch markets from all adapters
-                for adapter_name, adapter in adapters:
-                    try:
-                        logger.info(f"📊 Fetching {adapter_name} markets...")
-                        markets = adapter.fetch_markets()
-                        
-                        # Convert to MarketData objects
-                        for market in markets[:20]:  # Top 20 per adapter
-                            try:
-                                quotes = market.get('quotes', [])
-                                yes_price = 0
-                                no_price = 0
-                                
-                                for quote in quotes:
-                                    outcome = str(quote.get('outcome_id', '')).upper()
-                                    if 'YES' in outcome:
-                                        yes_price = quote.get('mid', 0)
-                                    elif 'NO' in outcome:
-                                        no_price = quote.get('mid', 0)
-                                
-                                if yes_price > 0:
-                                    md = MarketData(
-                                        market_id=market.get('id', f"{adapter_name.lower()}-{len(market_data)}"),
-                                        market_name=market.get('title', market.get('question', 'Unknown')),
-                                        yes_price=yes_price,
-                                        no_price=no_price if no_price > 0 else (1 - yes_price),
-                                        yes_bid=yes_price * 0.99,
-                                        yes_ask=yes_price * 1.01,
-                                        no_bid=(no_price if no_price > 0 else (1 - yes_price)) * 0.99,
-                                        no_ask=(no_price if no_price > 0 else (1 - yes_price)) * 1.01,
-                                        yes_liquidity=float(market.get('liquidity', 25000)),
-                                        no_liquidity=float(market.get('liquidity', 25000)),
-                                        volume_24h=float(market.get('volume', 100000)),
-                                        spread_percentage=abs(float(market.get('spread', 0))),
-                                        price_volatility=0.1,
-                                        expires_at=market.get('end_date', datetime.now() + timedelta(hours=24)),
-                                        polymarket_link=market.get('url', ''),
-                                        analysis_link='',
-                                        market_source=adapter_name
-                                    )
-                                    market_data.append(md)
-                            except Exception as e:
-                                logger.debug(f"Skipping market: {e}")
-                                continue
-                        
-                        logger.info(f"✅ {adapter_name}: {len([m for m in market_data if m.market_source == adapter_name])} markets")
-                    except Exception as e:
-                        logger.error(f"❌ {adapter_name} fetch failed: {e}")
-                
-                logger.info(f"📊 Total: {len(market_data)} markets fetched")
+                logger.info(f"📊 Total unified markets: {len(unified_markets)} across all platforms")
                 
             except Exception as e:
                 logger.error(f"❌ Market data fetch failed: {e}")
                 import traceback
                 traceback.print_exc()
-                market_data = []
+                unified_markets = []
             
-            # Run scan with real data
-            if market_data:
-                results = await system.run_full_scan_and_alert(market_data)
+            # Run cross-platform arbitrage scan
+            if unified_markets:
+                results = await system.run_full_scan_and_alert(unified_markets)
                 
                 opp_count = results['scan_results']['opportunities_detected']
                 alert_count = results['alerts_sent']
                 
                 if opp_count > 0:
-                    logger.info(f"🎯 DETECTED {opp_count} arbitrage opportunities")
+                    logger.info(f"🎯 DETECTED {opp_count} cross-platform arbitrage opportunities")
                     logger.info(f"📢 Sent {alert_count} Discord alerts")
                 else:
-                    logger.info("📊 No quality arbitrage opportunities detected")
+                    logger.info("📊 No viable cross-platform arbitrage detected this scan")
             else:
                 logger.warning("⚠️ No market data available for scan")
             
