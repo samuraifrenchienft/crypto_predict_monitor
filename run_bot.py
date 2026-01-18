@@ -13,10 +13,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
-# Load environment variables
+# Load environment variables (don't override Render env vars)
 try:
     from dotenv import load_dotenv
-    load_dotenv(".env")
+    load_dotenv(".env", override=False)
 except ImportError:
     pass
 
