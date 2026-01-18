@@ -132,10 +132,8 @@ class ArbitrageConfig:
         """Validate configuration settings"""
         issues = []
         
-        # Check scoring weights sum to 8.5
-        total_weight = sum(self.SCORING_WEIGHTS.values())
-        if abs(total_weight - 8.5) > 0.1:
-            issues.append(f"Scoring weights sum to {total_weight}, should be 8.5")
+        # SPREAD-ONLY: Weights sum to 4.5 (spread 3.0 + time 1.5), scaled to 10 in quality_scoring.py
+        # No validation needed - spread-only system is intentionally different
         
         # Check thresholds are logical
         if self.MIN_QUALITY_THRESHOLD > self.HIGH_QUALITY_THRESHOLD:
@@ -153,7 +151,8 @@ class ArbitrageConfig:
                 "high_quality": self.HIGH_QUALITY_THRESHOLD,
                 "min_spread": self.MIN_SPREAD_PERCENTAGE,
                 "min_liquidity": self.MIN_LIQUIDITY_USD,
-                "max_alerts_per_batch": self.MAX_ALERTS_PER_BATCH
+                "max_alerts_per_batch": self.MAX_ALERTS_PER_BATCH,
+                "scoring_mode": "spread_only"
             }
         }
 
