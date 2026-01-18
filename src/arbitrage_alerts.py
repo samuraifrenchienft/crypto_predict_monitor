@@ -12,8 +12,8 @@ import json
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv('.env')
+# Load environment variables (don't override existing env vars from Render)
+load_dotenv('.env', override=False)
 
 @dataclass
 class ArbitrageOpportunity:
