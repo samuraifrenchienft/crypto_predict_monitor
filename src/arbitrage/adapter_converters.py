@@ -28,11 +28,22 @@ def convert_polymarket_to_unified(markets) -> List[MarketData]:
             if not quotes and hasattr(market, 'outcomes'):
                 # Extract from outcomes if no quotes
                 for outcome in market.outcomes:
-                    if hasattr(outcome, 'name'):
-                        if 'YES' in outcome.name.upper():
-                            yes_price = getattr(outcome, 'price', 0.0) or 0.0
-                        elif 'NO' in outcome.name.upper():
-                            no_price = getattr(outcome, 'price', 0.0) or 0.0
+                    # Handle both Outcome and Quote objects
+                    outcome_name = getattr(outcome, 'name', None)
+                    outcome_id = getattr(outcome, 'outcome_id', None)
+                    
+                    # Try to get name from either attribute
+                    if outcome_name:
+                        name_str = str(outcome_name).upper()
+                    elif outcome_id:
+                        name_str = str(outcome_id).upper()
+                    else:
+                        continue
+                    
+                    if 'YES' in name_str:
+                        yes_price = getattr(outcome, 'price', 0.0) or getattr(outcome, 'mid', 0.0) or 0.0
+                    elif 'NO' in name_str:
+                        no_price = getattr(outcome, 'price', 0.0) or getattr(outcome, 'mid', 0.0) or 0.0
             
             # Process Quote objects
             for quote in quotes:
@@ -170,6 +181,26 @@ def convert_azuro_to_unified(markets) -> List[MarketData]:
             
             # Get quotes from Market object
             quotes = getattr(market, 'quotes', [])
+            if not quotes and hasattr(market, 'outcomes'):
+                # Extract from outcomes if no quotes
+                for outcome in market.outcomes:
+                    # Handle both Outcome and Quote objects
+                    outcome_name = getattr(outcome, 'name', None)
+                    outcome_id = getattr(outcome, 'outcome_id', None)
+                    
+                    # Try to get name from either attribute
+                    if outcome_name:
+                        name_str = str(outcome_name).upper()
+                    elif outcome_id:
+                        name_str = str(outcome_id).upper()
+                    else:
+                        continue
+                    
+                    if 'YES' in name_str or 'HOME' in name_str or '1' in name_str:
+                        yes_price = getattr(outcome, 'price', 0.0) or getattr(outcome, 'mid', 0.0) or 0.0
+                    elif 'NO' in name_str or 'AWAY' in name_str or '2' in name_str:
+                        no_price = getattr(outcome, 'price', 0.0) or getattr(outcome, 'mid', 0.0) or 0.0
+            
             for quote in quotes:
                 if hasattr(quote, 'outcome_id'):
                     outcome = str(quote.outcome_id).upper()
@@ -242,6 +273,26 @@ def convert_limitless_to_unified(markets) -> List[MarketData]:
             
             # Get quotes from Market object
             quotes = getattr(market, 'quotes', [])
+            if not quotes and hasattr(market, 'outcomes'):
+                # Extract from outcomes if no quotes
+                for outcome in market.outcomes:
+                    # Handle both Outcome and Quote objects
+                    outcome_name = getattr(outcome, 'name', None)
+                    outcome_id = getattr(outcome, 'outcome_id', None)
+                    
+                    # Try to get name from either attribute
+                    if outcome_name:
+                        name_str = str(outcome_name).upper()
+                    elif outcome_id:
+                        name_str = str(outcome_id).upper()
+                    else:
+                        continue
+                    
+                    if 'YES' in name_str:
+                        yes_price = getattr(outcome, 'price', 0.0) or getattr(outcome, 'mid', 0.0) or 0.0
+                    elif 'NO' in name_str:
+                        no_price = getattr(outcome, 'price', 0.0) or getattr(outcome, 'mid', 0.0) or 0.0
+            
             for quote in quotes:
                 if hasattr(quote, 'outcome_id'):
                     outcome = str(quote.outcome_id).upper()
