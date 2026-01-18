@@ -272,6 +272,7 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
                 from bot.adapters.polymarket import PolymarketAdapter
                 from bot.adapters.manifold import ManifoldAdapter
                 from bot.adapters.azuro import AzuroAdapter
+                from bot.adapters.limitless import LimitlessAdapter
                 from bot.config import Config
                 
                 config = Config.load()
@@ -313,6 +314,17 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
                     logger.info(f"✅ Azuro: {len(azuro_unified)} markets converted")
                 except Exception as e:
                     logger.error(f"❌ Azuro fetch failed: {e}")
+                
+                # LIMITLESS
+                try:
+                    logger.info("📊 Fetching Limitless markets...")
+                    limitless_adapter = LimitlessAdapter(markets_limit=50)
+                    limitless_markets = limitless_adapter.fetch_markets()
+                    limitless_unified = convert_limitless_to_unified(limitless_markets)
+                    unified_markets.extend(limitless_unified)
+                    logger.info(f"✅ Limitless: {len(limitless_unified)} markets converted")
+                except Exception as e:
+                    logger.error(f"❌ Limitless fetch failed: {e}")
                 
                 logger.info(f"📊 Total unified markets: {len(unified_markets)} across all platforms")
                 
