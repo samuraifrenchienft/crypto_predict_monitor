@@ -113,24 +113,16 @@ class QualityScorer:
             return 0.4
     
     def calculate_market_confidence(self, market_data: Dict[str, Any]) -> float:
-        """Calculate market confidence score (0-10 scale)"""
+        """Calculate market confidence score (0-10 scale) - SPREAD-ONLY"""
         spread_score = self.calculate_spread_score(market_data.get("spread_percentage", 0))
-        liquidity_score = self.calculate_liquidity_score(
-            market_data.get("yes_liquidity", 0),
-            market_data.get("no_liquidity", 0)
-        )
-        volume_score = self.calculate_volume_score(market_data.get("volume_24h", 0))
         time_score = self.calculate_time_score(market_data.get("expires_at", datetime.utcnow() + timedelta(hours=1)))
         
-        # Total possible score: 8.5 points (removed volatility)
-        total_score = (
-            spread_score +      # 0-3 points
-            liquidity_score +   # 0-2 points
-            volume_score +      # 0-2 points
-            time_score        # 0-1.5 points
-        )
+        # SPREAD-ONLY scoring: No liquidity or volume requirements
+        # Total possible score: 4.5 points (spread + time only)
+        # Scale up to 10-point scale: multiply by 2.22
+        total_score = (spread_score + time_score) * 2.22
         
-        return min(total_score, 8.5)  # Cap at 8.5 (reduced from 10.0)
+        return min(total_score, 10.0)  # Cap at 10.0
     
     def get_confidence_percentage(self, quality_score: float) -> float:
         """Convert quality score to confidence percentage"""

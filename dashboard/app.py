@@ -32,7 +32,7 @@ from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
 from bot.arbitrage import detect_cross_market_arbitrage
 from bot.comprehensive_matcher import get_event_matcher, start_comprehensive_matching
-from bot.alerts.discord import DiscordAlerter
+from bot.alerts.discord import DiscordAlerts
 from bot.whale_watcher import fetch_all_whale_positions, detect_convergence
 from utils.alert_manager import ArbitrageAlertManager, create_alert_from_opportunity
 import secrets
@@ -343,63 +343,20 @@ async def _arbitrage_alert_loop() -> None:
     cfg = load_config()
     # Use environment variable for health webhook like it should be
     health_webhook = os.getenv("DISCORD_HEALTH_WEBHOOK_URL", cfg.discord_health_webhook_url)
-    alerter = DiscordAlerter(
-        webhook_url=health_webhook,  # Use environment variable
-        enabled=cfg.discord.enabled,
-        min_seconds_between_same_alert=cfg.discord.min_seconds_between_same_alert,
+    webhook_url = os.getenv("CPM_WEBHOOK_URL", cfg.discord.webhook_url)
+    alerter = DiscordAlerts(
+        webhook_url=webhook_url,
+        health_webhook_url=health_webhook
     )
 
     min_profit = float(os.environ.get("ALERT_MIN_PROFIT", "0.01"))
 
     while True:
         try:
-            # Discord health check
-            if health_webhook:
-                await alerter.health_check()
-            
-            # Refresh referrals
-            try:
-                from dashboard.db import get_session
-                from dashboard.models import ReferralVisit
-                with get_session() as session:
-                    from sqlalchemy import select
-                    visits = session.execute(select(ReferralVisit)).scalars().all()
-                    print(f"[referrals] tracking {len(visits)} visits")
-            except Exception as e:
-                print(f"[referrals] error: {e}")
-
-            if cfg.arbitrage.mode == "cross_market":
-                markets_by_source, quotes_by_source = _build_quotes_for_arbitrage()
-                opportunities = detect_cross_market_arbitrage(
-                    markets_by_source,
-                    quotes_by_source,
-                    min_spread=cfg.thresholds.min_spread,  # Now uses updated config (1.5%)
-                    prioritize_new=cfg.arbitrage.prioritize_new_events,
-                    new_event_hours=cfg.arbitrage.new_event_hours,
-                )
-
-                for opp in opportunities[:3]:
-                    # Create alert in database for P&L tracking
-                    await create_alert_from_opportunity(opp, "system_user")
-                    
-                    # Send Discord notification
-                    title = opp.get("normalized_title", "Arbitrage Opportunity")
-                    markets = opp.get("markets", [])
-                    if len(markets) >= 2:
-                        buy_yes_at = markets[0].get("source", "unknown")
-                        buy_no_at = markets[1].get("source", "unknown")
-                        buy_yes_price = markets[0].get("mid", 0)
-                        buy_no_price = markets[1].get("mid", 0)
-                        profit_cents = int(opp.get("spread", 0) * 100)
-
-                        key = f"arb:{opp.get('normalized_title')}:{buy_yes_at}:{buy_no_at}"
-                        content = (
-                            f"🎯 Arbitrage {profit_cents}¢\n"
-                            f"{title}\n"
-                            f"BUY YES on {buy_yes_at} @ {buy_yes_price}\n"
-                            f"BUY NO on {buy_no_at} @ {buy_no_price}"
-                        )
-                        await alerter.send(key=key, content=content)
+            # Dashboard doesn't send alerts - worker service handles that
+            # This loop is disabled (background tasks handled by worker)
+            print("[dashboard] Alert loop disabled - handled by crypto-prediction-monitor worker")
+            await asyncio.sleep(300)  # Sleep indefinitely since this shouldn't run
 
         except Exception as e:
             print(f"[arbitrage_alert_loop] error: {e}")
@@ -408,34 +365,13 @@ async def _arbitrage_alert_loop() -> None:
 
 
 def _start_background_tasks() -> None:
-    """Start background tasks for data fetching and comprehensive matching"""
+    """Background tasks disabled in dashboard - handled by worker service"""
     global _background_started
     if _background_started:
         return
-
-    def run_data_fetcher():
-        _run_async(_data_fetch_loop())
-
-    def run_arbitrage_alerts():
-        _run_async(_arbitrage_alert_loop())
-        
-    def run_comprehensive_matching():
-        _run_async(start_comprehensive_matching())
-
-    # Start data fetcher
-    fetcher_thread = threading.Thread(target=run_data_fetcher, daemon=True)
-    fetcher_thread.start()
-
-    # Start arbitrage alerts
-    arbitrage_thread = threading.Thread(target=run_arbitrage_alerts, daemon=True)
-    arbitrage_thread.start()
     
-    # Start comprehensive matching
-    matching_thread = threading.Thread(target=run_comprehensive_matching, daemon=True)
-    matching_thread.start()
-
     _background_started = True
-    print("Background tasks started: data fetcher, arbitrage alerts, comprehensive matching")
+    print("Dashboard: Background tasks disabled (handled by crypto-prediction-monitor worker)")
 
 
 def _classic_arb_opportunities_from_cache() -> List[Dict[str, Any]]:
@@ -1149,7 +1085,9 @@ def get_all_markets():
 
     if should_refresh:
         try:
-            _run_async(update_all_markets())
+            # Skip blocking refresh on web requests - use cached data
+            # Background worker handles data updates
+            print(f"Market cache refresh skipped (handled by worker service)")
         except Exception as e:
             print(f"Error updating markets in /api/markets: {type(e).__name__}")
 

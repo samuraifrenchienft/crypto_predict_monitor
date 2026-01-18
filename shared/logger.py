@@ -123,9 +123,23 @@ def load_config(config_path: str) -> Dict[str, Any]:
     """Load configuration from YAML file"""
     try:
         with open(config_path, 'r') as f:
-            return yaml.safe_load(f)
+            config = yaml.safe_load(f)
+            # Handle empty YAML file (returns None)
+            if config is None:
+                config = {}
+            return config
     except FileNotFoundError:
         # Return default config if file not found
+        return {
+            'logging': {
+                'level': 'INFO',
+                'format': 'simple',
+                'file_path': 'data/logs/cpm.log',
+                'enable_console': True
+            }
+        }
+    except Exception:
+        # Return default config on any error
         return {
             'logging': {
                 'level': 'INFO',

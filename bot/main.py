@@ -27,8 +27,8 @@ except ImportError:
 from rich.console import Console
 
 # Import professional arbitrage system
-from arbitrage_main import ProfessionalArbitrageSystem
-from arbitrage_detector import MarketData
+from src.arbitrage_main import ProfessionalArbitrageSystem
+from src.arbitrage_detector import MarketData
 
 # Import adapters
 from bot.adapters.polymarket import PolymarketAdapter

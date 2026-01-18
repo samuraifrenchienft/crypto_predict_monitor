@@ -16,7 +16,10 @@ class ArbitrageConfig:
     
     # Market filters (matching updated config.yaml)
     MIN_SPREAD_PERCENTAGE = 0.01  # From updated config.yaml thresholds.min_spread (1.0%)
-    # Remove arbitrary liquidity and volume requirements - user didn't specify these
+    MIN_LIQUIDITY_USD = 0  # No minimum liquidity requirement (user wants spread-only)
+    MIN_VOLUME_USD = 0  # No minimum volume requirement (user wants spread-only)
+    MIN_TIME_WINDOW_MINUTES = 30  # Minimum 30 minutes until expiration
+    MAX_TIME_WINDOW_HOURS = 168  # Maximum 7 days (1 week)
     
     # Alert settings
     MAX_ALERTS_PER_BATCH = 5  # Maximum alerts to send in one batch
@@ -62,13 +65,11 @@ class ArbitrageConfig:
         "Kalshi"
     ]
     
-    # Scoring weights (total must sum to 8.5)
+    # Scoring weights - SPREAD-ONLY (no liquidity/volume requirements)
     SCORING_WEIGHTS = {
-        "spread": 3.0,        # 35.3% of total score
-        "liquidity": 2.0,     # 23.5% of total score
-        "volume": 2.0,        # 23.5% of total score
-        "time": 1.5,          # 17.6% of total score
-        # Removed "volatility": 1.5 (was 17.6%)
+        "spread": 3.0,        # Primary scoring factor
+        "time": 1.5,          # Secondary scoring factor
+        # REMOVED: liquidity, volume - user wants spread-only arbitrage
     }
     
     # Liquidity thresholds
@@ -127,33 +128,32 @@ class ArbitrageConfig:
         level = cls.get_quality_level(score)
         return cls.QUALITY_COLORS.get(level, cls.QUALITY_COLORS["poor"])
     
-    @classmethod
-    def validate_config(cls) -> Dict[str, Any]:
+    def validate_config(self) -> Dict[str, Any]:
         """Validate configuration settings"""
         issues = []
         
         # Check scoring weights sum to 8.5
-        total_weight = sum(cls.SCORING_WEIGHTS.values())
+        total_weight = sum(self.SCORING_WEIGHTS.values())
         if abs(total_weight - 8.5) > 0.1:
             issues.append(f"Scoring weights sum to {total_weight}, should be 8.5")
         
         # Check thresholds are logical
-        if cls.MIN_QUALITY_THRESHOLD > cls.HIGH_QUALITY_THRESHOLD:
+        if self.MIN_QUALITY_THRESHOLD > self.HIGH_QUALITY_THRESHOLD:
             issues.append("MIN_QUALITY_THRESHOLD should be <= HIGH_QUALITY_THRESHOLD")
         
         # Check time windows
-        if cls.MIN_TIME_WINDOW_MINUTES >= cls.MAX_TIME_WINDOW_HOURS * 60:
+        if self.MIN_TIME_WINDOW_MINUTES >= self.MAX_TIME_WINDOW_HOURS * 60:
             issues.append("MIN_TIME_WINDOW should be < MAX_TIME_WINDOW")
         
         return {
             "valid": len(issues) == 0,
             "issues": issues,
             "config": {
-                "min_quality": cls.MIN_QUALITY_THRESHOLD,
-                "high_quality": cls.HIGH_QUALITY_THRESHOLD,
-                "min_spread": cls.MIN_SPREAD_PERCENTAGE,
-                "min_liquidity": cls.MIN_LIQUIDITY_USD,
-                "max_alerts_per_batch": cls.MAX_ALERTS_PER_BATCH
+                "min_quality": self.MIN_QUALITY_THRESHOLD,
+                "high_quality": self.HIGH_QUALITY_THRESHOLD,
+                "min_spread": self.MIN_SPREAD_PERCENTAGE,
+                "min_liquidity": self.MIN_LIQUIDITY_USD,
+                "max_alerts_per_batch": self.MAX_ALERTS_PER_BATCH
             }
         }
 

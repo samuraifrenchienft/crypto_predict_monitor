@@ -123,30 +123,23 @@ class ArbitrageDetector:
         return opportunity
     
     def _get_filters_applied(self, spread: float, yes_liq: float, no_liq: float, volume: float) -> str:
-        """Generate filter description for opportunity"""
+        """Generate filter description for opportunity - SPREAD-ONLY"""
         filters = []
         
-        if spread >= 2.0:
-            filters.append("Spread > 2%")
+        if spread >= 3.0:
+            filters.append("Spread > 3% (EXCEPTIONAL)")
+        elif spread >= 2.51:
+            filters.append("Spread > 2.51% (EXCELLENT)")
+        elif spread >= 2.01:
+            filters.append("Spread > 2.01% (VERY GOOD)")
         elif spread >= 1.5:
-            filters.append("Spread > 1.5%")
+            filters.append("Spread > 1.5% (GOOD)")
+        elif spread >= 1.0:
+            filters.append("Spread > 1% (FAIR)")
         else:
-            filters.append("Spread > 1%")
+            filters.append("Spread detected")
         
-        min_liquidity = min(yes_liq, no_liq)
-        if min_liquidity >= 50000:
-            filters.append("Liquidity > $50K")
-        elif min_liquidity >= 25000:
-            filters.append("Liquidity > $25K")
-        else:
-            filters.append("Liquidity > $10K")
-        
-        if volume >= 1000000:
-            filters.append("Volume > $1M 24h")
-        elif volume >= 500000:
-            filters.append("Volume > $500K 24h")
-        else:
-            filters.append("Volume > $100K 24h")
+        # NO LIQUIDITY OR VOLUME FILTERS - spread-only arbitrage
         
         return " | ".join(filters)
     
