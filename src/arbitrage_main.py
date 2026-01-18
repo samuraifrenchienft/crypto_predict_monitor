@@ -229,32 +229,160 @@ async def run_professional_demo():
     print(f"\n🏥 System Health: {health['status']}")
 
 async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 10):
-    """Run continuous monitoring with specified interval"""
-    print(f"🔄 Starting continuous monitoring (every {interval_minutes} minutes, max {max_scans} scans)")
+    """Run continuous monitoring with real market data from adapters"""
+    logger.info(f"🔄 Starting continuous monitoring (every {interval_minutes} minutes, max {max_scans} scans)")
     
     system = ProfessionalArbitrageSystem()
     
     if not await system.initialize():
+        logger.error("❌ System initialization failed")
         return
     
-    for scan_num in range(max_scans):
-        print(f"\n📍 Scan {scan_num + 1}/{max_scans}")
-        
-        # Get fresh market data (in real implementation, this would fetch from APIs)
-        market_data = create_test_market_data()
-        
-        # Run scan
-        results = await system.run_full_scan_and_alert(market_data)
-        
-        # Monitor health
-        health = await system.monitor_system_health()
-        
-        # Wait for next scan
-        if scan_num < max_scans - 1:
-            print(f"⏳ Waiting {interval_minutes} minutes for next scan...")
-            await asyncio.sleep(interval_minutes * 60)
+    # Send startup alert
+    await system.send_health_alert(
+        "🚀 ARBITRAGE BOT ONLINE - Real Market Monitoring\n"
+        "✅ Live data filtering active\n"
+        "✅ Discord alerts enabled\n"
+        "✅ Quality scoring system ready",
+        "success"
+    )
     
-    print("✅ Continuous monitoring complete")
+    for scan_num in range(max_scans):
+        try:
+            logger.info(f"\n📍 Scan {scan_num + 1}/{max_scans}")
+            
+            # Fetch real market data from adapters
+            market_data = []
+            try:
+                import sys
+                from pathlib import Path
+                sys.path.insert(0, str(Path(__file__).parent.parent))
+                
+                from bot.adapters.polymarket import PolymarketAdapter
+                from bot.adapters.manifold import ManifoldAdapter
+                from bot.adapters.azuro import AzuroAdapter
+                from bot.config import Config
+                
+                config = Config.load()
+                
+                # Initialize adapters
+                adapters = []
+                
+                # Polymarket
+                try:
+                    poly_adapter = PolymarketAdapter(
+                        gamma_base_url=config.get_platform_config("polymarket", "gamma_base_url"),
+                        clob_base_url=config.get_platform_config("polymarket", "clob_base_url"),
+                        data_base_url=config.get_platform_config("polymarket", "data_base_url"),
+                        events_limit=100
+                    )
+                    adapters.append(("Polymarket", poly_adapter))
+                except Exception as e:
+                    logger.error(f"Failed to init Polymarket: {e}")
+                
+                # Manifold
+                try:
+                    manifold_adapter = ManifoldAdapter(markets_limit=100)
+                    adapters.append(("Manifold", manifold_adapter))
+                except Exception as e:
+                    logger.error(f"Failed to init Manifold: {e}")
+                
+                # Azuro
+                try:
+                    azuro_adapter = AzuroAdapter(markets_limit=100)
+                    adapters.append(("Azuro", azuro_adapter))
+                except Exception as e:
+                    logger.error(f"Failed to init Azuro: {e}")
+                
+                # Fetch markets from all adapters
+                for adapter_name, adapter in adapters:
+                    try:
+                        logger.info(f"📊 Fetching {adapter_name} markets...")
+                        markets = adapter.fetch_markets()
+                        
+                        # Convert to MarketData objects
+                        for market in markets[:20]:  # Top 20 per adapter
+                            try:
+                                quotes = market.get('quotes', [])
+                                yes_price = 0
+                                no_price = 0
+                                
+                                for quote in quotes:
+                                    outcome = str(quote.get('outcome_id', '')).upper()
+                                    if 'YES' in outcome:
+                                        yes_price = quote.get('mid', 0)
+                                    elif 'NO' in outcome:
+                                        no_price = quote.get('mid', 0)
+                                
+                                if yes_price > 0:
+                                    md = MarketData(
+                                        market_id=market.get('id', f"{adapter_name.lower()}-{len(market_data)}"),
+                                        market_name=market.get('title', market.get('question', 'Unknown')),
+                                        yes_price=yes_price,
+                                        no_price=no_price if no_price > 0 else (1 - yes_price),
+                                        yes_bid=yes_price * 0.99,
+                                        yes_ask=yes_price * 1.01,
+                                        no_bid=(no_price if no_price > 0 else (1 - yes_price)) * 0.99,
+                                        no_ask=(no_price if no_price > 0 else (1 - yes_price)) * 1.01,
+                                        yes_liquidity=float(market.get('liquidity', 25000)),
+                                        no_liquidity=float(market.get('liquidity', 25000)),
+                                        volume_24h=float(market.get('volume', 100000)),
+                                        spread_percentage=abs(float(market.get('spread', 0))),
+                                        price_volatility=0.1,
+                                        expires_at=market.get('end_date', datetime.now() + timedelta(hours=24)),
+                                        polymarket_link=market.get('url', ''),
+                                        analysis_link='',
+                                        market_source=adapter_name
+                                    )
+                                    market_data.append(md)
+                            except Exception as e:
+                                logger.debug(f"Skipping market: {e}")
+                                continue
+                        
+                        logger.info(f"✅ {adapter_name}: {len([m for m in market_data if m.market_source == adapter_name])} markets")
+                    except Exception as e:
+                        logger.error(f"❌ {adapter_name} fetch failed: {e}")
+                
+                logger.info(f"📊 Total: {len(market_data)} markets fetched")
+                
+            except Exception as e:
+                logger.error(f"❌ Market data fetch failed: {e}")
+                import traceback
+                traceback.print_exc()
+                market_data = []
+            
+            # Run scan with real data
+            if market_data:
+                results = await system.run_full_scan_and_alert(market_data)
+                
+                opp_count = results['scan_results']['opportunities_detected']
+                alert_count = results['alerts_sent']
+                
+                if opp_count > 0:
+                    logger.info(f"🎯 DETECTED {opp_count} arbitrage opportunities")
+                    logger.info(f"📢 Sent {alert_count} Discord alerts")
+                else:
+                    logger.info("📊 No quality arbitrage opportunities detected")
+            else:
+                logger.warning("⚠️ No market data available for scan")
+            
+            # Monitor health
+            if scan_num % 10 == 0:
+                health = await system.monitor_system_health()
+                logger.info(f"🏥 System health: {health['status']}")
+            
+            # Wait for next scan
+            if scan_num < max_scans - 1:
+                logger.info(f"⏳ Waiting {interval_minutes} minutes for next scan...")
+                await asyncio.sleep(interval_minutes * 60)
+                
+        except Exception as e:
+            logger.error(f"❌ Scan error: {e}")
+            import traceback
+            traceback.print_exc()
+            await asyncio.sleep(60)  # Wait 1 minute on error
+    
+    logger.info("✅ Continuous monitoring complete")
 
 if __name__ == "__main__":
     # Check if running in production (Render) or demo mode
