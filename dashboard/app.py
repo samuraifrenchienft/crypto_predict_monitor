@@ -364,14 +364,32 @@ async def _arbitrage_alert_loop() -> None:
         await asyncio.sleep(cfg.bot.poll_interval_seconds)
 
 
+async def _data_fetch_loop() -> None:
+    """Periodically fetch market data for dashboard cache"""
+    cfg = load_config()
+    while True:
+        try:
+            await update_all_markets()
+            await asyncio.sleep(cfg.bot.poll_interval_seconds)
+        except Exception as e:
+            print(f"[data_fetch_loop] error: {e}")
+            await asyncio.sleep(60)
+
 def _start_background_tasks() -> None:
-    """Background tasks disabled in dashboard - handled by worker service"""
+    """Start background data fetching for dashboard"""
     global _background_started
     if _background_started:
         return
-    
+
+    def run_data_fetcher():
+        _run_async(_data_fetch_loop())
+
+    # Start data fetcher only (alerts handled by worker)
+    fetcher_thread = threading.Thread(target=run_data_fetcher, daemon=True)
+    fetcher_thread.start()
+
     _background_started = True
-    print("Dashboard: Background tasks disabled (handled by crypto-prediction-monitor worker)")
+    print("Dashboard: Background data fetching enabled (alerts handled by worker)")
 
 
 def _classic_arb_opportunities_from_cache() -> List[Dict[str, Any]]:
@@ -2390,7 +2408,13 @@ def create_discord_alert():
 
 
 if __name__ == "__main__":
+    # Start background tasks
+    _start_background_tasks()
+    
     # Run Flask app
     import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
+
+# Start background tasks when loaded by Gunicorn
+_start_background_tasks()
