@@ -161,12 +161,12 @@ async def main() -> None:
                         
                         for q in quotes:
                             outcome_name = str(q.outcome_id).upper()
-                            if 'YES' in outcome_name or q.name.upper() == 'YES':
+                            if 'YES' in outcome_name:
                                 yes_price = q.mid or 0.0
                                 yes_bid = q.bid or yes_price
                                 yes_ask = q.ask or yes_price
                                 yes_liquidity = getattr(q, 'liquidity', 0.0) or 0.0
-                            elif 'NO' in outcome_name or q.name.upper() == 'NO':
+                            elif 'NO' in outcome_name:
                                 no_price = q.mid or 0.0
                                 no_bid = q.bid or no_price
                                 no_ask = q.ask or no_price
