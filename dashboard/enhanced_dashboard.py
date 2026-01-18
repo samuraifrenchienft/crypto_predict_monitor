@@ -18,7 +18,7 @@ API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
 KALSHI_API = os.getenv("KALSHI_API_URL", "https://api.elections.kalshi.com/trade-api/v2")
 POLYMARKET_API = os.getenv("POLYMARKET_API_URL", "https://strapi-matic.poly.market.com")
 LIMITLESS_API = os.getenv("LIMITLESS_API_URL", "https://api.limitless.com")
-MANIFOLD_API = os.getenv("MANIFOLD_API_URL", "https://api.manifold.markets")
+# Manifold removed - uses play money (M$), not real crypto
 
 # Custom CSS for consistent design
 st.markdown("""
@@ -308,14 +308,14 @@ def display_pnl_overview(pnl_data: list, user_address: str = None):
                             <div style="color: #94a3b8; font-size: 0.8rem;">48 trades</div>
                         </div>
                         <div style="text-align: center; padding: 10px; background: rgba(0,1,255,0.1); border-radius: 6px;">
-                            <div style="color: white; font-weight: bold;">MANIFOLD</div>
-                            <div style="color: #10b981;">+$890.22</div>
-                            <div style="color: #94a3b8; font-size: 0.8rem;">37 trades</div>
-                        </div>
-                        <div style="text-align: center; padding: 10px; background: rgba(0,1,255,0.1); border-radius: 6px;">
                             <div style="color: white; font-weight: bold;">POLYMARKET</div>
                             <div style="color: #ef4444;">-$332.00</div>
                             <div style="color: #94a3b8; font-size: 0.8rem;">57 trades</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: rgba(0,1,255,0.1); border-radius: 6px;">
+                            <div style="color: white; font-weight: bold;">AZURO</div>
+                            <div style="color: #10b981;">+$567.89</div>
+                            <div style="color: #94a3b8; font-size: 0.8rem;">31 trades</div>
                         </div>
                     </div>
                 </div>
@@ -555,9 +555,8 @@ def main():
                 st.metric("Completed", completed)
     
     # Main content with tabs
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3 = st.tabs([
         "🎯 Limitless",
-        "🎲 Manifold", 
         "💰 P&L Tracking", 
         "🏆 Leaderboard"
     ])
@@ -568,11 +567,6 @@ def main():
         # Limitless-specific content would go here
     
     with tab2:
-        st.header("🎲 Manifold Markets")
-        st.info("Manifold prediction markets will appear here when detected")
-        # Manifold-specific content would go here
-    
-    with tab3:
         st.header("💰 Your P&L")
         
         if not user_address:

@@ -17,7 +17,6 @@ sys.path.insert(0, str(Path(__file__).parent / 'arbitrage'))
 from arbitrage.complete_system import CompleteArbitrageSystem, MarketData as UnifiedMarketData
 from arbitrage.adapter_converters import (
     convert_polymarket_to_unified,
-    convert_manifold_to_unified,
     convert_azuro_to_unified,
     convert_limitless_to_unified
 )
@@ -270,7 +269,6 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
                 sys.path.insert(0, str(Path(__file__).parent.parent))
                 
                 from bot.adapters.polymarket import PolymarketAdapter
-                from bot.adapters.manifold import ManifoldAdapter
                 from bot.adapters.azuro import AzuroAdapter
                 from bot.adapters.limitless import LimitlessAdapter
                 from bot.config import Config
@@ -292,17 +290,6 @@ async def run_continuous_monitoring(interval_minutes: int = 5, max_scans: int = 
                     logger.info(f"✅ Polymarket: {len(poly_unified)} markets converted")
                 except Exception as e:
                     logger.error(f"❌ Polymarket fetch failed: {e}")
-                
-                # MANIFOLD
-                try:
-                    logger.info("📊 Fetching Manifold markets...")
-                    manifold_adapter = ManifoldAdapter(markets_limit=50)
-                    manifold_markets = manifold_adapter.fetch_markets()
-                    manifold_unified = convert_manifold_to_unified(manifold_markets)
-                    unified_markets.extend(manifold_unified)
-                    logger.info(f"✅ Manifold: {len(manifold_unified)} markets converted")
-                except Exception as e:
-                    logger.error(f"❌ Manifold fetch failed: {e}")
                 
                 # AZURO
                 try:

@@ -26,7 +26,6 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from bot.config import load_config
-from bot.adapters.manifold import ManifoldAdapter
 from bot.adapters.azuro import AzuroAdapter
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.models import Market, Quote
@@ -269,17 +268,7 @@ async def update_all_markets():
         else:
             print("DEBUG: Azuro not enabled in config")
         
-        if cfg.manifold.enabled:
-            from bot.rate_limit import RateLimitConfig
-            adapters.append(("manifold", ManifoldAdapter(
-                base_url=cfg.manifold.base_url,
-                markets_limit=cfg.manifold.markets_limit,
-                rate_limit_config=RateLimitConfig(
-                    requests_per_second=cfg.manifold.requests_per_second,
-                    requests_per_minute=cfg.manifold.requests_per_minute,
-                    burst_size=cfg.manifold.burst_size,
-                ),
-            )))
+        # Manifold removed - uses play money (M$), not real crypto
         
         print(f"DEBUG: Adapters configured: {[name for name, _ in adapters]}")
         # Fetch data from all adapters
@@ -1051,8 +1040,7 @@ def _ensure_working_link(source: str, market_id: str) -> str:
     elif source == 'azuro':
         # Use the working bookmaker.xyz app
         return f"https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral"
-    elif source == 'manifold':
-        return f"https://manifold.markets/{market_id}"
+    # Manifold removed - play money only
     elif source == 'limitless':
         return f"https://limitless.exchange/events/{market_id}"
     else:
@@ -1667,7 +1655,7 @@ def get_comprehensive_matches():
 @app.route("/api/markets/<source>")
 def get_markets_by_source(source: str):
     """Get ARBITRAGE EVENTS involving a specific source - reworked for arbitrage focus"""
-    if source not in ['polymarket', 'azuro', 'manifold', 'limitless']:
+    if source not in ['polymarket', 'azuro', 'limitless']:
         return jsonify({"error": f"Source '{source}' not supported"}), 404
     
     try:

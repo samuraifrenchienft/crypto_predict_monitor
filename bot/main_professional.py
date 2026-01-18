@@ -34,7 +34,6 @@ from arbitrage.complete_system import MarketData
 from bot.adapters.polymarket import PolymarketAdapter
 from bot.adapters.limitless import LimitlessAdapter
 from bot.adapters.azuro import AzuroAdapter
-from bot.adapters.manifold import ManifoldAdapter
 from bot.errors import FatalError, RetryableError, log_error_metrics
 
 console = Console()
@@ -117,12 +116,7 @@ async def main() -> None:
             use_fallback=True,
         ))
     
-    if platforms_cfg.get('manifold', {}).get('enabled', True):
-        console.print("[cyan]Initializing Manifold adapter...[/cyan]")
-        adapters.append(ManifoldAdapter(
-            base_url="https://api.manifold.markets/v0",
-            markets_limit=max_markets,
-        ))
+    # Manifold removed - uses play money (M$), not real crypto
     
     console.print(f"[bold green][OK] {len(adapters)} platform adapters initialized[/bold green]\n")
     
