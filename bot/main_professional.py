@@ -206,7 +206,7 @@ async def main() -> None:
                         console.print(f"[dim]  Skipping market: {e}[/dim]")
                         continue
                 
-                console.print(f"[green]  [OK] {source}: {len([md for md in all_market_data if md.market_source == source])} markets processed[/green]")
+                console.print(f"[green]  [OK] {source}: {len([md for md in all_market_data if md.platform.value.lower() == source])} markets processed[/green]")
                 
             except FatalError as e:
                 console.print(f"[red]FATAL {source}: {e.error_info.message}[/red]")
