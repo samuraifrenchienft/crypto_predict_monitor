@@ -64,6 +64,18 @@ def setup_logging(config_path: str = "config.yaml") -> None:
     """
     # Load config
     config = load_config(config_path)
+    
+    # Handle None config gracefully
+    if config is None:
+        config = {
+            'logging': {
+                'level': 'INFO',
+                'format': 'simple',
+                'file_path': 'data/logs/cpm.log',
+                'enable_console': True
+            }
+        }
+    
     log_config = config.get('logging', {})
     
     # Create logs directory

@@ -3,11 +3,11 @@
 
 # Discord webhook URLs
 discord:
-  # Main arbitrage alerts webhook
-  webhook_url: "https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV"
+  # Main arbitrage alerts webhook (set via CPM_WEBHOOK_URL env var)
+  webhook_url: "${CPM_WEBHOOK_URL}"
   
-  # Health alerts webhook (separate from arbitrage alerts)
-  health_webhook_url: "https://discord.com/api/webhooks/1455877944005365814/TpDNqyFu6XhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb"
+  # Health alerts webhook (set via DISCORD_HEALTH_WEBHOOK_URL env var)
+  health_webhook_url: "${DISCORD_HEALTH_WEBHOOK_URL}"
 
 # Alert settings
 alerts:

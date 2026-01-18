@@ -1,0 +1,396 @@
+{
+  "source": "polymarket",
+  "markets": [
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "601697",
+        "title": "Fed decreases interest rates by 50+ bps after January 2026 meeting?",
+        "url": "https://polymarket.com/market/fed-decreases-interest-rates-by-50-bps-after-january-2026-meeting",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "11862165566757345985240476164489718219056735011698825377388402888080786399275",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "71478852790279095447182996049071040792010759617668969799049179229104800573786",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "11862165566757345985240476164489718219056735011698825377388402888080786399275",
+          "bid": 0.001,
+          "ask": 0.0085,
+          "mid": 0.004750000000000001,
+          "spread": 0.007500000000000001,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "71478852790279095447182996049071040792010759617668969799049179229104800573786",
+          "bid": 0.9915,
+          "ask": 0.999,
+          "mid": 0.99525,
+          "spread": 0.007499999999999951,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "601700",
+        "title": "Fed increases interest rates by 25+ bps after January 2026 meeting?",
+        "url": "https://polymarket.com/market/fed-increases-interest-rates-by-25-bps-after-january-2026-meeting",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "16419649354067298412736919830777830730026677464626899811394461690794060330642",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "42139849929574046088630785796780813725435914859433767469767950066058132350666",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "16419649354067298412736919830777830730026677464626899811394461690794060330642",
+          "bid": 0.001,
+          "ask": 0.006500000000000001,
+          "mid": 0.0037500000000000003,
+          "spread": 0.0055000000000000005,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "42139849929574046088630785796780813725435914859433767469767950066058132350666",
+          "bid": 0.9935,
+          "ask": 0.999,
+          "mid": 0.9962500000000001,
+          "spread": 0.005499999999999949,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "964904",
+        "title": "Will Saudi Aramco be the largest company in the world by market cap on January 31?",
+        "url": "https://polymarket.com/market/will-saudi-aramco-be-the-largest-company-in-the-world-by-market-cap-on-january-31",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "40845509633705234212990806245413159914299766490266159257433681743116933626199",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "79789244315836523402136877431030612325216260775265009169443548511003846205851",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "40845509633705234212990806245413159914299766490266159257433681743116933626199",
+          "bid": 0.001,
+          "ask": 0.0055,
+          "mid": 0.00325,
+          "spread": 0.0045,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "79789244315836523402136877431030612325216260775265009169443548511003846205851",
+          "bid": 0.9945,
+          "ask": 0.999,
+          "mid": 0.99675,
+          "spread": 0.0044999999999999485,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "1106713",
+        "title": "Khamenei out as Supreme Leader of Iran by January 31?",
+        "url": "https://polymarket.com/market/khamenei-out-as-supreme-leader-of-iran-by-january-31",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "101434403359553929764780234916919166959889590658679054429843672204390513588056",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "62595435619678438799673612599999067112702849851098967060818869994133628780778",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "101434403359553929764780234916919166959889590658679054429843672204390513588056",
+          "bid": 0.060000000000000005,
+          "ask": 0.07,
+          "mid": 0.065,
+          "spread": 0.010000000000000002,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "62595435619678438799673612599999067112702849851098967060818869994133628780778",
+          "bid": 0.93,
+          "ask": 0.9400000000000001,
+          "mid": 0.935,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "1157513",
+        "title": "US strikes Iran by January 16, 2026?",
+        "url": "https://polymarket.com/market/us-strikes-iran-by-january-16-2026-498-181-173-663",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "71245395341640282981822050245876486438708685626052577722484604820158902803989",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "63864522346594368809423416425052844778517942296857413266450057529414766826445",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "71245395341640282981822050245876486438708685626052577722484604820158902803989",
+          "bid": 0.001,
+          "ask": 0.0055,
+          "mid": 0.00325,
+          "spread": 0.0045,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "63864522346594368809423416425052844778517942296857413266450057529414766826445",
+          "bid": 0.9945,
+          "ask": 0.999,
+          "mid": 0.99675,
+          "spread": 0.0044999999999999485,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "601699",
+        "title": "No change in Fed interest rates after January 2026 meeting?",
+        "url": "https://polymarket.com/market/no-change-in-fed-interest-rates-after-january-2026-meeting",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "112838095111461683880944516726938163688341306245473734071798778736646352193304",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "7321318078891059430231591636389479745928915782241484131001985601124919020061",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "112838095111461683880944516726938163688341306245473734071798778736646352193304",
+          "bid": 0.9475,
+          "ask": 0.9575,
+          "mid": 0.9525,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "7321318078891059430231591636389479745928915782241484131001985601124919020061",
+          "bid": 0.0425,
+          "ask": 0.0525,
+          "mid": 0.0475,
+          "spread": 0.009999999999999995,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "572476",
+        "title": "Will Trump nominate Arthur Laffer as the next Fed chair?",
+        "url": "https://polymarket.com/market/will-trump-nominate-arthur-laffer-as-the-next-fed-chair",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "102110965054889141204087078786638995691907331207010422719821820828048023654600",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "67226656450095636293712530956946388608022327392541095566165288573961331856925",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "102110965054889141204087078786638995691907331207010422719821820828048023654600",
+          "bid": 0.001,
+          "ask": 0.0055,
+          "mid": 0.00325,
+          "spread": 0.0045,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "67226656450095636293712530956946388608022327392541095566165288573961331856925",
+          "bid": 0.9945,
+          "ask": 0.999,
+          "mid": 0.99675,
+          "spread": 0.0044999999999999485,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "601698",
+        "title": "Fed decreases interest rates by 25 bps after January 2026 meeting?",
+        "url": "https://polymarket.com/market/fed-decreases-interest-rates-by-25-bps-after-january-2026-meeting",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "92703761682322480664976766247614127878023988651992837287050266308961660624165",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "48193521645113703700467246669338225849301704920590102230072263970163239985027",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "92703761682322480664976766247614127878023988651992837287050266308961660624165",
+          "bid": 0.039,
+          "ask": 0.048999999999999995,
+          "mid": 0.044,
+          "spread": 0.009999999999999995,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "48193521645113703700467246669338225849301704920590102230072263970163239985027",
+          "bid": 0.951,
+          "ask": 0.961,
+          "mid": 0.956,
+          "spread": 0.010000000000000009,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "572488",
+        "title": "Will Trump nominate Philip Jefferson as the next Fed chair?",
+        "url": "https://polymarket.com/market/will-trump-nominate-philip-jefferson-as-the-next-fed-chair",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "48736293153290177808826829086324607671667481734489071688928973450784973883505",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "34820642554962155082266283514752176104913745692048348609229843729669275081403",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "48736293153290177808826829086324607671667481734489071688928973450784973883505",
+          "bid": 0.001,
+          "ask": 0.0055,
+          "mid": 0.00325,
+          "spread": 0.0045,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "34820642554962155082266283514752176104913745692048348609229843729669275081403",
+          "bid": 0.9945,
+          "ask": 0.999,
+          "mid": 0.99675,
+          "spread": 0.0044999999999999485,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    },
+    {
+      "market": {
+        "source": "polymarket",
+        "market_id": "572478",
+        "title": "Will Trump nominate Jerome Powell as the next Fed chair?",
+        "url": "https://polymarket.com/market/will-trump-nominate-jerome-powell-as-the-next-fed-chair",
+        "outcomes": []
+      },
+      "outcomes": [
+        {
+          "outcome_id": "75562986572078747541577175725857968095799345857741050112699871710798605147441",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "83835245338776946964312557572556765129893211997427807179516406386114613522003",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "75562986572078747541577175725857968095799345857741050112699871710798605147441",
+          "bid": 0.001,
+          "ask": 0.006500000000000001,
+          "mid": 0.0037500000000000003,
+          "spread": 0.0055000000000000005,
+          "bid_size": null,
+          "ask_size": null
+        },
+        {
+          "outcome_id": "83835245338776946964312557572556765129893211997427807179516406386114613522003",
+          "bid": 0.9935,
+          "ask": 0.999,
+          "mid": 0.9962500000000001,
+          "spread": 0.005499999999999949,
+          "bid_size": null,
+          "ask_size": null
+        }
+      ]
+    }
+  ],
+  "timestamp": "20260117_065229"
+}

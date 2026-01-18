@@ -108,3 +108,17 @@ class BaseAdapter(ABC):
     
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(platform={self.platform.value})"
+
+
+class Adapter:
+    """Simple adapter base class for adapters that don't use BaseAdapter"""
+    name: str = "unknown"
+    
+    async def list_active_markets(self):
+        raise NotImplementedError
+    
+    async def list_outcomes(self, market):
+        raise NotImplementedError
+    
+    async def get_quotes(self, market, outcomes):
+        raise NotImplementedError

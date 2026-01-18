@@ -33,6 +33,7 @@ class ManifoldAdapter(Adapter):
         self.markets_limit = markets_limit
         self._rate_limit_config = rate_limit_config or get_adapter_rate_limit(self.name)
         self._client: Optional[RateLimitedClient] = None
+        self._prob_cache: dict[str, float] = {}  # Cache probabilities from search results
 
     def _get_client(self) -> RateLimitedClient:
         """Get or create a rate-limited HTTP client."""
@@ -67,6 +68,7 @@ class ManifoldAdapter(Adapter):
         markets_raw = r.json()
 
         markets: list[Market] = []
+        self._prob_cache.clear()  # Clear cache for fresh data
 
         for m in markets_raw or []:
             if not isinstance(m, dict):
@@ -83,6 +85,14 @@ class ManifoldAdapter(Adapter):
             outcome_type = m.get("outcomeType")
             if outcome_type != "BINARY":
                 continue
+            
+            # Cache probability from search results to avoid individual API calls
+            prob = m.get("probability")
+            if prob is not None:
+                try:
+                    self._prob_cache[market_id] = float(prob)
+                except (ValueError, TypeError):
+                    pass
 
             markets.append(
                 Market(
@@ -108,21 +118,11 @@ class ManifoldAdapter(Adapter):
 
     async def get_quotes(self, market: Market, outcomes: Iterable[Outcome]) -> list[Quote]:
         """
-        Fetch current probability from /v0/market/[marketId]/prob endpoint.
+        Use cached probability from search results instead of individual API calls.
         Manifold doesn't have traditional bid/ask, so we use probability as mid.
         """
-        url = f"{self.base_url}/market/{quote(market.market_id, safe='')}/prob"
-
-        client = self._get_client()
-        r = await retry_with_backoff(
-            client.get, self.name, url,
-            max_retries=3,
-            adapter_name=self.name,
-            market_id=market.market_id
-        )
-        data = r.json()
-
-        prob = data.get("prob")
+        # Use cached probability instead of making API call
+        prob = self._prob_cache.get(market.market_id)
 
         quotes: list[Quote] = []
         

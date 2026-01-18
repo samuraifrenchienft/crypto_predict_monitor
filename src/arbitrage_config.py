@@ -15,7 +15,7 @@ class ArbitrageConfig:
     MEDIUM_QUALITY_THRESHOLD = 6.5  # Medium confidence threshold
     
     # Market filters (matching updated config.yaml)
-    MIN_SPREAD_PERCENTAGE = 0.015  # From updated config.yaml thresholds.min_spread (1.5%)
+    MIN_SPREAD_PERCENTAGE = 0.01  # From updated config.yaml thresholds.min_spread (1.0%)
     # Remove arbitrary liquidity and volume requirements - user didn't specify these
     
     # Alert settings
@@ -94,9 +94,9 @@ class ArbitrageConfig:
         "exceptional": 3.0,     # 3%+ spread - Blue
         "excellent": 2.51,      # 2.51-3% spread - Green
         "very_good": 2.01,      # 2.01-2.5% spread - Yellow
-        "good": 1.5,            # 1.5-2% spread - Orange
-        "fair": 1.0,            # 1-1.5% spread
-        "poor": 0.5             # <1% spread
+        "good": 1.0,            # 1.0-2% spread - Orange
+        "fair": 0.75,           # 0.75-1% spread
+        "poor": 0.5             # <0.75% spread
     }
     
     # Branding

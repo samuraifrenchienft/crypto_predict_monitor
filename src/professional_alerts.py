@@ -56,8 +56,8 @@ class ProfessionalArbitrageAlerts:
                     cfg = load_config()
                     self.webhook_url = cfg.discord_health_webhook_url
                 except:
-                    # Final fallback
-                    self.webhook_url = "https://discord.com/api/webhooks/1455877944005365814/TpDNqyFuXhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb"
+                    # No webhook configured
+                    self.webhook_url = None
         
         self.health_webhook_url = os.getenv("DISCORD_HEALTH_WEBHOOK_URL")
         self.session = None

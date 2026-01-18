@@ -25,19 +25,19 @@ services:
           name: crypto-arbitrage-db
           property: connectionString
       - key: SUPABASE_URL
-        value: https://wfzdwptyoqnylhrnyrzp.supabase.co
+        sync: false
       - key: SUPABASE_KEY
-        value: sb_publishable_tHtqTfqxTShOiY6c4gFOkA_jwGc1vjx
+        sync: false
       - key: SUPABASE_SERVICE_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmemR3cHR5b3FueWxocm55cnpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODA1MTIzMiwiZXhwIjoyMDgzNjI3MjMyfQ.yrdUvlQwF4_Tp4ZKHfoPPSG2vjFG7kGqUUGuLdkfJK8
+        sync: false
       - key: DISCORD_WEBHOOK_URL
-        value: https://discord.com/api/webhooks/1461039388627829015/vdT4dZDu7JjjnXkXle4nmq2aAkVL9rFSr5bWLYaYq0snaFqIDkV3XPpP5b8aNa6SjTF
+        sync: false
       - key: CPM_WEBHOOK_URL
-        value: https://discord.com/api/webhooks/1461018352012230797/qsKOPbw4Qnk7NJN5Hh0bqRIpRRnYuU1nddNa4aPAJSVgb2eumdTYS6EmJDp3fVda81WV
+        sync: false
       - key: DISCORD_HEALTH_WEBHOOK_URL
-        value: https://discord.com/api/webhooks/1455877944005365814/TpDNqyFu6XhD6SKgOMPssuBozVJ2HJvFa2fOMSqtOnyw6t5zaTx3F53TAcpDbLYpCeXb
+        sync: false
       - key: ALCHEMY_API_KEY
-        value: LHxDbj5Kc53tKUvwy9vOD
+        sync: false
       - key: DB_ECHO
         value: "false"
       - key: DB_POOL_SIZE

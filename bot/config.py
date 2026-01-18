@@ -95,8 +95,8 @@ class Config:
                 'exceptional': {'min_spread': 3.0, 'emoji': '🔵', 'color': '#0066ff', 'action': 'IMMEDIATE ATTENTION', 'priority': 1, 'alert': True},
                 'excellent': {'min_spread': 2.51, 'emoji': '🟢', 'color': '#00ff00', 'action': 'ACT QUICKLY', 'priority': 2, 'alert': True},
                 'very_good': {'min_spread': 2.01, 'emoji': '💛', 'color': '#ffff00', 'action': 'STRONG YES', 'priority': 3, 'alert': True},
-                'good': {'min_spread': 1.5, 'emoji': '🟠', 'color': '#ffa500', 'action': 'YOUR STRATEGY', 'priority': 4, 'alert': True},
-                'fair': {'min_spread': 1.0, 'emoji': '⚪', 'color': '#808080', 'action': 'FILTERED OUT', 'priority': 5, 'alert': False},
+                'good': {'min_spread': 1.0, 'emoji': '🟠', 'color': '#ffa500', 'action': 'YOUR STRATEGY', 'priority': 4, 'alert': True},
+                'fair': {'min_spread': 0.75, 'emoji': '⚪', 'color': '#808080', 'action': 'FILTERED OUT', 'priority': 5, 'alert': False},
                 'poor': {'min_spread': 0.0, 'emoji': '⚫', 'color': '#808080', 'action': 'FILTERED OUT', 'priority': 6, 'alert': False}
             },
             'platforms': {

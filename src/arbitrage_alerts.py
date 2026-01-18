@@ -38,9 +38,9 @@ class ArbitrageAlert:
     """Professional Discord embed builder for arbitrage opportunities"""
     
     def __init__(self, webhook_url: Optional[str] = None):
-        # Use environment variable for health webhook
-        self.webhook_url = webhook_url or os.getenv("DISCORD_HEALTH_WEBHOOK_URL") 
-        self.health_webhook_url = os.getenv("DISCORD_HEALTH_WEBHOOK_URL")  
+        # Use CPM_WEBHOOK_URL for arbitrage alerts, separate health webhook for system alerts
+        self.webhook_url = webhook_url or os.getenv("CPM_WEBHOOK_URL") 
+        self.health_webhook_url = os.getenv("DISCORD_HEALTH_WEBHOOK_URL") or os.getenv("CPM_HEALTH_WEBHOOK_URL")  
         self.session = None
         
     async def __aenter__(self):

@@ -60,7 +60,7 @@ class TieredArbitrageFilter:
             ),
             "good": TierConfig(
                 name="good",
-                min_spread=1.5,      # 1.5-2.0%
+                min_spread=1.0,      # 1.0-2.0%
                 emoji="🟠",
                 color="#ffa500", 
                 priority=4,

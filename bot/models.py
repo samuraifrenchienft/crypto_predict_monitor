@@ -3,10 +3,17 @@ Bot Data Models
 Clean, minimal data models for spread-only arbitrage system
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Iterable
 from enum import Enum
+
+try:
+    from pydantic import BaseModel
+    PYDANTIC_AVAILABLE = True
+except ImportError:
+    PYDANTIC_AVAILABLE = False
+    BaseModel = object
 
 class Platform(Enum):
     """Supported prediction market platforms"""
@@ -25,17 +32,25 @@ class Tier(Enum):
     POOR = "poor"
 
 @dataclass
+class Outcome:
+    """Market outcome (YES/NO)"""
+    outcome_id: str
+    name: str
+
+    def model_dump(self, mode: str = "python") -> Dict[str, Any]:
+        return {"outcome_id": self.outcome_id, "name": self.name}
+
+@dataclass
 class Quote:
     """Market quote with bid/ask prices"""
-    market_id: str
-    platform: Platform
-    bid: float
-    ask: float
-    mid: float
-    spread: float
-    timestamp: datetime
-    volume: Optional[float] = None  # Kept for compatibility but not used
-    
+    outcome_id: str
+    bid: Optional[float] = None
+    ask: Optional[float] = None
+    mid: Optional[float] = None
+    spread: Optional[float] = None
+    bid_size: Optional[float] = None
+    ask_size: Optional[float] = None
+
     def __post_init__(self):
         """Calculate mid price and spread if not provided"""
         if self.mid is None and self.bid is not None and self.ask is not None:
@@ -43,17 +58,41 @@ class Quote:
         if self.spread is None and self.bid is not None and self.ask is not None:
             self.spread = self.ask - self.bid
 
+    @classmethod
+    def from_bid_ask(cls, outcome_id: str, bid: Optional[float], ask: Optional[float], 
+                     bid_size: Optional[float] = None, ask_size: Optional[float] = None) -> "Quote":
+        mid = None
+        spread = None
+        if bid is not None and ask is not None:
+            mid = (bid + ask) / 2
+            spread = ask - bid
+        return cls(outcome_id=outcome_id, bid=bid, ask=ask, mid=mid, spread=spread, 
+                   bid_size=bid_size, ask_size=ask_size)
+
+    def model_dump(self, mode: str = "python") -> Dict[str, Any]:
+        return {
+            "outcome_id": self.outcome_id,
+            "bid": self.bid,
+            "ask": self.ask,
+            "mid": self.mid,
+            "spread": self.spread,
+            "bid_size": self.bid_size,
+            "ask_size": self.ask_size,
+        }
+
 @dataclass
 class Market:
     """Prediction market information"""
+    source: str
     market_id: str
-    platform: Platform
     title: str
-    description: str
-    url: str
-    category: str
-    end_time: Optional[datetime]
-    created_time: datetime
+    url: Optional[str] = None
+    outcomes: List[Any] = field(default_factory=list)
+    platform: Optional[Platform] = None
+    description: str = ""
+    category: str = ""
+    end_time: Optional[datetime] = None
+    created_time: Optional[datetime] = None
     is_active: bool = True
     
     def get_normalized_title(self) -> str:
@@ -62,6 +101,8 @@ class Market:
     
     def get_platform_url(self) -> str:
         """Get platform-specific URL"""
+        if self.url:
+            return self.url
         if self.platform == Platform.POLYMARKET:
             return f"https://polymarket.com/event/{self.market_id}"
         elif self.platform == Platform.AZURO:
@@ -70,7 +111,16 @@ class Market:
             return f"https://manifold.markets/{self.market_id}"
         elif self.platform == Platform.LIMITLESS:
             return f"https://limitless.exchange/events/{self.market_id}"
-        return self.url
+        return self.url or ""
+
+    def model_dump(self, mode: str = "python") -> Dict[str, Any]:
+        return {
+            "source": self.source,
+            "market_id": self.market_id,
+            "title": self.title,
+            "url": self.url,
+            "outcomes": self.outcomes,
+        }
 
 @dataclass
 class ArbitrageOpportunity:

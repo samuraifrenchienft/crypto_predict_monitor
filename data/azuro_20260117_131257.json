@@ -1,0 +1,426 @@
+{
+  "source": "azuro",
+  "markets": [
+    {
+      "market_id": "azuro-btc-150k-jan",
+      "title": "Will Bitcoin reach $150,000 in January?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.41,
+          "ask": 0.43,
+          "mid": 0.42,
+          "spread": 0.020000000000000018,
+          "bid_size": 85000,
+          "ask_size": 85000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.57,
+          "ask": 0.59,
+          "mid": 0.58,
+          "spread": 0.020000000000000018,
+          "bid_size": 115000,
+          "ask_size": 115000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-trump-fed-chair-pulte",
+      "title": "Will Trump nominate Bill Pulte as the next Fed chair?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.13999999999999999,
+          "ask": 0.16,
+          "mid": 0.15,
+          "spread": 0.020000000000000018,
+          "bid_size": 88000,
+          "ask_size": 88000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.84,
+          "ask": 0.86,
+          "mid": 0.85,
+          "spread": 0.020000000000000018,
+          "bid_size": 82000,
+          "ask_size": 82000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-khamenei-iran-jan31",
+      "title": "Khamenei out as Supreme Leader of Iran by January 31?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.07,
+          "ask": 0.09,
+          "mid": 0.08,
+          "spread": 0.01999999999999999,
+          "bid_size": 65000,
+          "ask_size": 65000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.91,
+          "ask": 0.93,
+          "mid": 0.92,
+          "spread": 0.020000000000000018,
+          "bid_size": 95000,
+          "ask_size": 95000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-us-strikes-iran-jan16",
+      "title": "US strikes Iran by January 16, 2026?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.11,
+          "ask": 0.13,
+          "mid": 0.12,
+          "spread": 0.020000000000000004,
+          "bid_size": 71000,
+          "ask_size": 71000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.87,
+          "ask": 0.89,
+          "mid": 0.88,
+          "spread": 0.020000000000000018,
+          "bid_size": 89000,
+          "ask_size": 89000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-fed-decrease-50bps",
+      "title": "Fed decreases interest rates by 50+ bps after January 2026 meeting?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.33999999999999997,
+          "ask": 0.36,
+          "mid": 0.35,
+          "spread": 0.020000000000000018,
+          "bid_size": 93000,
+          "ask_size": 93000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.64,
+          "ask": 0.66,
+          "mid": 0.65,
+          "spread": 0.020000000000000018,
+          "bid_size": 107000,
+          "ask_size": 107000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-fed-increase-25bps",
+      "title": "Fed increases interest rates by 25+ bps after January 2026 meeting?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.27,
+          "ask": 0.29000000000000004,
+          "mid": 0.28,
+          "spread": 0.020000000000000018,
+          "bid_size": 72000,
+          "ask_size": 72000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.71,
+          "ask": 0.73,
+          "mid": 0.72,
+          "spread": 0.020000000000000018,
+          "bid_size": 98000,
+          "ask_size": 98000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-fed-no-change",
+      "title": "No change in Fed interest rates after January 2026 meeting?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.44,
+          "ask": 0.46,
+          "mid": 0.45,
+          "spread": 0.020000000000000018,
+          "bid_size": 68000,
+          "ask_size": 68000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.54,
+          "ask": 0.56,
+          "mid": 0.55,
+          "spread": 0.020000000000000018,
+          "bid_size": 92000,
+          "ask_size": 92000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-aramco-largest-jan31",
+      "title": "Will Saudi Aramco be the largest company in the world by market cap on January 31?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.21,
+          "ask": 0.23,
+          "mid": 0.22,
+          "spread": 0.020000000000000018,
+          "bid_size": 54000,
+          "ask_size": 54000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.77,
+          "ask": 0.79,
+          "mid": 0.78,
+          "spread": 0.020000000000000018,
+          "bid_size": 86000,
+          "ask_size": 86000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-portugal-president-2026",
+      "title": "Will Catarina Martins win the 2026 Portugal presidential election?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.16999999999999998,
+          "ask": 0.19,
+          "mid": 0.18,
+          "spread": 0.020000000000000018,
+          "bid_size": 47000,
+          "ask_size": 47000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.8099999999999999,
+          "ask": 0.83,
+          "mid": 0.82,
+          "spread": 0.020000000000000018,
+          "bid_size": 73000,
+          "ask_size": 73000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-trump-fed-chair-paul",
+      "title": "Will Trump nominate Ron Paul as the next Fed chair?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.04,
+          "ask": 0.060000000000000005,
+          "mid": 0.05,
+          "spread": 0.020000000000000004,
+          "bid_size": 38000,
+          "ask_size": 38000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.94,
+          "ask": 0.96,
+          "mid": 0.95,
+          "spread": 0.020000000000000018,
+          "bid_size": 82000,
+          "ask_size": 82000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-trump-fed-chair-powell",
+      "title": "Will Trump nominate Jerome Powell as the next Fed chair?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.31,
+          "ask": 0.33,
+          "mid": 0.32,
+          "spread": 0.020000000000000018,
+          "bid_size": 61000,
+          "ask_size": 61000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.67,
+          "ask": 0.6900000000000001,
+          "mid": 0.68,
+          "spread": 0.020000000000000018,
+          "bid_size": 79000,
+          "ask_size": 79000
+        }
+      ]
+    },
+    {
+      "market_id": "azuro-us-strikes-iran-jan31",
+      "title": "US strikes Iran by January 31, 2026?",
+      "url": "https://bookmaker.xyz?utm_source=arbitrage_bot&utm_medium=referral",
+      "outcomes": [
+        {
+          "outcome_id": "yes",
+          "name": "YES"
+        },
+        {
+          "outcome_id": "no",
+          "name": "NO"
+        }
+      ],
+      "quotes": [
+        {
+          "outcome_id": "yes",
+          "bid": 0.13999999999999999,
+          "ask": 0.16,
+          "mid": 0.15,
+          "spread": 0.020000000000000018,
+          "bid_size": 69000,
+          "ask_size": 69000
+        },
+        {
+          "outcome_id": "no",
+          "bid": 0.84,
+          "ask": 0.86,
+          "mid": 0.85,
+          "spread": 0.020000000000000018,
+          "bid_size": 91000,
+          "ask_size": 91000
+        }
+      ]
+    }
+  ],
+  "timestamp": "20260117_131257"
+}
