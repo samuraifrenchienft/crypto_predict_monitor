@@ -28,7 +28,7 @@ from rich.console import Console
 
 # Import professional arbitrage system
 from src.arbitrage_main import ProfessionalArbitrageSystem
-from src.arbitrage_detector import MarketData
+from arbitrage.complete_system import MarketData
 
 # Import adapters
 from bot.adapters.polymarket import PolymarketAdapter
