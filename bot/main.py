@@ -28,7 +28,7 @@ from rich.console import Console
 
 # Import professional arbitrage system
 from src.arbitrage_main import ProfessionalArbitrageSystem
-from arbitrage.complete_system import MarketData
+from arbitrage.complete_system import MarketData, Platform
 
 # Import adapters
 from bot.adapters.polymarket import PolymarketAdapter
@@ -187,23 +187,17 @@ async def main() -> None:
                         
                         # Create MarketData object
                         market_data = MarketData(
+                            platform=Platform.POLYMARKET if source == 'polymarket' else Platform.LIMITLESS if source == 'limitless' else Platform.AZURO,
                             market_id=m.market_id,
-                            market_name=m.title,
+                            title=m.title,
+                            description=getattr(m, 'description', ''),
                             yes_price=yes_price,
                             no_price=no_price,
-                            yes_bid=yes_bid,
-                            yes_ask=yes_ask,
-                            no_bid=no_bid,
-                            no_ask=no_ask,
                             yes_liquidity=yes_liquidity,
                             no_liquidity=no_liquidity,
                             volume_24h=getattr(m, 'volume_24h', 0.0) or 0.0,
-                            spread_percentage=spread_pct,
-                            price_volatility=0.1,  # Default volatility
                             expires_at=expires_at or datetime.utcnow() + timedelta(days=7),
-                            polymarket_link=m.url,
-                            analysis_link=m.url,
-                            market_source=source
+                            image_url=getattr(m, 'image', None)
                         )
                         
                         all_market_data.append(market_data)
