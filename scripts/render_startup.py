@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Import MarketData for strategy filters
-from arbitrage_detector import MarketData
+from arbitrage.complete_system import MarketData
 
 # Configure logging
 logging.basicConfig(
@@ -125,7 +125,7 @@ def start_arbitrage_bot():
                 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
                 
                 from arbitrage_main import ProfessionalArbitrageSystem
-                from arbitrage_detector import MarketData
+                from arbitrage.complete_system import MarketData
                 from dashboard.app import update_all_markets
                 
                 async def arbitrage_loop():
